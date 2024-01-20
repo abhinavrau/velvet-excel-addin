@@ -1,3 +1,5 @@
+
+
 Office.onReady((info) => {
     // Check that we loaded into Excel
     if (info.host === Office.HostType.Excel) {
@@ -155,7 +157,7 @@ async function getResults() {
                             cell.values = [[result.response.summary.summaryText]];
                             await context.sync();
 
-                            const score = await calculateSimilarity(result.response.summary.summaryText, expectedSummary[result.rowNum][0], config);
+                            const score = await calculateSimilarityUsingVertexAI(result.response.summary.summaryText, expectedSummary[result.rowNum][0], config);
                             const score_cell = summaryScoreColumn.getRange().getCell(result.rowNum, 0);
                             score_cell.values = [[score]];
                             await context.sync();
@@ -191,14 +193,6 @@ async function callVertexAISearch(rowNum, query, config) {
     try {
 
         const token = $('#access-token').val();
-        // Get the value of the preamble field.
-        /* const preamble = $('#preamble').val();
-        const summaryResultCount = $('#summaryResultCount').val();
-        const maxExtractiveAnswerCount = $('#maxExtractiveAnswerCount').val();
-        const ignoreAdversarialQuery = $('#ignoreAdversarialQuery').val();
-        const ignoreNonSummarySeekingQuery = $('#ignoreNonSummarySeekingQuery').val();
-        const projectNumber = $('#project-number').val();
-        const datastoreName = $('#datastore-name').val(); */
 
         const preamble = config.preamble;
         const summaryResultCount = config.summaryResultCount;
@@ -250,73 +244,54 @@ async function callVertexAISearch(rowNum, query, config) {
     }
 }
 
-async function calculateSimilarity(sentence1, sentence2, config) {
+async function calculateSimilarityUsingVertexAI(sentence1, sentence2, config) {
+
     try {
 
-        const projectId = config.projectId;
-        const location = config.location;
         const token = $('#access-token').val();
+        const projectId = config.vertexAIProjectID;
+        const location = config.vertexAILocation;
+        
+        var prompt = "You will get two answers to a question, you should determine if they are semantically similar or not. " +
+            "examples - answer_1: I was created by X. answer_2: X created me. output: same" +
+            "answer_1:There are 52 days in a year. answer_2: A year is fairly long. output: different"
 
-        // Get embedding for each sentence
-        const embedding1 = await getEmbedding(sentence1, token, projectId, location);
-        const embedding2 = await getEmbedding(sentence2, token, projectId, location);
+        var full_prompt = `${prompt} answer_1: ${sentence1} answer_2: ${sentence2} output:`;
 
-        // Calculate cosine similarity (assuming embeddings are NumPy arrays)
-        let dotProduct = 0;
-        let magnitude1 = 0;
-        let magnitude2 = 0;
-
-        for (let i = 0; i < embedding1.length; i++) {
-            dotProduct += embedding1[i] * embedding2[i];
-            magnitude1 += embedding1[i] * embedding1[i];
-            magnitude2 += embedding2[i] * embedding2[i];
+        // "$prompt". Now answer answer_1:
+        var data = {
+            instances: [
+                { prompt: `${full_prompt}` }
+            ],
+            parameters: {
+                temperature: 0.2,
+                maxOutputTokens: 256,
+                topK: 40,
+                topP: 0.95,
+                logprobs: 2
+            }
         }
 
-        magnitude1 = Math.sqrt(magnitude1);
-        magnitude2 = Math.sqrt(magnitude2);
+        const url = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/text-bison:predict`;
 
-        const cosineSimilarity = dotProduct / (magnitude1 * magnitude2);
-
-        return cosineSimilarity;
-
-    } catch (error) {
-        console.error("calculateSimilarity: Error calculating similarity:", error);
-        // Handle errors appropriately, e.g., return error message to client
-        throw error;
-    }
-}
-async function getEmbedding(text, token, projectId, location) {
-
-    const endpointURL = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/textembedding-gecko:predict`
-
-    const instance = {
-        instances: [{ // Assuming your model expects a list of instances
-            task_type: `SEMANTIC_SIMILARITY`,
-            content: text // For text input, use "content" (adjust for images etc.)
-        }]
-    };
-
-    try {
-        const response = await fetch(endpointURL, {
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json; charset=utf-8',
-                'Authorization': `Bearer ${token}` // Replace with your authentication
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify(instance),
+            body: JSON.stringify(data),
         });
 
         if (!response.ok) {
-            throw new Error(`getEmbedding: Request failed with status ${response.status}`);
+            throw new Error(`calculateSimilarityUsingVertexAI: Request failed with status ${response.status}`);
         }
-
-        const responseData = await response.json();
-        const embedding = responseData.predictions[0].embeddings.values; // Extract embedding (adjust structure if needed)
-
-        return embedding;
+        const json = await response.json();
+        return json.predictions[0].content;
 
     } catch (error) {
-        console.error('Error getting embedding:', error);
+        console.error('Error calling calculateSimilarityUsingVertexAI: ', error);
         throw error;
+
     }
 }
