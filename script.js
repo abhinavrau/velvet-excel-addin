@@ -64,11 +64,11 @@ async function createTable() {
             currentWorksheet.getUsedRange().format.autofitRows();
             await context.sync();
 
-            var velvetTable = currentWorksheet.tables.add("A15:M15", true /*hasHeaders*/);
+            var velvetTable = currentWorksheet.tables.add("A15:L15", true /*hasHeaders*/);
             velvetTable.name = `${worksheetName}.TestCasesTable`;
 
             velvetTable.getHeaderRowRange().values =
-                [["ID", "Query", "Expected Summary", "Actual Summary", "Summary_p", "Link_p0", "MRR", "expected_link1", "actual_link1", "expected_link_2", "actual_link2", "expected_link3", "actual_link3"]];
+                [["ID", "Query", "Expected Summary", "Actual Summary", "Summary_p", "Link_p0", "expected_link1", "actual_link1", "expected_link_2", "actual_link2", "expected_link3", "actual_link3"]];
 
             /*velvetTable.rows.add(null, [
                ["1", "`You are expert financial analyst. Be terse. Answer the question with minimal facts. What is Google's revenue for year ending 2022?`", "Revenue was $282.8 billion in 2022", ""],
@@ -119,11 +119,14 @@ async function getResults() {
             const link_1_Column = getColumn(testCasesTable, "actual_link1");
             const link_2_Column = getColumn(testCasesTable, "actual_link2");
             const link_3_Column = getColumn(testCasesTable, "actual_link3");
+            const expected_link_1_Column = getColumn(testCasesTable, "expected_link1");
+            const expected_link_2_Column = getColumn(testCasesTable, "expected_link2");
+            const expected_link_3_Column = getColumn(testCasesTable, "expected_link3");
+
 
 
             const link_p0Column = getColumn(testCasesTable, "Link_p0");
-            const mrrColumn = getColumn(testCasesTable, "MRR");
-            
+
 
 
             testCasesTable.rows.load('count');
@@ -151,7 +154,8 @@ async function getResults() {
                 let id = idColumn.values;
                 let query = queryColumn.values;
                 let expectedSummary = expectedSummaryColumn.values;
-                
+                let expectedLink1 = expected_link_1_Column.values;
+
 
                 //console.log('Number of rows in table:' + table.rows.count);
                 while (rowNum <= testCasesTable.rows.count && id[rowNum][0] !== null && id[rowNum][0] !== "") {
@@ -163,37 +167,65 @@ async function getResults() {
 
                         if (result.response.hasOwnProperty('summary')) {
 
-                          
+
                             console.log('Summary: ' + result.response.summary.summaryText);
                             const cell = actualSummaryColumn.getRange().getCell(result.rowNum, 0);
+                            cell.clear(Excel.ClearApplyTo.formats);
                             cell.values = [[result.response.summary.summaryText]];
+
 
                             const score = await calculateSimilarityUsingVertexAI(result.response.summary.summaryText, expectedSummary[result.rowNum][0], config);
                             const score_cell = summaryScoreColumn.getRange().getCell(result.rowNum, 0);
+                            score_cell.clear(Excel.ClearApplyTo.formats);
                             console.log('result.rowNum ' + result.rowNum + ' score: ' + score);
-                            
+
                             if (score.trim() === 'same') {
                                 score_cell.values = [[1]];
-                               
-                                testCasesTable.rows.getItemAt(result.rowNum - 1).getRange().clear(Excel.ClearApplyTo.formats);
+
                             } else {
                                 score_cell.values = [[0]];
-                                testCasesTable.rows.getItemAt(result.rowNum-1).getRange().format.fill.color = '#FFCCCB';
+                                score_cell.format.fill.color = '#FFCCCB';
+                                const actualSummarycell = actualSummaryColumn.getRange().getCell(result.rowNum, 0);
+                                actualSummarycell.format.fill.color = '#FFCCCB';
                                 //currentWorksheet.getRange().getRow(result.rowNum).format.fill.color = '#FFCCCB';
                             }
                             await context.sync();
 
-                            
+
                         }
                         if (result.response.hasOwnProperty('results')) {
-                            
-                            link_1_Column.getRange().getCell(result.rowNum, 0).values = [[result.response.results[0].document.derivedStructData.link]];
-                            link_2_Column.getRange().getCell(result.rowNum, 0).values = [[result.response.results[1].document.derivedStructData.link]];
-                            link_3_Column.getRange().getCell(result.rowNum, 0).values = [[result.response.results[2].document.derivedStructData.link]];
 
-                            link_p0Column.getRange().getCell(result.rowNum, 0).formulas = [['=IF(ISBLANK([@[expected_link1]]),"", IF([@[expected_link1]] = [@[actual_link1]], 1, 0))']];
-                            
-                            await context.sync(); 
+                            var p0_result;
+
+                            if (result.response.results[0].document.hasOwnProperty('structData')) {
+                                link_1_Column.getRange().getCell(result.rowNum, 0).values = [[result.response.results[0].document.structData.title]];
+                                link_2_Column.getRange().getCell(result.rowNum, 0).values = [[result.response.results[1].document.structData.title]];
+                                link_3_Column.getRange().getCell(result.rowNum, 0).values = [[result.response.results[2].document.structData.title]];
+                                p0_result = result.response.results[0].document.structData.title;
+                            } else {
+                                link_1_Column.getRange().getCell(result.rowNum, 0).values = [[result.response.results[0].document.derivedStructData.link]];
+                                link_2_Column.getRange().getCell(result.rowNum, 0).values = [[result.response.results[1].document.derivedStructData.link]];
+                                link_3_Column.getRange().getCell(result.rowNum, 0).values = [[result.response.results[2].document.derivedStructData.link]];
+                                p0_result = result.response.results[0].document.derivedStructData.link;
+                            }
+
+                            const link_p0_cell = link_p0Column.getRange().getCell(result.rowNum, 0);
+                            link_p0_cell.clear(Excel.ClearApplyTo.formats);
+
+
+                            const link1_cell = link_1_Column.getRange().getCell(result.rowNum, 0);
+                            link1_cell.clear(Excel.ClearApplyTo.formats);
+                            // match first link with expected link
+                            if (p0_result === expectedLink1[result.rowNum][0]) {
+                                link_p0_cell.values = [[1]];
+
+                            } else {
+                                link_p0_cell.values = [[0]];
+                                link_p0_cell.format.fill.color = '#FFCCCB';
+                                link1_cell.format.fill.color = '#FFCCCB';
+
+                            }
+                            await context.sync();
                         }
                         if (result.response.hasOwnProperty('error')) {
                             throw Error(result.response.error.message);
@@ -208,7 +240,7 @@ async function getResults() {
             }
 
 
-            //currentWorksheet.getUsedRange().format.autofitColumns();
+            currentWorksheet.getUsedRange().format.autofitColumns();
             //currentWorksheet.getUsedRange().format.autofitRows();
             await context.sync();
             showStatus("Calling Vertex AI Search", false);
@@ -229,7 +261,7 @@ async function callVertexAISearch(rowNum, query, config) {
 
         const preamble = config.preamble;
         const summaryResultCount = config.summaryResultCount;
-        const maxExtractiveAnswerCount = config.maxExtractiveAnswerCount; 
+        const maxExtractiveAnswerCount = config.maxExtractiveAnswerCount;
         const ignoreAdversarialQuery = config.ignoreAdversarialQuery;
         const ignoreNonSummarySeekingQuery = config.ignoreNonSummarySeekingQuery;
         const projectNumber = config.vertexAISearchProjectNumber;
@@ -271,7 +303,7 @@ async function callVertexAISearch(rowNum, query, config) {
         return { rowNum: rowNum, response: json };
 
     } catch (error) {
-        console.error('Error calling callVertexAISearch: ' +  error);
+        console.error('Error calling callVertexAISearch: ' + error);
         throw error;
 
     }
@@ -284,16 +316,16 @@ async function calculateSimilarityUsingVertexAI(sentence1, sentence2, config) {
         const token = $('#access-token').val();
         const projectId = config.vertexAIProjectID;
         const location = config.vertexAILocation;
-        
+
         var prompt = "You will get two answers to a question, you should determine if they are semantically similar or not. If any monetoery numbers in the answers, they should be matched exactly." +
             "examples - answer_1: I was created by X. answer_2: X created me. output:same " +
             "answer_1:There are 52 days in a year. answer_2: A year is fairly long. output:different ";
-            /* "answer_1:The revenue was $10 milllion in 2022. answer_2: In 2022 the revenue was $10 million output:same " +
-            "answer_1:The revenue was $12 milllion in 2022. answer_2: In 2022 the revenue was $10 million output:different " +
-            "answer_1:The revenue was $12 milllion in 2022. answer_2: In 2022 the revenue was $1200  output:different " +
-            "answer_1:Alphabet total net income was $59.9 billion in 2022. answer_2: Alphabet's net income in 2022 was $59972. output:different "; */
-            
-        
+        /* "answer_1:The revenue was $10 milllion in 2022. answer_2: In 2022 the revenue was $10 million output:same " +
+        "answer_1:The revenue was $12 milllion in 2022. answer_2: In 2022 the revenue was $10 million output:different " +
+        "answer_1:The revenue was $12 milllion in 2022. answer_2: In 2022 the revenue was $1200  output:different " +
+        "answer_1:Alphabet total net income was $59.9 billion in 2022. answer_2: Alphabet's net income in 2022 was $59972. output:different "; */
+
+
 
         var full_prompt = `${prompt} answer_1: ${sentence1} answer_2: ${sentence2} output:`;
 
@@ -328,7 +360,7 @@ async function calculateSimilarityUsingVertexAI(sentence1, sentence2, config) {
         return json.predictions[0].content;
 
     } catch (error) {
-        console.error('Error calling calculateSimilarityUsingVertexAI: ' +  error);
+        console.error('Error calling calculateSimilarityUsingVertexAI: ' + error);
         throw error;
 
     }
