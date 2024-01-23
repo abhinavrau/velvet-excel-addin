@@ -162,6 +162,15 @@ async function getResults() {
                     console.log('ID:' + id[rowNum][0]);
                     console.log('Query: ' + query[rowNum][0]);
 
+
+                    // check the modulus of 10 for the rownum so be batch 10 calls to vertex AI
+                    if (rowNum % 10 === 0) {
+                        console.log('Sleeping: ' + rowNum);
+                        // sleep for 2 seconds
+                        await new Promise(r => setTimeout(r, 2000));
+                    }
+
+
                     // add to function array
                     callVertexAISearch(rowNum, query[rowNum][0], config).then(async function (result) {
 
