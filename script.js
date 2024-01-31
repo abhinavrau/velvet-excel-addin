@@ -36,13 +36,13 @@ async function createTable() {
             const worksheetName = currentWorksheet.name;
             console.log(`TableName: ${worksheetName}.ConfigTable`);
 
-            var range = currentWorksheet.getRange('C1');
+            var range = currentWorksheet.getRange('A1');
             range.values = [["Vertex AI Search Parameters"]];
             range.format.font.bold = true;
             range.format.fill.color = 'yellow';
             range.format.font.size = 16;
 
-            var configTable = currentWorksheet.tables.add("C3:D3", true /*hasHeaders*/);
+            var configTable = currentWorksheet.tables.add("A2:B3", true /*hasHeaders*/);
             configTable.name = `${worksheetName}.ConfigTable`;
 
             configTable.getHeaderRowRange().values =
@@ -53,22 +53,22 @@ async function createTable() {
                 ["Vertex AI Search DataStore Name", "alphabet-pdfs_1695783402380"],
                 ["Vertex AI Project ID", "argolis-arau"],
                 ["Vertex AI Location", "us-central1"],
-                ["maxExtractiveAnswerCount (1-5)", "1"],
+                ["maxExtractiveAnswerCount (1-5)", "1"], //maxExtractiveAnswerCount
                 ["Preamble", "Put your preamble here"],
-                ["summaryResultCount (1-5)", "1"],
-                ["ignoreAdversarialQuery (True or False)", "True"],
-                ["ignoreNonSummarySeekingQuery (True or False)", "True"]
+                ["summaryResultCount (1-5)", "1"],   //summaryResultCount
+                ["ignoreAdversarialQuery (True or False)", "True"], // ignoreAdversarialQuery
+                ["ignoreNonSummarySeekingQuery (True or False)", "True"] // ignoreNonSummarySeekingQuery
             ]);
 
             currentWorksheet.getUsedRange().format.autofitColumns();
             currentWorksheet.getUsedRange().format.autofitRows();
             await context.sync();
 
-            var velvetTable = currentWorksheet.tables.add("A15:L15", true /*hasHeaders*/);
+            var velvetTable = currentWorksheet.tables.add("C15:O15", true /*hasHeaders*/);
             velvetTable.name = `${worksheetName}.TestCasesTable`;
 
             velvetTable.getHeaderRowRange().values =
-                [["ID", "Query", "Expected Summary", "Actual Summary", "Summary_p", "Link_p0", "expected_link1", "actual_link1", "expected_link_2", "actual_link2", "expected_link3", "actual_link3"]];
+                [["ID", "Query", "Expected Summary", "Actual Summary", "Expected Link 1", "Expected Link 2", "Expected Link 3", "Summary Match", "First Link Match", "Link in Top 2", "Actual Link 1",  "Actual Link 2", "Actual Link 3"]];
 
             /*velvetTable.rows.add(null, [
                ["1", "`You are expert financial analyst. Be terse. Answer the question with minimal facts. What is Google's revenue for year ending 2022?`", "Revenue was $282.8 billion in 2022", ""],
@@ -77,7 +77,7 @@ async function createTable() {
                ["4", "You are expert financial analyst. Be terse. Answer the question with minimal facts. How much did Google invest in research and development (R&D) in 2022?", "Google's parent company Alphabet spent $39.5 billion on research and development (R&D) in 2022", ""]
            ]); */
 
-            velvetTable.resize('A15:M150');
+            velvetTable.resize('C15:O116');
             currentWorksheet.getUsedRange().format.autofitColumns();
             currentWorksheet.getUsedRange().format.autofitRows();
 
@@ -115,17 +115,19 @@ async function getResults() {
             const idColumn = getColumn(testCasesTable, "ID");
             const actualSummaryColumn = getColumn(testCasesTable, "Actual Summary");
             const expectedSummaryColumn = getColumn(testCasesTable, "Expected Summary");
-            const summaryScoreColumn = getColumn(testCasesTable, "Summary_p");
-            const link_1_Column = getColumn(testCasesTable, "actual_link1");
-            const link_2_Column = getColumn(testCasesTable, "actual_link2");
-            const link_3_Column = getColumn(testCasesTable, "actual_link3");
-            const expected_link_1_Column = getColumn(testCasesTable, "expected_link1");
-            const expected_link_2_Column = getColumn(testCasesTable, "expected_link2");
-            const expected_link_3_Column = getColumn(testCasesTable, "expected_link3");
+            const summaryScoreColumn = getColumn(testCasesTable, "Summary Match");
+            
+            const link_1_Column = getColumn(testCasesTable, "Actual Link 1");
+            const link_2_Column = getColumn(testCasesTable, "Actual Link 2");
+            const link_3_Column = getColumn(testCasesTable, "Actual Link 3");
+            const expected_link_1_Column = getColumn(testCasesTable, "Expected Link 1");
+            const expected_link_2_Column = getColumn(testCasesTable, "Expected Link 2");
+            const expected_link_3_Column = getColumn(testCasesTable, "Expected Link 3");
 
 
 
-            const link_p0Column = getColumn(testCasesTable, "Link_p0");
+            const link_p0Column = getColumn(testCasesTable, "First Link Match");
+            const link_top2Column = getColumn(testCasesTable, "Link in Top 2");
 
 
 
@@ -155,6 +157,7 @@ async function getResults() {
                 let query = queryColumn.values;
                 let expectedSummary = expectedSummaryColumn.values;
                 let expectedLink1 = expected_link_1_Column.values;
+                let expectedLink2 = expected_link_2_Column.values;
 
 
                 //console.log('Number of rows in table:' + table.rows.count);
@@ -189,10 +192,10 @@ async function getResults() {
                             console.log('result.rowNum ' + result.rowNum + ' score: ' + score);
 
                             if (score.trim() === 'same') {
-                                score_cell.values = [[1]];
+                                score_cell.values = [["TRUE"]];
 
                             } else {
-                                score_cell.values = [[0]];
+                                score_cell.values = [["FALSE"]];
                                 score_cell.format.fill.color = '#FFCCCB';
                                 const actualSummarycell = actualSummaryColumn.getRange().getCell(result.rowNum, 0);
                                 actualSummarycell.format.fill.color = '#FFCCCB';
@@ -205,17 +208,19 @@ async function getResults() {
                         if (result.response.hasOwnProperty('results')) {
 
                             var p0_result;
-
+                            var p2_result;
                             if (result.response.results[0].document.hasOwnProperty('structData')) {
                                 link_1_Column.getRange().getCell(result.rowNum, 0).values = [[result.response.results[0].document.structData.title]];
                                 link_2_Column.getRange().getCell(result.rowNum, 0).values = [[result.response.results[1].document.structData.title]];
                                 link_3_Column.getRange().getCell(result.rowNum, 0).values = [[result.response.results[2].document.structData.title]];
                                 p0_result = result.response.results[0].document.structData.title;
+                                p2_result = result.response.results[1].document.structData.title;
                             } else {
                                 link_1_Column.getRange().getCell(result.rowNum, 0).values = [[result.response.results[0].document.derivedStructData.link]];
                                 link_2_Column.getRange().getCell(result.rowNum, 0).values = [[result.response.results[1].document.derivedStructData.link]];
                                 link_3_Column.getRange().getCell(result.rowNum, 0).values = [[result.response.results[2].document.derivedStructData.link]];
                                 p0_result = result.response.results[0].document.derivedStructData.link;
+                                p2_result = result.response.results[1].document.derivedStructData.link;
                             }
 
                             const link_p0_cell = link_p0Column.getRange().getCell(result.rowNum, 0);
@@ -224,15 +229,27 @@ async function getResults() {
 
                             const link1_cell = link_1_Column.getRange().getCell(result.rowNum, 0);
                             link1_cell.clear(Excel.ClearApplyTo.formats);
+                            const top2_cell = link_top2Column.getRange().getCell(result.rowNum, 0);
+                            top2_cell.clear(Excel.ClearApplyTo.formats);
                             // match first link with expected link
                             if (p0_result === expectedLink1[result.rowNum][0]) {
-                                link_p0_cell.values = [[1]];
-
+                                link_p0_cell.values = [["TRUE"]];
                             } else {
-                                link_p0_cell.values = [[0]];
+                                link_p0_cell.values = [["FALSE"]];
                                 link_p0_cell.format.fill.color = '#FFCCCB';
                                 link1_cell.format.fill.color = '#FFCCCB';
 
+                            }
+
+                            // match top 2 
+                            if (p2_result === expectedLink2[result.rowNum][0]
+                                || p2_result === expectedLink1[result.rowNum][0]
+                                || p0_result === expectedLink1[result.rowNum][0]
+                                || p0_result === expectedLink2[result.rowNum][0]) {
+                                top2_cell.values = [["TRUE"]];
+                            } else {
+                                top2_cell.values = [["FALSE"]];
+                                top2_cell.format.fill.color = '#FFCCCB';
                             }
                             await context.sync();
                         }
@@ -276,7 +293,8 @@ async function callVertexAISearch(rowNum, query, config) {
         const projectNumber = config.vertexAISearchProjectNumber;
         const datastoreName = config.vertexAISearchDataStoreName;
 
-
+        console.log('config: ' + JSON.stringify(config));
+        
         var data = {
             query: query,
             page_size: 5,
@@ -306,7 +324,7 @@ async function callVertexAISearch(rowNum, query, config) {
         });
 
         if (!response.ok) {
-            throw new Error(`callVertexAISearch: Request failed with status ${response.status}`);
+            throw new Error(`callVertexAISearch: Request failed with status ${response.status} and message: ${response.message}`);
         }
         const json = await response.json();
         return { rowNum: rowNum, response: json };
