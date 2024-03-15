@@ -42,7 +42,7 @@ async function createTable() {
             range.format.fill.color = 'yellow';
             range.format.font.size = 16;
 
-            var configTable = currentWorksheet.tables.add("A2:B3", true /*hasHeaders*/);
+            var configTable = currentWorksheet.tables.add("A2:B2", true /*hasHeaders*/);
             configTable.name = `${worksheetName}.ConfigTable`;
 
             configTable.getHeaderRowRange().values =
@@ -68,7 +68,7 @@ async function createTable() {
             velvetTable.name = `${worksheetName}.TestCasesTable`;
 
             velvetTable.getHeaderRowRange().values =
-                [["ID", "Query", "Expected Summary", "Actual Summary", "Expected Link 1", "Expected Link 2", "Expected Link 3", "Summary Match", "First Link Match", "Link in Top 2", "Actual Link 1",  "Actual Link 2", "Actual Link 3"]];
+                [["ID", "Query", "Expected Summary", "Actual Summary", "Expected Link 1", "Expected Link 2", "Expected Link 3", "Summary Match", "First Link Match", "Link in Top 2", "Actual Link 1", "Actual Link 2", "Actual Link 3"]];
 
             /*velvetTable.rows.add(null, [
                ["1", "`You are expert financial analyst. Be terse. Answer the question with minimal facts. What is Google's revenue for year ending 2022?`", "Revenue was $282.8 billion in 2022", ""],
@@ -116,7 +116,7 @@ async function getResults() {
             const actualSummaryColumn = getColumn(testCasesTable, "Actual Summary");
             const expectedSummaryColumn = getColumn(testCasesTable, "Expected Summary");
             const summaryScoreColumn = getColumn(testCasesTable, "Summary Match");
-            
+
             const link_1_Column = getColumn(testCasesTable, "Actual Link 1");
             const link_2_Column = getColumn(testCasesTable, "Actual Link 2");
             const link_3_Column = getColumn(testCasesTable, "Actual Link 3");
@@ -149,6 +149,7 @@ async function getResults() {
                 summaryResultCount: valueColumn.values[7][0],
                 ignoreAdversarialQuery: valueColumn.values[8][0],
                 ignoreNonSummarySeekingQuery: valueColumn.values[9][0],
+                accessToken: $('#access-token').val()
             };
 
             if (!queryColumn.isNullObject && !idColumn.isNullObject) {
@@ -159,7 +160,7 @@ async function getResults() {
                 let expectedLink1 = expected_link_1_Column.values;
                 let expectedLink2 = expected_link_2_Column.values;
 
-
+                let numfails = 0;
                 //console.log('Number of rows in table:' + table.rows.count);
                 while (rowNum <= testCasesTable.rows.count && id[rowNum][0] !== null && id[rowNum][0] !== "") {
                     console.log('ID:' + id[rowNum][0]);
@@ -168,11 +169,12 @@ async function getResults() {
 
                     // check the modulus of 10 for the rownum so be batch 10 calls to vertex AI
                     if (rowNum % 10 === 0) {
+                        showStatus(`Processed ${rowNum} test cases`, false);
                         console.log('Sleeping: ' + rowNum);
                         // sleep for 2 seconds
-                        await new Promise(r => setTimeout(r, 2000));
+                        await new Promise(r => setTimeout(r, 3000));
                     }
-
+                  
 
                     // add to function array
                     callVertexAISearch(rowNum, query[rowNum][0], config).then(async function (result) {
@@ -185,21 +187,24 @@ async function getResults() {
                             cell.clear(Excel.ClearApplyTo.formats);
                             cell.values = [[result.response.summary.summaryText]];
 
+                            // match summaries only if they are not null or empty
+                            if (expectedSummary[result.rowNum][0] !== null && expectedSummary[result.rowNum][0] !== "") {
 
-                            const score = await calculateSimilarityUsingVertexAI(result.response.summary.summaryText, expectedSummary[result.rowNum][0], config);
-                            const score_cell = summaryScoreColumn.getRange().getCell(result.rowNum, 0);
-                            score_cell.clear(Excel.ClearApplyTo.formats);
-                            console.log('result.rowNum ' + result.rowNum + ' score: ' + score);
+                                const score = await calculateSimilarityUsingVertexAI(result.response.summary.summaryText, expectedSummary[result.rowNum][0], config);
+                                const score_cell = summaryScoreColumn.getRange().getCell(result.rowNum, 0);
+                                score_cell.clear(Excel.ClearApplyTo.formats);
+                                //console.log('result.rowNum ' + result.rowNum + ' score: ' + score);
 
-                            if (score.trim() === 'same') {
-                                score_cell.values = [["TRUE"]];
+                                if (score.trim() === 'same') {
+                                    score_cell.values = [["TRUE"]];
 
-                            } else {
-                                score_cell.values = [["FALSE"]];
-                                score_cell.format.fill.color = '#FFCCCB';
-                                const actualSummarycell = actualSummaryColumn.getRange().getCell(result.rowNum, 0);
-                                actualSummarycell.format.fill.color = '#FFCCCB';
-                                //currentWorksheet.getRange().getRow(result.rowNum).format.fill.color = '#FFCCCB';
+                                } else {
+                                    score_cell.values = [["FALSE"]];
+                                    score_cell.format.fill.color = '#FFCCCB';
+                                    const actualSummarycell = actualSummaryColumn.getRange().getCell(result.rowNum, 0);
+                                    actualSummarycell.format.fill.color = '#FFCCCB';
+
+                                }
                             }
                             await context.sync();
 
@@ -253,12 +258,14 @@ async function getResults() {
                             }
                             await context.sync();
                         }
+                        // check for error json property
                         if (result.response.hasOwnProperty('error')) {
                             throw Error(result.response.error.message);
                         }
 
                     }).catch(async function (error) {
                         console.log('Error callVertexAISearch: ' + error);
+                        numfails++;
                         showStatus(`Exception when getting results: ${JSON.stringify(error.message)}`, true);
                     });
                     rowNum++;
@@ -283,8 +290,7 @@ async function callVertexAISearch(rowNum, query, config) {
 
     try {
 
-        const token = $('#access-token').val();
-
+        const token = config.accessToken;
         const preamble = config.preamble;
         const summaryResultCount = config.summaryResultCount;
         const maxExtractiveAnswerCount = config.maxExtractiveAnswerCount;
@@ -294,7 +300,7 @@ async function callVertexAISearch(rowNum, query, config) {
         const datastoreName = config.vertexAISearchDataStoreName;
 
         console.log('config: ' + JSON.stringify(config));
-        
+
         var data = {
             query: query,
             page_size: 5,
@@ -324,13 +330,13 @@ async function callVertexAISearch(rowNum, query, config) {
         });
 
         if (!response.ok) {
-            throw new Error(`callVertexAISearch: Request failed with status ${response.status} and message: ${response.message}`);
+            throw new Error(`callVertexAISearch: Request failed with with code:${response.code} status:${response.status} and message:${response.message}`);
         }
         const json = await response.json();
         return { rowNum: rowNum, response: json };
 
     } catch (error) {
-        console.error('Error calling callVertexAISearch: ' + error);
+        console.log('Error calling callVertexAISearch: ' + error);
         throw error;
 
     }
@@ -340,11 +346,11 @@ async function calculateSimilarityUsingVertexAI(sentence1, sentence2, config) {
 
     try {
 
-        const token = $('#access-token').val();
+        const token = config.accessToken;
         const projectId = config.vertexAIProjectID;
         const location = config.vertexAILocation;
 
-        var prompt = "You will get two answers to a question, you should determine if they are semantically similar or not. If any monetoery numbers in the answers, they should be matched exactly." +
+        var prompt = "You will get two answers to a question, you should determine if they are semantically similar or not. If any monetory numbers in the answers, they should be matched exactly." +
             "examples - answer_1: I was created by X. answer_2: X created me. output:same " +
             "answer_1:There are 52 days in a year. answer_2: A year is fairly long. output:different ";
         /* "answer_1:The revenue was $10 milllion in 2022. answer_2: In 2022 the revenue was $10 million output:same " +
@@ -381,13 +387,13 @@ async function calculateSimilarityUsingVertexAI(sentence1, sentence2, config) {
         });
 
         if (!response.ok) {
-            throw new Error(`calculateSimilarityUsingVertexAI: Request failed with status ${response.status}`);
+            throw new Error(`calculateSimilarityUsingVertexAI: Request failed with code:${response.code} status:${response.status} and message:${response.message}`);
         }
         const json = await response.json();
         return json.predictions[0].content;
 
     } catch (error) {
-        console.error('Error calling calculateSimilarityUsingVertexAI: ' + error);
+        console.log('Error calling calculateSimilarityUsingVertexAI: ' + error);
         throw error;
 
     }
