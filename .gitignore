@@ -1,0 +1,7 @@
+# Node / JS
+node_modules/
+.env
+env.yaml
+
+# VS Code
+.DS_Store

@@ -1,0 +1,36 @@
+{
+  "name": "velvet-excel",
+  "version": "1.0.0",
+  "description": "![](images/velvet_logo.png)",
+  "main": "src/addin.js",
+  "type": "module",
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha.js test/*.js"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "author": "arau@google.com",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "dotenv": "^16.3.1"
+    
+  },
+  "devDependencies": {
+    "c8": "^8.0.1",
+    "mocha": "^10.2.0",
+    "mocha-param": "^2.0.1",
+    "pre-commit": "^1.2.2",
+    "sinon": "^17.0.1",
+    "supertest": "^6.3.3",
+    "nock": "13.5.4",
+    "expect": "^27.5.1",
+    "fetch-mock": "9.11.0"
+  },
+  "pre-commit": [
+    "test"
+  ],
+  "directories": {
+    "test": "test"
+  }
+}
