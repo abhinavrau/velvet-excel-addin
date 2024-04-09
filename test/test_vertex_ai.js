@@ -61,7 +61,7 @@ describe('callVertexAISearch', () => {
         };
 
         // Read json from file into variable 
-        const rawData = fs.readFileSync('./test/test_response.json');
+        const rawData = fs.readFileSync('./test/test_vertex_ai_search_response.json');
         const data = JSON.parse(rawData);
 
         const response = {

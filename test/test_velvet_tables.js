@@ -1,7 +1,7 @@
 
 import expect from 'expect';
 import pkg from 'office-addin-mock';
-import { createConfigTable, createDataTable } from '../src/test_template.js';
+import { createConfigTable, createDataTable } from '../src/velvet_tables.js';
 const { OfficeMockObject } = pkg;
 
 describe("create Test Template Tables", () => {
@@ -17,7 +17,7 @@ describe("create Test Template Tables", () => {
                         getActiveWorksheet: function () {
                             return this;
                         },
-                        range: {
+                        range: { // Config Table
                             values: [["Config", "Value"]],
                             format: {
                                 font: {
@@ -44,7 +44,8 @@ describe("create Test Template Tables", () => {
                         getUsedRange: function () {
                             return this.range;
                         },
-                        tables: {
+                        tables: { // Test Cases Table
+                            name: "TestCasesTable",
                             add: function (str, flag) {
                                 return this;
                             },

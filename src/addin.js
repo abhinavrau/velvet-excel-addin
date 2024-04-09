@@ -1,5 +1,5 @@
-import { executeTests } from './test_runner.js';
-import { createConfigTable, createDataTable } from './test_template.js';
+import { executeTests } from './velvet_runner.js';
+import { createConfigTable, createDataTable } from './velvet_tables.js';
 import { showStatus } from "./ui.js";
 
 // Initialize Office API
