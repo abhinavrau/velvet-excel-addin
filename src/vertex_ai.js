@@ -5,8 +5,10 @@ export async function callVertexAISearch(rowNum, query, config) {
 
         const token = config.accessToken;
         const preamble = config.preamble;
+        const model = config.model;
         const summaryResultCount = config.summaryResultCount;
-        const maxExtractiveAnswerCount = config.maxExtractiveAnswerCount;
+        const extractiveContentSpec = config.extractiveContentSpec === null ? {} : config.extractiveContentSpec;
+        const snippetSpec = config.snippetSpec === null ? {} : config.snippetSpec;
         const ignoreAdversarialQuery = config.ignoreAdversarialQuery;
         const ignoreNonSummarySeekingQuery = config.ignoreNonSummarySeekingQuery;
         const projectNumber = config.vertexAISearchProjectNumber;
@@ -16,16 +18,21 @@ export async function callVertexAISearch(rowNum, query, config) {
 
         var data = {
             query: query,
-            page_size: 5,
+            page_size: "5",
             offset: 0,
             contentSearchSpec: {
-                extractiveContentSpec: { maxExtractiveAnswerCount: `${maxExtractiveAnswerCount}` },
+                extractiveContentSpec,
+                snippetSpec,
                 summarySpec: {
                     summaryResultCount: `${summaryResultCount}`,
                     ignoreAdversarialQuery: `${ignoreAdversarialQuery}`,
                     ignoreNonSummarySeekingQuery: `${ignoreNonSummarySeekingQuery}`,
                     modelPromptSpec: {
                         preamble: `${preamble}`
+                    },
+                    modelSpec: {
+                        version: `${model}`                  
+
                     }
                 },
             }

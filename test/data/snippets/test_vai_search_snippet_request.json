@@ -1,0 +1,21 @@
+{
+    "query": "query",
+    "page_size": "5",
+    "offset": 0,
+    "contentSearchSpec": {
+        "snippetSpec": {
+            "maxSnippetCount": 2
+        },
+        "summarySpec": {
+            "summaryResultCount": "2",
+            "ignoreAdversarialQuery": "true",
+            "ignoreNonSummarySeekingQuery": "true",
+            "modelPromptSpec": {
+                "preamble": "You are an expert financial analyst. Be brief."
+            },
+            "modelSpec": {
+                "version": "preview"
+            }
+        }
+    }
+}

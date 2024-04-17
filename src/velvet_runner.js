@@ -11,7 +11,7 @@ function getColumn(table, columnName) {
         return column;
     } catch (error) {
         console.log('Error getColumn: ' + error);
-        showStatus(`Exception when getting column: ${JSON.stringify(error)}`, true);
+        //showStatus(`Exception when getting column: ${JSON.stringify(error)}`, true);
     }
 }
 
@@ -58,13 +58,23 @@ export async function executeTests() {
                 vertexAISearchDataStoreName: valueColumn.values[2][0],
                 vertexAIProjectID: valueColumn.values[3][0],
                 vertexAILocation: valueColumn.values[4][0],
-                maxExtractiveAnswerCount: valueColumn.values[5][0],
-                preamble: valueColumn.values[6][0],
-                summaryResultCount: valueColumn.values[7][0],
-                ignoreAdversarialQuery: valueColumn.values[8][0],
-                ignoreNonSummarySeekingQuery: valueColumn.values[9][0],
+                extractiveContentSpec: {
+                    maxExtractiveAnswerCount: valueColumn.values[5][0] === "0" ? null : valueColumn.values[5][0],
+                    maxExtractiveSegmentCount: valueColumn.values[6][0] === "0" ? null : valueColumn.values[6][0],
+                },
+                maxSnippetCount: valueColumn.values[7][0] === "0" ? null : valueColumn.values[7][0],
+                model: valueColumn.values[8][0],
+                preamble: valueColumn.values[9][0],
+                summaryResultCount: valueColumn.values[10][0],
+                ignoreAdversarialQuery: valueColumn.values[11][0],
+                ignoreNonSummarySeekingQuery: valueColumn.values[12][0],
                 accessToken: $('#access-token').val()
             };
+
+            if (config.extractiveContentSpec.maxExtractiveAnswerCount === null && config.extractiveContentSpec.maxExtractiveSegmentCount === null && config.maxSnippetCount === null) {
+                showStatus(`Error: executeTests: One of the maxExtractiveAnswerCount, maxExtractiveSegmentCount, or maxSnippetCount should be set to a non-zero value`, true);
+                return;
+            }
 
             if (!queryColumn.isNullObject && !idColumn.isNullObject) {
                 let rowNum = 1;

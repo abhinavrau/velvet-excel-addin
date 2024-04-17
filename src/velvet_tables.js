@@ -27,8 +27,11 @@ export async function createConfigTable() {
                 ["Vertex AI Search DataStore Name", "alphabet-pdfs_1695783402380"],
                 ["Vertex AI Project ID", "argolis-arau"],
                 ["Vertex AI Location", "us-central1"],
-                ["maxExtractiveAnswerCount (1-5)", "1"], //maxExtractiveAnswerCount
+                ["maxExtractiveAnswerCount (1-5)", "0"], //maxExtractiveAnswerCount
+                ["maxExtractiveSegmentCount (1-5)", "0"], //maxExtractiveSegmentCount
+                ["maxSnippetCount (1-5)", "2"], //maxSnippetCount
                 ["Preamble", "Put your preamble here"],
+                ["Answer Model", "preview"],
                 ["summaryResultCount (1-5)", "1"],   //summaryResultCount
                 ["ignoreAdversarialQuery (True or False)", "True"], // ignoreAdversarialQuery
                 ["ignoreNonSummarySeekingQuery (True or False)", "True"] // ignoreNonSummarySeekingQuery
