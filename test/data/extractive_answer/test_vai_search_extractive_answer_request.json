@@ -1,0 +1,22 @@
+{
+    "query": "query",
+    "page_size": "5",
+    "offset": 0,
+    "contentSearchSpec": {
+        "extractiveContentSpec": {
+            "maxExtractiveAnswerCount": 2
+        },
+        "summarySpec": {
+            "useSemanticChunks": "true",
+            "summaryResultCount": "2",
+            "ignoreAdversarialQuery": "false",
+            "ignoreNonSummarySeekingQuery": "false",
+            "modelPromptSpec": {
+                "preamble": "preamble"
+            },
+            "modelSpec": {
+                "version": "preview"
+            }
+        }
+    }
+}

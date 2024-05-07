@@ -1,0 +1,143 @@
+{
+  "results": [
+    {
+      "id": "276cee4c4086600303bc561483691f9a",
+      "document": {
+        "name": "projects/384473000457/locations/global/collections/default_collection/dataStores/alphabet-pdfs_1695783402380/branches/0/documents/276cee4c4086600303bc561483691f9a",
+        "id": "276cee4c4086600303bc561483691f9a",
+        "derivedStructData": {
+          "extractive_segments": [
+            {
+              "pageNumber": "66",
+              "content": "Revenues\nThe following table presents revenues by type (in millions):\n\nYear Ended December 31,\n2021\n\n2022\n\nGoogle Search & other\n\n$\n\n148,951 $\n\n162,450\n\nYouTube ads\n\n28,845\n\n29,243\n\nGoogle Network\n\n31,701\n\n32,780\n\nGoogle advertising\n\n209,497\n\n224,473\n\nGoogle other\n\n28,032\n\n29,055\n\nGoogle Services total\n\n237,529\n\n253,528\n\nGoogle Cloud\n\n19,206\n\n26,280\n\nOther Bets\n\n753\n\n1,068\n\nHedging gains (losses)\n\n149\n\n1,960\n\nTotal revenues\n\n$\n\n257,637 $ 282,836"
+            },
+            {
+              "pageNumber": "94",
+              "content": "56\n\nALPHABET INC. ● ANNUAL REPORT\n\nPART II\nITEM 8  FINANCIAL STATEMENTS AND SUPPLEMENTARY DATA\n\nNote 2. Revenues\nDisaggregated Revenues\nThe following table presents revenues disaggregated by type (in millions):\n\nYear Ended December 31,\n2020\n\n2021\n\n2022\n\nGoogle Search & other\n\n$\n\n104,062\n\n$\n\n148,951\n\n$\n\n162,450\n\nYouTube ads\n\n19,772\n\n28,845\n\n29,243\n\nGoogle Network\n\n23,090\n\n31,701\n\n32,780\n\nGoogle advertising\n\n146,924\n\n209,497\n\n224,473\n\nGoogle other\n\n21,711\n\n28,032\n\n29,055\n\nGoogle Services total\n\n168,635\n\n237,529\n\n253,528\n\nGoogle Cloud\n\n13,059\n\n19,206\n\n26,280\n\nOther Bets\n\n657\n\n753\n\n1,068\n\nHedging gains (losses)\n\n176\n\n149\n\n1,960\n\nTotal revenues\n\n$\n\n182,527\n\n$\n\n257,637\n\n$\n\n282,836\nNo individual customer or groups of affiliated customers represented more than 10% of our revenues in 2020, 2021, or 2022.\nThe following table presents revenues disaggregated by geography, based on the addresses of our customers (in millions):\nYear Ended December 31,\n\n2020\n\n2021\n\n2022\n\nUnited States\n\n$ 85,014\n\n47 %\n\n$ 117,854\n\n46 %\n\n$ 134,814 48%\n\nEMEA(1)\n\n55,370\n\n30\n\n79,107\n\n31\n\n82,062\n\n29\n\nAPAC(1)\n\n32,550\n\n18\n\n46,123\n\n18\n\n47,024\n\n16\n\nOther Americas(1)\n\n9,417\n\n5\n\n14,404\n\n5\n\n16,976\n\n6\n\nHedging gains (losses)\n\n176\n\n0\n\n149\n\n0\n\n1,960\n\n1\n\nTotal revenues\n\n$ 182,527 100%\n\n$ 257,637 100 %\n\n$ 282,836 100%\n(1) Regions represent Europe, the Middle East, and Africa (EMEA); Asia-Pacific (APAC); and Canada and Latin America (“Other Americas”).\n\nRevenue Backlog\nAs of December 31, 2022, we had $64.3 billion of remaining performance obligations (“revenue backlog”), primarily related to Google\nCloud. Our revenue backlog represents commitments in customer contracts for future services that have not yet been recognized as\nrevenue. The amount and timing of revenue recognition for these commitments is largely driven by our ability to deliver in accordance\nwith relevant contract terms and when our customers utilize services, which could affect our estimate of revenue backlog and when\nwe expect to recognize such as revenue. We expect to recognize approximately half of the revenue backlog as revenues over the next\n24 months with the remaining to be recognized thereafter. Revenue backlog includes related deferred revenue currently recorded\nas well as amounts that will be invoiced in future periods, and excludes contracts with an original expected term of one year or less\nand cancellable contracts.\n\nDeferred Revenue\nWe record deferred revenues when cash payments are received or due in advance of our performance, including amounts which are\nrefundable. Deferred revenues primarily relate to Google Cloud and Google other. Total deferred revenue as of December 31, 2021\nwas $3.8 billion, of which $2.5 billion was recognized as revenues for the year ending December 31, 2022."
+            }
+          ],
+          "link": "gs://cloud-samples-data/gen-app-builder/search/alphabet-investor-pdfs/2022_alphabet_annual_report.pdf",
+          "title": "2022_alphabet_annual_report"
+        }
+      }
+    },
+    {
+      "id": "e528afa38b3a739bc98bfff0e840fe98",
+      "document": {
+        "name": "projects/384473000457/locations/global/collections/default_collection/dataStores/alphabet-pdfs_1695783402380/branches/0/documents/e528afa38b3a739bc98bfff0e840fe98",
+        "id": "e528afa38b3a739bc98bfff0e840fe98",
+        "derivedStructData": {
+          "extractive_segments": [
+            {
+              "pageNumber": "33",
+              "content": "Financial Results\nRevenues\nThe following table presents revenues by type (in millions):\n\nYear Ended December 31,\n2021\n\n2022\n\nGoogle Search & other\n\n$\n\n148,951 $\n\n162,450\n\nYouTube ads\n\n28,845\n\n29,243\n\nGoogle Network\n\n31,701\n\n32,780\n\nGoogle advertising\n\n209,497\n\n224,473\n\nGoogle other\n\n28,032\n\n29,055\n\nGoogle Services total\n\n237,529\n\n253,528\n\nGoogle Cloud\n\n19,206\n\n26,280\n\nOther Bets\n\n753\n\n1,068\n\nHedging gains (losses)\n\n149\n\n1,960\n\nTotal revenues\n\n$\n\n257,637 $\n\n282,836\n\nGoogle Services\nGoogle advertising revenues\nGoogle Search & other\nGoogle Search & other revenues increased $13.5 billion from 2021 to 2022. The growth was driven by\ninterrelated factors including increases in search queries resulting from growth in user adoption and usage, primarily\non mobile devices; growth in advertiser spending; and improvements we have made in ad formats and delivery.\nGrowth was adversely affected by the unfavorable effect of foreign currency exchange rates.\n\nYouTube ads\nYouTube ads revenues increased $398 million from 2021 to 2022. The growth was driven by our brand\nadvertising products followed by direct response products, both of which benefited from increased spending by our\nadvertisers as well as improvements to ad formats and delivery. Growth was adversely affected by the unfavorable\neffect of foreign currency exchange rates.\nGoogle Network\nGoogle Network revenues increased $1.1 billion from 2021 to 2022. The growth was primarily driven by strength\nin AdSense and AdMob. Growth was adversely affected by the unfavorable effect of foreign currency exchange rates.\n\nMonetization Metrics\nPaid clicks and cost-per-click\nThe following table presents changes in paid clicks and cost-per-click (expressed as a percentage) from 2021 to\n2022:\nPaid clicks change\n\n10 %\n\nCost-per-click change\n\n(1) %\nPaid clicks increased from 2021 to 2022 driven by a number of interrelated factors, including an increase in\nsearch queries resulting from growth in user adoption and usage, primarily on mobile devices; growth in advertiser\nspending; and improvements we have made in ad formats and delivery.\nCost-per-click decreased from 2021 to 2022 driven by a number of interrelated factors including changes in\ndevice mix, geographic mix, advertiser spending, ongoing product changes, and property mix, as well as the\nunfavorable effect of foreign currency exchange rates.\n\nTable of Contents\n\nAlphabet Inc.\n\n32"
+            },
+            {
+              "pageNumber": "60",
+              "content": "Note 2. Revenues\nDisaggregated Revenues\nThe following table presents revenues disaggregated by type (in millions):\n\nYear Ended December 31,\n2020\n\n2021\n\n2022\n\nGoogle Search & other\n\n$ 104,062 $ 148,951 $ 162,450\n\nYouTube ads\n\n19,772\n\n28,845\n\n29,243\n\nGoogle Network\n\n23,090\n\n31,701\n\n32,780\n\nGoogle advertising\n\n146,924\n\n209,497\n\n224,473\n\nGoogle other\n\n21,711\n\n28,032\n\n29,055\n\nGoogle Services total\n\n168,635\n\n237,529\n\n253,528\n\nGoogle Cloud\n\n13,059\n\n19,206\n\n26,280\n\nOther Bets\n\n657\n\n753\n\n1,068\n\nHedging gains (losses)\n\n176\n\n149\n\n1,960\n\nTotal revenues\n\n$ 182,527 $ 257,637 $ 282,836\nNo individual customer or groups of affiliated customers represented more than 10% of our revenues in 2020,\n2021, or 2022.\nThe following table presents revenues disaggregated by geography, based on the addresses of our customers (in\nmillions):\n\nYear Ended December 31,\n\n2020\n\n2021\n\n2022\n\nUnited States\n\n$ 85,014 47 % $ 117,854 46 % $ 134,814 48 %\n\nEMEA(1)\n\n55,370 30\n\n79,107 31\n\n82,062 29\n\nAPAC(1)\n\n32,550 18\n\n46,123 18\n\n47,024 16\n\nOther Americas(1)\n\n9,417\n\n5\n\n14,404\n\n5\n\n16,976\n\n6\n\nHedging gains (losses)\n\n176\n\n0\n\n149\n\n0\n\n1,960\n\n1\n\nTotal revenues\n\n$ 182,527 100 % $ 257,637 100 % $ 282,836 100 %\n\n(1)\n\nRegions represent Europe, the Middle East, and Africa (EMEA); Asia-Pacific (APAC); and Canada and Latin America (\"Other\nAmericas\").\nRevenue Backlog\nAs of December 31, 2022, we had $64.3 billion of remaining performance obligations (“revenue backlog”),\nprimarily related to Google Cloud. Our revenue backlog represents commitments in customer contracts for future\nservices that have not yet been recognized as revenue. The amount and timing of revenue recognition for these\ncommitments is largely driven by our ability to deliver in accordance with relevant contract terms and when our\ncustomers utilize services, which could affect our estimate of revenue backlog and when we expect to recognize such\nas revenue. We expect to recognize approximately half of the revenue backlog as revenues over the next 24 months\nwith the remaining to be recognized thereafter. Revenue backlog includes related deferred revenue currently recorded\nas well as amounts that will be invoiced in future periods, and excludes contracts with an original expected term of one\nyear or less and cancellable contracts.\nDeferred Revenue\nWe record deferred revenues when cash payments are received or due in advance of our performance, including\namounts which are refundable. Deferred revenues primarily relate to Google Cloud and Google other. Total deferred\nrevenue as of December 31, 2021 was $3.8 billion, of which $2.5 billion was recognized as revenues for the year\nending December 31, 2022.\n\nTable of Contents\n\nAlphabet Inc.\n\n59"
+            }
+          ],
+          "link": "gs://cloud-samples-data/gen-app-builder/search/alphabet-investor-pdfs/20230203_alphabet_10K.pdf",
+          "title": "GOOG 10-K Q4 2022"
+        }
+      }
+    },
+    {
+      "id": "4635f88090410ce63427d19ee7b39710",
+      "document": {
+        "name": "projects/384473000457/locations/global/collections/default_collection/dataStores/alphabet-pdfs_1695783402380/branches/0/documents/4635f88090410ce63427d19ee7b39710",
+        "id": "4635f88090410ce63427d19ee7b39710",
+        "derivedStructData": {
+          "link": "gs://cloud-samples-data/gen-app-builder/search/alphabet-investor-pdfs/20221025_alphabet_10Q.pdf",
+          "extractive_segments": [
+            {
+              "content": "Regions represent Europe, the Middle East, and Africa (EMEA); Asia-Pacific (APAC); and Canada and Latin America\n(\"Other Americas\").\nRevenue Backlog and Deferred Revenues\nAs of September 30, 2022, we had $52.4 billion of remaining performance obligations (“revenue backlog”),\nprimarily related to Google Cloud, and expect to recognize approximately half of this amount as revenues over the\nnext 24 months with the remaining to be recognized thereafter. Our revenue backlog represents commitments in\ncustomer contracts for future services that have not yet been recognized as revenues. The amount and timing of\nrevenue recognition for these commitments is largely driven by when our customers utilize services and our ability\nto deliver in accordance with relevant contract terms, which could affect our estimate of revenue backlog and when\nwe expect to recognize such as revenues. Revenue backlog includes related deferred revenue currently recorded\nas well as amounts that will be invoiced in future periods and excludes contracts with an original expected term of\none year or less and cancellable contracts.\nWe record deferred revenues when cash payments are received or due in advance of our performance,\nincluding amounts which are refundable. Deferred revenues primarily relate to Google Cloud and Google other.\nTotal deferred revenue as of December 31, 2021 was $3.8 billion, of which $2.4 billion was recognized as revenues\nduring the nine months ended September 30, 2022.\nNote 3. Financial Instruments\nDebt Securities\nWe classify our marketable debt securities, which are accounted for as available-for-sale, within Level 2 in the\nfair value hierarchy because we use quoted market prices to the extent available or alternative pricing sources and\nmodels utilizing market observable inputs to determine fair value.\n\nTable of Contents\n\nAlphabet Inc.\n\n12",
+              "pageNumber": "12"
+            },
+            {
+              "pageNumber": "37",
+              "content": "24 %\n• Revenues were $69.1 billion, an increase of 6% year over year, primarily driven by an increase in Google\nCloud segment revenues of $1.9 billion, or 38%, and an increase in Google Services segment revenues of\n$1.5 billion, or 2%. Hedging gains contributed approximately one percentage point to consolidated revenue\ngrowth.\n• Total constant currency revenues, which exclude the effect of hedging, increased 11% year over year\nreflecting the strengthening of the U.S. dollar.\n• Cost of revenues was $31.2 billion, an increase of 13% year over year, primarily driven by an increase in\nother costs of revenues.\n• Operating expenses were $20.8 billion, an increase of 26% year over year, primarily driven by increases in\ncompensation expenses due to headcount growth and advertising and promotional expenses.\nOther information\n• On September 12, 2022 we closed the acquisition of Mandiant for a total purchase price of $6.1 billion and\nadded over 2,600 employees. Mandiant's financial results are reported within Google Cloud as of the\nacquisition date. See Note 7 of the Notes to Consolidated Financial Statements included in Item 1 of this\nQuarterly Report on Form 10-Q for additional information.\n• Beginning in the first quarter of 2022, we suspended the vast majority of our commercial activities in Russia\nand effectively ceased business activities of our Russian entity. The ongoing effect of these direct actions on\nour financial results was not material. The broader economic effects resulting from the war in Ukraine on our\nfuture financial results may be unpredictable.\n• Repurchases of Class A and Class C shares were $15.4 billion for the three months ended September 30,\n2022. See Note 10 of the Notes to Consolidated Financial Statements included in Item 1 of this Quarterly\nReport on Form 10-Q for additional information.\n• Operating cash flow was $23.4 billion for the three months ended September 30, 2022.\n• Capital expenditures of $7.3 billion for the three months ended September 30, 2022 primarily relate to\n\ninvestments in technical infrastructure.\n\nTable of Contents\n\nAlphabet Inc.\n\n37"
+            }
+          ],
+          "title": "GOOG 10-Q Q3 2022"
+        }
+      }
+    },
+    {
+      "id": "34b4fd7aac0259cbb37a92a523f5a38d",
+      "document": {
+        "name": "projects/384473000457/locations/global/collections/default_collection/dataStores/alphabet-pdfs_1695783402380/branches/0/documents/34b4fd7aac0259cbb37a92a523f5a38d",
+        "id": "34b4fd7aac0259cbb37a92a523f5a38d",
+        "derivedStructData": {
+          "extractive_segments": [
+            {
+              "content": "Financial Results\nRevenues\nThe following table presents revenues by type (in millions):\n\nThree Months Ended\n\nSix Months Ended\n\nJune 30,\n\nJune 30,\n\n2021\n\n2022\n\n2021\n\n2022\n\nGoogle Search & other\n\n$ 35,845 $ 40,689 $ 67,724 $ 80,307\n\nYouTube ads\n\n7,002\n\n7,340\n\n13,007\n\n14,209\n\nGoogle Network\n\n7,597\n\n8,259\n\n14,397\n\n16,433\n\nGoogle advertising\n\n50,444\n\n56,288\n\n95,128\n\n110,949\n\nGoogle other\n\n6,623\n\n6,553\n\n13,117\n\n13,364\n\nGoogle Services total\n\n57,067\n\n62,841\n\n108,245\n\n124,313\n\nGoogle Cloud\n\n4,628\n\n6,276\n\n8,675\n\n12,097\n\nOther Bets\n\n192\n\n193\n\n390\n\n633\n\nHedging gains (losses)\n\n(7)\n\n375\n\n(116)\n\n653\n\nTotal revenues\n\n$ 61,880 $ 69,685 $ 117,194 $ 137,696\n\nGoogle Services\nGoogle advertising revenues\nGoogle Search & other\nGoogle Search & other revenues increased $4.8 billion and $12.6 billion from the three and six months ended\nJune 30, 2021 to the three and six months ended June 30, 2022, respectively. The overall growth was driven by\ninterrelated factors including increases in search queries resulting from growth in user adoption and usage, primarily\non mobile devices, growth in advertiser spending, and improvements we have made in ad formats and delivery.\n\nYouTube ads\nYouTube ads revenues increased $338 million and $1.2 billion from the three and six months ended June 30,\n2021 to the three and six months ended June 30, 2022, respectively. The growth was driven by our brand and direct\nresponse advertising products. Growth for both products was primarily driven by increased spending by our\nadvertisers as well as improvements to ad formats and delivery.\nGoogle Network\nGoogle Network revenues increased $662 million from the three months ended June 30, 2021 to the three\nmonths ended June 30, 2022. The growth was primarily driven by strength in AdSense.\nGoogle Network revenues increased $2.0 billion from the six months ended June 30, 2021 to the six months\nended June 30, 2022. The growth was primarily driven by strength in AdSense and AdMob.\nMonetization Metrics\nPaid clicks and cost-per-click\nThe following table presents year-over-year changes in paid clicks and cost-per-click (expressed as a\npercentage):\n\nThree Months\n\nEnded June 30,\n\nSix Months Ended\nJune 30,\n\n2022\n\n2022\n\nPaid clicks change\n\n12%\n\n14%\n\nCost-per-click change\n\n—%\n\n4%\nPaid clicks increased from the three and six months ended June 30, 2021 to the three and six months ended\nJune 30, 2022, driven by a number of interrelated factors, including an increase in search queries resulting from\ngrowth in user adoption and usage, primarily on mobile devices; growth in advertiser spending; and improvements\nwe have made in ad formats and delivery.\n\nTable of Contents\n\nAlphabet Inc.\n\n37",
+              "pageNumber": "37"
+            },
+            {
+              "pageNumber": "42",
+              "content": "Google Services\nGoogle Services operating income increased $427 million from the three months ended June 30, 2021 to the\nthree months ended June 30, 2022. The increase was due to growth in revenues, partially offset by increases in\ncompensation expenses and TAC.\nGoogle Services operating income increased $3.8 billion from the six months ended June 30, 2021 to the six\nmonths ended June 30, 2022. The increase was due to growth in revenues, partially offset by increases in TAC and\ncompensation expenses.\nGoogle Cloud\nGoogle Cloud operating loss increased $267 million and $224 million from the three and six months ended\nJune 30, 2021 to the three and six months ended June 30, 2022, respectively. The increase in operating loss was\nprimarily driven by an increase in expenses, primarily driven by compensation expenses, partially offset by growth in\n\nrevenues.\n\nOther Bets\nOther Bets operating loss increased $288 million from the three months ended June 30, 2021 to the three\nmonths ended June 30, 2022. The increase in operating loss was primarily driven by an increase in compensation\nexpenses.\nOther Bets operating loss increased $298 million from the six months ended June 30, 2021 to the six months\nended June 30, 2022. The increase in operating loss was primarily driven by increases in compensation expenses,\npartially offset by growth in revenues.\nOther Income (Expense), Net\nThe following table presents other income (expense), net (in millions):\n\nThree Months Ended\n\nSix Months Ended\n\nJune 30,\n\nJune 30,\n\n2021\n\n2022\n\n2021\n\n2022\n\nOther income (expense), net\n\n$ 2,624\n\n$"
+            }
+          ],
+          "title": "GOOG 10-Q Q2 2022",
+          "link": "gs://cloud-samples-data/gen-app-builder/search/alphabet-investor-pdfs/20220726_alphabet_10Q.pdf"
+        }
+      }
+    },
+    {
+      "id": "aa01e4e93efa1eb6a57dd711d8d6b151",
+      "document": {
+        "name": "projects/384473000457/locations/global/collections/default_collection/dataStores/alphabet-pdfs_1695783402380/branches/0/documents/aa01e4e93efa1eb6a57dd711d8d6b151",
+        "id": "aa01e4e93efa1eb6a57dd711d8d6b151",
+        "derivedStructData": {
+          "title": "2022_Q4_Earnings_Transcript",
+          "extractive_segments": [
+            {
+              "pageNumber": "9",
+              "content": "We delivered Free Cash Flow of $16 billion in the fourth quarter and $60 billion in 2022. We\nended the year with $114 billion in cash and marketable securities. We also repurchased a total\nof $59 billion of our Class A and Class C shares in 2022.\nTurning to our segment results, starting with Google Services, Revenues were $67.8 billion,\ndown 2%. Google Search and Other advertising revenues of $42.6 billion in the quarter were\ndown 2%. Search delivered moderate underlying growth in Q4, absent the impact of currency\nmovements on reported results. YouTube advertising revenues of $8 billion, were down 8%.\nNetwork advertising revenues of $8.5 billion, were down 9%.\nOther Revenues were $8.8 billion, up 8%, reflecting several factors. First, significant subscriber\ngrowth in YouTube Music Premium and YouTube TV. Second, strong growth in Hardware\nrevenues, primarily from the Pixel family. Offsetting growth in these two areas was a\nyear-on-year decline in Play revenues, reflecting a particularly large foreign exchange headwind\nin APAC, as well as the impact of reductions of Play Store fees.\nTAC was $12.9 billion, down 4%.\nGoogle Services Operating income was $21.1 billion, down 19%, and the operating margin was\n31%.\n\nTurning to the Google Cloud segment, revenues were $7.3 billion for the quarter, up 32%.\nRevenue growth in GCP was again greater than Google Cloud, reflecting strength in both\ninfrastructure and platform services. Google Workspace’s strong results were driven by\nincreases in both seats and average revenue per seat. In Q4, we saw slower growth of\nconsumption as customers optimized GCP costs, reflecting the macro backdrop. Google Cloud\nhad an Operating Loss of $480 million.\nAs to our Other Bets, for the full year 2022, revenues were $1.1 billion and the operating loss\nwas $6.1 billion.\nTurning to our outlook for the business. In 2022, our year-on-year revenue growth was affected\nby a number of challenges. First, we faced very tough comps given the outsized recovery in\n2021 from the impact of the pandemic. Second, foreign exchange headwinds grew throughout\nthe year. And third, we were operating against the backdrop of a more challenging economic\nclimate that also impacted many of our customers and which remains ongoing.\nWithin Google Services, we are focused on investing in the opportunities we see for long-term\nrevenue growth.\nFirst, within Advertising, we are focused on using advances in AI to drive new and better\nexperiences for users in Search, as well as to deliver better measurement, higher ROI and tools\nfor more compelling creative content to advertisers.\n\n9"
+            }
+          ],
+          "link": "gs://cloud-samples-data/gen-app-builder/search/alphabet-investor-pdfs/2022_Q4_Earnings_Transcript.pdf"
+        }
+      }
+    }
+  ],
+  "totalSize": 8371,
+  "attributionToken": "jwHwjgoMCPzg87AGEMPphpkCEiQ2NjMyNjAyNy0wMDAwLTIzYmMtYWJkMS01ODI0MjlhNjkwODQiB0dFTkVSSUMqUOftiC2jgJciwvCeFcXL8xe2t4wt24-aIq7Eii2N96cig7KaIvrsiC3b7Ygt5O2ILdSynRWrxIotgLKaIt7tiC337Igtjr6dFd6PmiKQ96ci",
+  "nextPageToken": "0gDM5YTY5IDNygTNtEDZiFWLjJ2My0CMwADMtYjMwYjMzYjNkoRD7fY3QYQsDms_IsgE1EgC",
+  "guidedSearchResult": {},
+  "summary": {
+    "summaryText": "I don't know.",
+    "safetyAttributes": {
+      "categories": [
+        "Dangerous Content",
+        "Harassment",
+        "Hate Speech",
+        "Sexually Explicit"
+      ],
+      "scores": [
+        0,
+        0.1,
+        0.1,
+        0.1
+      ]
+    },
+    "summaryWithMetadata": {
+      "citationMetadata": {},
+      "references": [
+        {
+          "title": "2022_alphabet_annual_report",
+          "document": "projects/384473000457/locations/global/collections/default_collection/dataStores/alphabet-pdfs_1695783402380/branches/0/documents/276cee4c4086600303bc561483691f9a"
+        },
+        {
+          "title": "GOOG 10-K Q4 2022",
+          "document": "projects/384473000457/locations/global/collections/default_collection/dataStores/alphabet-pdfs_1695783402380/branches/0/documents/e528afa38b3a739bc98bfff0e840fe98"
+        },
+        {
+          "title": "GOOG 10-Q Q3 2022",
+          "document": "projects/384473000457/locations/global/collections/default_collection/dataStores/alphabet-pdfs_1695783402380/branches/0/documents/4635f88090410ce63427d19ee7b39710"
+        }
+      ]
+    }
+  }
+}

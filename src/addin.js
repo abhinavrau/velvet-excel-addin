@@ -1,6 +1,6 @@
+import { showStatus } from "./ui.js";
 import { executeTests } from './velvet_runner.js';
 import { createConfigTable, createDataTable } from './velvet_tables.js';
-import { showStatus } from "./ui.js";
 
 // Initialize Office API
 Office.onReady((info) => {
@@ -28,10 +28,12 @@ async function createTestTemplateTables() {
 }
 
 async function runTests() {
-    try {
-        await executeTests();
-        showStatus("Finished Successfully!", false);
-    } catch (error) {
-        showStatus(`Exception when running tests: ${JSON.stringify(error)}`, true);
+    const status = await executeTests();
+    let message = "";
+    if (status.isError) {
+        message = `Error: ${status.message}. Number of tests failed: ${status.numFailed}`;
+    } else {
+        message = `Success: ${status.message} Num of tests done successfully ${status.numDone} Num of tests failed: ${status.numFailed}`;
     }
+    showStatus(message, status.isError);
 }

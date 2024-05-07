@@ -1,0 +1,110 @@
+{
+  "results": [
+    {
+      "id": "276cee4c4086600303bc561483691f9a",
+      "document": {
+        "name": "projects/384473000457/locations/global/collections/default_collection/dataStores/alphabet-pdfs_1695783402380/branches/0/documents/276cee4c4086600303bc561483691f9a",
+        "id": "276cee4c4086600303bc561483691f9a",
+        "derivedStructData": {
+          "snippets": [
+            {
+              "snippet_status": "SUCCESS",
+              "snippet": "\u003cb\u003eRevenues\u003c/b\u003e Disaggregated \u003cb\u003eRevenues\u003c/b\u003e The following table presents \u003cb\u003erevenues\u003c/b\u003e disaggregated by type (in millions): \u003cb\u003eYear Ended\u003c/b\u003e December 31, 2020 2021 \u003cb\u003e2022 Google\u003c/b\u003e Search&nbsp;..."
+            }
+          ],
+          "link": "gs://cloud-samples-data/gen-app-builder/search/alphabet-investor-pdfs/2022_alphabet_annual_report.pdf",
+          "title": "2022_alphabet_annual_report"
+        }
+      }
+    },
+    {
+      "id": "e528afa38b3a739bc98bfff0e840fe98",
+      "document": {
+        "name": "projects/384473000457/locations/global/collections/default_collection/dataStores/alphabet-pdfs_1695783402380/branches/0/documents/e528afa38b3a739bc98bfff0e840fe98",
+        "id": "e528afa38b3a739bc98bfff0e840fe98",
+        "derivedStructData": {
+          "snippets": [
+            {
+              "snippet": "Note 2. \u003cb\u003eRevenues\u003c/b\u003e Disaggregated \u003cb\u003eRevenues\u003c/b\u003e The following table presents \u003cb\u003erevenues\u003c/b\u003e disaggregated by type (in millions): \u003cb\u003eYear Ended\u003c/b\u003e December 31, 2020 2021 \u003cb\u003e2022 Google\u003c/b\u003e&nbsp;...",
+              "snippet_status": "SUCCESS"
+            }
+          ],
+          "title": "GOOG 10-K Q4 2022",
+          "link": "gs://cloud-samples-data/gen-app-builder/search/alphabet-investor-pdfs/20230203_alphabet_10K.pdf"
+        }
+      }
+    },
+    {
+      "id": "4635f88090410ce63427d19ee7b39710",
+      "document": {
+        "name": "projects/384473000457/locations/global/collections/default_collection/dataStores/alphabet-pdfs_1695783402380/branches/0/documents/4635f88090410ce63427d19ee7b39710",
+        "id": "4635f88090410ce63427d19ee7b39710",
+        "derivedStructData": {
+          "title": "GOOG 10-Q Q3 2022",
+          "snippets": [
+            {
+              "snippet_status": "SUCCESS",
+              "snippet": "... \u003cb\u003eGoogle\u003c/b\u003e Services segment ... • Operating expenses were $20.8 \u003cb\u003ebillion\u003c/b\u003e, an increase of 26% \u003cb\u003eyear\u003c/b\u003e over \u003cb\u003eyear\u003c/b\u003e ... \u003cb\u003ebillion\u003c/b\u003e for the three months \u003cb\u003eended\u003c/b\u003e September 30, \u003cb\u003e2022\u003c/b\u003e."
+            }
+          ],
+          "link": "gs://cloud-samples-data/gen-app-builder/search/alphabet-investor-pdfs/20221025_alphabet_10Q.pdf"
+        }
+      }
+    },
+    {
+      "id": "34b4fd7aac0259cbb37a92a523f5a38d",
+      "document": {
+        "name": "projects/384473000457/locations/global/collections/default_collection/dataStores/alphabet-pdfs_1695783402380/branches/0/documents/34b4fd7aac0259cbb37a92a523f5a38d",
+        "id": "34b4fd7aac0259cbb37a92a523f5a38d",
+        "derivedStructData": {
+          "link": "gs://cloud-samples-data/gen-app-builder/search/alphabet-investor-pdfs/20220726_alphabet_10Q.pdf",
+          "title": "GOOG 10-Q Q2 2022",
+          "snippets": [
+            {
+              "snippet": "\u003cb\u003eGoogle\u003c/b\u003e Services \u003cb\u003eGoogle\u003c/b\u003e Services operating \u003cb\u003eincome\u003c/b\u003e ... \u003cb\u003eGoogle\u003c/b\u003e Services operating \u003cb\u003eincome\u003c/b\u003e increased $3.8 \u003cb\u003ebillion\u003c/b\u003e ... In the three months \u003cb\u003eended\u003c/b\u003e June 30, \u003cb\u003e2022\u003c/b\u003e, $1.2&nbsp;...",
+              "snippet_status": "SUCCESS"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "aa01e4e93efa1eb6a57dd711d8d6b151",
+      "document": {
+        "name": "projects/384473000457/locations/global/collections/default_collection/dataStores/alphabet-pdfs_1695783402380/branches/0/documents/aa01e4e93efa1eb6a57dd711d8d6b151",
+        "id": "aa01e4e93efa1eb6a57dd711d8d6b151",
+        "derivedStructData": {
+          "link": "gs://cloud-samples-data/gen-app-builder/search/alphabet-investor-pdfs/2022_Q4_Earnings_Transcript.pdf",
+          "title": "2022_Q4_Earnings_Transcript",
+          "snippets": [
+            {
+              "snippet": "We delivered Free Cash Flow of $16 \u003cb\u003ebillion\u003c/b\u003e in the fourth quarter and $60 \u003cb\u003ebillion\u003c/b\u003e in \u003cb\u003e2022\u003c/b\u003e. We \u003cb\u003eended\u003c/b\u003e the \u003cb\u003eyear\u003c/b\u003e with $114 \u003cb\u003ebillion\u003c/b\u003e in cash and marketable securities.",
+              "snippet_status": "SUCCESS"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "totalSize": 8371,
+  "attributionToken": "jwHwjgoMCO6gpLEGEMj1pc8CEiQ2NjU1YTM2OS0wMDAwLTI5ZGItOGJhZS0zYzI4NmQzYWVkNmEiB0dFTkVSSUMqUN7tiC3bj5oi5-2ILcLwnhWjgJci1LKdFY33pyL67IgtkPenIo6-nRXb7Ygt5O2ILd6PmiKuxIott7eMLcXL8xeAspoi9-yILavEii2Dspoi",
+  "nextPageToken": "hZDZlF2MkZDOyM2MtUWYihTLiRWOy0CMwADMtgjNzEWN1YjNkoBDu_NgQYQs0mI8IsgE1EgC",
+  "guidedSearchResult": {},
+  "summary": {
+    "summaryText": "Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.",
+    "safetyAttributes": {
+      "categories": [
+        "Dangerous Content",
+        "Harassment",
+        "Hate Speech",
+        "Sexually Explicit"
+      ],
+      "scores": [
+        0.1,
+        0.1,
+        0.1,
+        0.1
+      ]
+    }
+  }
+}

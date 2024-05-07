@@ -6,6 +6,13 @@ const { OfficeMockObject } = pkg;
 
 describe("create Test Template Tables", () => {
 
+    // Create a map to store the mock data.
+    let configTableMap = new Map();
+    configTableMap.set(0, [[]]);
+
+    let dataTableMap = new Map();
+    dataTableMap.set(0, [[]]);
+
     let mockData;
 
     beforeEach(() => {
@@ -18,7 +25,7 @@ describe("create Test Template Tables", () => {
                             return this;
                         },
                         range: { // Config Table
-                            values: [["Config", "Value"]],
+                            values: [[]],
                             format: {
                                 font: {
                                     bold: false
@@ -55,16 +62,26 @@ describe("create Test Template Tables", () => {
                             resize: function (str) {
                                 
                             },
+                            getItem: function (str) {
+                                // check is str ends with string "TestCasesTable"
+                                if (str.endsWith("ConfigTable")) {
+                                    return this.rows;
+                                }
+                                return this;
+                            },
                             rows: {
 
                                 values: [[]],
+                                count: 1, 
                                 add: function (str, values) {
                                     this.values = values;;
                                 }
+                                
                             },
                             header_row_range: {
-                                values: [["Config", "Value"]]
-                            }
+                                values: [[]]
+                            },
+                            
                         },
 
                     },
@@ -102,11 +119,18 @@ describe("create Test Template Tables", () => {
             ["Vertex AI Search DataStore Name", "alphabet-pdfs_1695783402380"],
             ["Vertex AI Project ID", "argolis-arau"],
             ["Vertex AI Location", "us-central1"],
-            ["maxExtractiveAnswerCount (1-5)", "1"], //maxExtractiveAnswerCount
-            ["Preamble", "Put your preamble here"],
-            ["summaryResultCount (1-5)", "1"],   //summaryResultCount
+            ["maxExtractiveAnswerCount (1-5)", "2"], //maxExtractiveAnswerCount
+            ["maxExtractiveSegmentCount (1-5)", "0"], //maxExtractiveSegmentCount
+            ["maxSnippetCount (1-5)", "0"], //maxSnippetCount
+            ["Preamble (Customized Summaries)", ""],
+            ["Summarization Model", "gemini-1.0-pro-002/answer_gen/v1"],
+            ["summaryResultCount (1-5)", "2"],   //summaryResultCount
+            ["useSemanticChunks (True or False)", "False"],   //useSemanticChunks
             ["ignoreAdversarialQuery (True or False)", "True"], // ignoreAdversarialQuery
-            ["ignoreNonSummarySeekingQuery (True or False)", "True"] // ignoreNonSummarySeekingQuery
+            ["ignoreNonSummarySeekingQuery (True or False)", "True"], // ignoreNonSummarySeekingQuery
+            ["SummaryMatchingAdditionalPrompt", "If there are monetory numbers in the answers, they should be matched exactly."],
+            ["Batch Size (1-10)", "2"], // BatchSize
+            ["Time between Batches in Seconds (1-10)", "2"], // BatchSize
         ]);
     });
 
@@ -127,5 +151,41 @@ describe("create Test Template Tables", () => {
 
     });
 
+    /* it("should return the correct values from Vertex AI Search", async () => {
+
+       
+        // Create the final mock object from the seed object.
+        const contextMock = new OfficeMockObject(mockData);
+
+
+        global.Excel = contextMock;
+        await createConfigTable();
+        await createDataTable();
+
+        var config = {
+            vertexAISearchProjectNumber: "384473000457",
+            vertexAISearchDataStoreName: "alphabet-pdfs_1695783402380",
+        }
+
+        const { requestJson, url, expectedResponse } =  prepareVertexAISearchRequestResponse(
+            './test/data/snippets/test_vai_search_snippet_request.json',
+            './test/data/snippets/test_vai_search_snippet_response.json', config);
+        
+        
+        await executeTests();
+
+        expect(fetchMock.called()).toBe(true);
+        // Assert request body is correct
+        expect(JSON.parse(fetchMock.lastCall()[1].body)).toEqual(requestJson);
+        // Assert URL is correct
+        expect(fetchMock.lastUrl().toLowerCase()).toBe(url.toLowerCase());
+        // Assert response is correct
+        expect(result).toEqual(expectedResponse);
+       
+        
+    }); */
+
 
 });
+
+
