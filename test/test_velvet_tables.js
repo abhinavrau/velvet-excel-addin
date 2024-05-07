@@ -1,9 +1,7 @@
 
 import expect from 'expect';
 import pkg from 'office-addin-mock';
-import { executeTests } from '../src/velvet_runner.js';
 import { createConfigTable, createDataTable } from '../src/velvet_tables.js';
-import { prepareVertexAISearchRequestResponse } from './test_vertex_ai.js';
 const { OfficeMockObject } = pkg;
 
 describe("create Test Template Tables", () => {
@@ -121,14 +119,18 @@ describe("create Test Template Tables", () => {
             ["Vertex AI Search DataStore Name", "alphabet-pdfs_1695783402380"],
             ["Vertex AI Project ID", "argolis-arau"],
             ["Vertex AI Location", "us-central1"],
-            ["maxExtractiveAnswerCount (1-5)", "0"], //maxExtractiveAnswerCount
+            ["maxExtractiveAnswerCount (1-5)", "2"], //maxExtractiveAnswerCount
             ["maxExtractiveSegmentCount (1-5)", "0"], //maxExtractiveSegmentCount
-            ["maxSnippetCount (1-5)", "2"], //maxSnippetCount
-            ["Preamble", "Put your preamble here"],
-            ["Answer Model", "preview"],
-            ["summaryResultCount (1-5)", "1"],   //summaryResultCount
+            ["maxSnippetCount (1-5)", "0"], //maxSnippetCount
+            ["Preamble (Customized Summaries)", ""],
+            ["Summarization Model", "gemini-1.0-pro-002/answer_gen/v1"],
+            ["summaryResultCount (1-5)", "2"],   //summaryResultCount
+            ["useSemanticChunks (True or False)", "False"],   //useSemanticChunks
             ["ignoreAdversarialQuery (True or False)", "True"], // ignoreAdversarialQuery
-            ["ignoreNonSummarySeekingQuery (True or False)", "True"] // ignoreNonSummarySeekingQuery
+            ["ignoreNonSummarySeekingQuery (True or False)", "True"], // ignoreNonSummarySeekingQuery
+            ["SummaryMatchingAdditionalPrompt", "If there are monetory numbers in the answers, they should be matched exactly."],
+            ["Batch Size (1-10)", "2"], // BatchSize
+            ["Time between Batches in Seconds (1-10)", "2"], // BatchSize
         ]);
     });
 

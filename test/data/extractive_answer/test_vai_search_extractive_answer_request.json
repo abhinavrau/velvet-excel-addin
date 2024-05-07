@@ -7,6 +7,7 @@
             "maxExtractiveAnswerCount": 2
         },
         "summarySpec": {
+            "useSemanticChunks": "true",
             "summaryResultCount": "2",
             "ignoreAdversarialQuery": "false",
             "ignoreNonSummarySeekingQuery": "false",
