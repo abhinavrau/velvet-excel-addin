@@ -8,6 +8,21 @@ Run and measure [Vertex AI Search Agent](https://cloud.google.com/enterprise-sea
 ## Note
 This is not an official Google product
 
+## How it works
+
+### 1. Install the Excel Addin 
+
+Follow the [Instructions](#installation)
+
+### 2. Creating the Placeholder tables and create access token
+
+![](images/CreateTemplate.gif)
+
+### 3. Put in the Data in Test Table and Run the Tests
+
+![](images/RunTests.gif)
+
+
 ## Why?
 - 🧑‍💻 Run your search acceptance test cases without leaving Excel.
 - ✅ Enables Business and Compliance teams to measure search accuracy without any training or developer skills using the tool they use every day.
@@ -39,7 +54,7 @@ This is not an official Google product
     - Other
         - Summary Match Additional Prompt: Additional prompt to pass to the PaLM2 model for semantic similarity matching. Useful when the need to match exact monetary quantities (millions, billions, etc).
 
-## Installation
+## Installation <a id="installation"></a>
 Only [sideloading](https://learn.microsoft.com/en-us/office/dev/add-ins/testing/test-debug-office-add-ins#sideload-an-office-add-in-for-testing) is supported at this time.
 
 
