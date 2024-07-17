@@ -14,7 +14,7 @@ This is not an official Google product
 
 Follow the [Instructions](#installation)
 
-### 2. Creating the Placeholder tables and create access token
+### 2. Creating the Placeholder tables and Paste in GCP access token
 
 ![](images/CreateTemplate.gif)
 

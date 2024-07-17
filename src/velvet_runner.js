@@ -202,8 +202,19 @@ async function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, 
         link_1_Column.getRange().getCell(rowNum, 0).values = [[result.results[0].document.derivedStructData.link]];
         link_2_Column.getRange().getCell(rowNum, 0).values = [[result.results[1].document.derivedStructData.link]];
         link_3_Column.getRange().getCell(rowNum, 0).values = [[result.results[2].document.derivedStructData.link]];
-        p0_result = result.results[0].document.derivedStructData.link;
-        p2_result = result.results[1].document.derivedStructData.link;
+        if (result.results[1] !== null) {
+            p0_result = result.results[0].document.derivedStructData.link;
+        } else {
+            p0_result = "";
+        }
+       
+        if (result.results[1] !== null) {
+            p2_result = result.results[1].document.derivedStructData.link;
+        } else {
+            p2_result = "";
+        }
+
+        
     }
 
     // clear the formatting in the cells 
