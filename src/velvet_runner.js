@@ -158,8 +158,9 @@ export async function executeTests() {
                         catch (error) {
 
                             numfails++;
+                            // ouput stacktrace for error 
                             console.error(`executeTests: Error in row: ${testCaseNum} numFails:${numfails} error: ${error} with stack: ${error.stack}`);
-                            errorMessages += `executeTests: Error for row:: row: ${testCaseNum}  error: ${error}`;
+                            errorMessages += `executeTests: Error for row: ${testCaseNum}  error: ${error}`;
                            
                         }
                     });
@@ -193,20 +194,20 @@ async function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, 
     var p2_result = null;
     // Check for document info and linksin the metadata if it exists
     if (result.results[0].document.hasOwnProperty('structData')) {
-        link_1_Column.getRange().getCell(rowNum, 0).values = [[result.results[0].document.structData.title]];
+        link_1_Column.getRange().getCell(rowNum, 0).values = [[result.results[0].document.structData.sharepoint_ref]];
         p0_result = result.results[0].document.structData.title;
     } else if (result.results[0].document.hasOwnProperty('derivedStructData')) {
         link_1_Column.getRange().getCell(rowNum, 0).values = [[result.results[0].document.derivedStructData.link]];
         p0_result = result.results[0].document.derivedStructData.link;
     }
     if (result.results[1].document.hasOwnProperty('structData')) {
-        link_2_Column.getRange().getCell(rowNum, 0).values = [[result.results[1].document.structData.title]];
+        link_2_Column.getRange().getCell(rowNum, 0).values = [[result.results[1].document.structData.sharepoint_ref]];
     } else if (result.results[1].document.hasOwnProperty('derivedStructData')) {
         link_2_Column.getRange().getCell(rowNum, 0).values = [[result.results[1].document.derivedStructData.link]];
         p2_result = result.results[1].document.derivedStructData.link;
     }
     if (result.results[2].document.hasOwnProperty('structData')) {
-        link_3_Column.getRange().getCell(rowNum, 0).values = [[result.results[2].document.structData.title]];
+        link_3_Column.getRange().getCell(rowNum, 0).values = [[result.results[2].document.structData.sharepoint_ref]];
     } else if (result.results[2].document.hasOwnProperty('derivedStructData')) {
         link_3_Column.getRange().getCell(rowNum, 0).values = [[result.results[2].document.derivedStructData.link]];
     }
