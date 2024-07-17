@@ -195,19 +195,19 @@ async function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, 
     if (result.results[0].document.hasOwnProperty('structData')) {
         link_1_Column.getRange().getCell(rowNum, 0).values = [[result.results[0].document.structData.title]];
         p0_result = result.results[0].document.structData.title;
-    } else {
+    } else if (result.results[0].document.hasOwnProperty('derivedStructData')) {
         link_1_Column.getRange().getCell(rowNum, 0).values = [[result.results[0].document.derivedStructData.link]];
         p0_result = result.results[0].document.derivedStructData.link;
     }
     if (result.results[1].document.hasOwnProperty('structData')) {
         link_2_Column.getRange().getCell(rowNum, 0).values = [[result.results[1].document.structData.title]];
-    } else {
+    } else if (result.results[1].document.hasOwnProperty('derivedStructData')) {
         link_2_Column.getRange().getCell(rowNum, 0).values = [[result.results[1].document.derivedStructData.link]];
         p2_result = result.results[1].document.derivedStructData.link;
     }
     if (result.results[2].document.hasOwnProperty('structData')) {
         link_3_Column.getRange().getCell(rowNum, 0).values = [[result.results[2].document.structData.title]];
-    } else {
+    } else if (result.results[2].document.hasOwnProperty('derivedStructData')) {
         link_3_Column.getRange().getCell(rowNum, 0).values = [[result.results[2].document.derivedStructData.link]];
     }
 
