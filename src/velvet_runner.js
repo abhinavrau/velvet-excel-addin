@@ -189,32 +189,26 @@ export async function executeTests() {
 
 
 async function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, link_3_Column, link_p0Column, link_top2Column, expectedLink1, expectedLink2, context) {
-    var p0_result;
-    var p2_result;
+    var p0_result = null;
+    var p2_result = null;
     // Check for document info and linksin the metadata if it exists
     if (result.results[0].document.hasOwnProperty('structData')) {
         link_1_Column.getRange().getCell(rowNum, 0).values = [[result.results[0].document.structData.title]];
-        link_2_Column.getRange().getCell(rowNum, 0).values = [[result.results[1].document.structData.title]];
-        link_3_Column.getRange().getCell(rowNum, 0).values = [[result.results[2].document.structData.title]];
         p0_result = result.results[0].document.structData.title;
-        p2_result = result.results[1].document.structData.title;
     } else {
         link_1_Column.getRange().getCell(rowNum, 0).values = [[result.results[0].document.derivedStructData.link]];
+        p0_result = result.results[0].document.derivedStructData.link;
+    }
+    if (result.results[1].document.hasOwnProperty('structData')) {
+        link_2_Column.getRange().getCell(rowNum, 0).values = [[result.results[1].document.structData.title]];
+    } else {
         link_2_Column.getRange().getCell(rowNum, 0).values = [[result.results[1].document.derivedStructData.link]];
+        p2_result = result.results[1].document.derivedStructData.link;
+    }
+    if (result.results[2].document.hasOwnProperty('structData')) {
+        link_3_Column.getRange().getCell(rowNum, 0).values = [[result.results[2].document.structData.title]];
+    } else {
         link_3_Column.getRange().getCell(rowNum, 0).values = [[result.results[2].document.derivedStructData.link]];
-        if (result.results[1] !== null) {
-            p0_result = result.results[0].document.derivedStructData.link;
-        } else {
-            p0_result = "";
-        }
-       
-        if (result.results[1] !== null) {
-            p2_result = result.results[1].document.derivedStructData.link;
-        } else {
-            p2_result = "";
-        }
-
-        
     }
 
     // clear the formatting in the cells 
@@ -226,7 +220,7 @@ async function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, 
     top2_cell.clear(Excel.ClearApplyTo.formats);
 
     // match first link with expected link
-    if (p0_result === expectedLink1[rowNum][0]) {
+    if (p0_result !==null && p0_result === expectedLink1[rowNum][0]) {
         link_p0_cell.values = [["TRUE"]];
     } else {
         link_p0_cell.values = [["FALSE"]];
@@ -236,7 +230,7 @@ async function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, 
     }
 
     // match if the top 2 links returned are in the top 2 expected links
-    if (p2_result === expectedLink2[rowNum][0]
+    if (p2_result !==null && p2_result === expectedLink2[rowNum][0]
         || p2_result === expectedLink1[rowNum][0]
         || p0_result === expectedLink1[rowNum][0]
         || p0_result === expectedLink2[rowNum][0]) {
