@@ -4,18 +4,19 @@
     "offset": 0,
     "contentSearchSpec": {
         "extractiveContentSpec": {
-            "maxExtractiveAnswerCount": 2
+            "maxExtractiveAnswerCount": "2",
+            "maxExtractiveSegmentCount": "0"
         },
         "summarySpec": {
-            "useSemanticChunks": "true",
+            "useSemanticChunks": "false",
             "summaryResultCount": "2",
-            "ignoreAdversarialQuery": "false",
-            "ignoreNonSummarySeekingQuery": "false",
+            "ignoreAdversarialQuery": "true",
+            "ignoreNonSummarySeekingQuery": "true",
             "modelPromptSpec": {
-                "preamble": "preamble"
+                "preamble": ""
             },
             "modelSpec": {
-                "version": "preview"
+                "version": "gemini-1.0-pro-001/answer_gen/v1"
             }
         }
     }

@@ -1,8 +1,8 @@
 import expect from 'expect';
 import fetchMock from 'fetch-mock';
-import fs from 'fs';
 
 import { calculateSimilarityUsingVertexAI, callVertexAISearch } from '../src/vertex_ai.js';
+import { mockVertexAISearchRequestResponse } from './common.js';
 
 describe('calculateSimilarityUsingVertexAI', () => {
     beforeEach(() => {
@@ -119,19 +119,20 @@ describe('calculateSimilarityUsingVertexAI', () => {
     beforeEach(() => {
         fetchMock.reset();
     });
-    it('should return a list of search results for Extractive Answer', async () => {
+        it('should return a list of search results for Extractive Answer', async () => {
         const query = 'query';
         const config = {
             accessToken: 'YOUR_ACCESS_TOKEN',
-            preamble: 'preamble',
+            preamble: '',
             extractiveContentSpec: {
-                maxExtractiveAnswerCount: 2,
+                maxExtractiveAnswerCount: "2",
+                maxExtractiveSegmentCount: "0",
             },
             summaryResultCount: 2,
-            model: "preview",
-            useSemanticChunks: true,
-            ignoreAdversarialQuery: false,
-            ignoreNonSummarySeekingQuery: false,
+            model: "gemini-1.0-pro-001/answer_gen/v1",
+            useSemanticChunks: false,
+            ignoreAdversarialQuery: true,
+            ignoreNonSummarySeekingQuery: true,
             vertexAISearchProjectNumber: 'YOUR_PROJECT_NUMBER',
             vertexAISearchDataStoreName: 'YOUR_DATASTORE_NAME',
             vertexAILocation: 'YOUR_LOCATION',
@@ -194,15 +195,16 @@ describe('calculateSimilarityUsingVertexAI', () => {
         const query = 'query';
         const config = {
             accessToken: 'YOUR_ACCESS_TOKEN',
-            preamble: 'preamble',
+            preamble: '',
             extractiveContentSpec: {
-                maxExtractiveAnswerCount: 2,
+                maxExtractiveAnswerCount: "2",
+                maxExtractiveSegmentCount: "0",
             },
             summaryResultCount: 2,
-            model: "preview",
-            useSemanticChunks: true,
-            ignoreAdversarialQuery: false,
-            ignoreNonSummarySeekingQuery: false,
+            model: "gemini-1.0-pro-001/answer_gen/v1",
+            useSemanticChunks: false,
+            ignoreAdversarialQuery: true,
+            ignoreNonSummarySeekingQuery: true,
             vertexAISearchProjectNumber: 'YOUR_PROJECT_NUMBER',
             vertexAISearchDataStoreName: 'YOUR_DATASTORE_NAME',
             vertexAILocation: 'YOUR_LOCATION',
@@ -257,7 +259,7 @@ describe('calculateSimilarityUsingVertexAI', () => {
 });
 
 async function testRequestResponse(testCaseNum, expected_status_code, config, query, expectedRequestFile, expectedResponseFile) {
-    const { requestJson, url, expectedResponse } = prepareVertexAISearchRequestResponse(testCaseNum, expected_status_code, expectedRequestFile, expectedResponseFile, config);
+    const { requestJson, url, expectedResponse } = mockVertexAISearchRequestResponse(testCaseNum, expected_status_code, expectedRequestFile, expectedResponseFile, config);
 
 
     const result = await callVertexAISearch(1, query, config);
@@ -277,33 +279,6 @@ async function testRequestResponse(testCaseNum, expected_status_code, config, qu
     }
     
 
-}
-
-export function prepareVertexAISearchRequestResponse(testCaseNum, expected_status_code, expectedRequestFile, expectedResponseFile, config) {
-    const requestData = fs.readFileSync(expectedRequestFile);
-    const requestJson = JSON.parse(requestData);
-
-    // Read response  json from file into variable 
-    const responseData = fs.readFileSync(expectedResponseFile);
-    const responseJson = JSON.parse(responseData);
-
-    // expected response with row number
-    const expectedResponse = {
-        testCaseNum: testCaseNum,
-        status_code: expected_status_code,
-        output: responseJson
-    };
-
-    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
-
-    var response = fetchMock.postOnce(url, {
-        status: expected_status_code,
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(responseJson)
-    });
-    return { requestJson, url, expectedResponse };
 }
 
  

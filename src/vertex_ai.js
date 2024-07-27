@@ -1,12 +1,13 @@
 
-export async function callVertexAISearch(testCaseNum, query, config) {
+
+export  async function callVertexAISearch(testCaseNum, query, config) {
     var status;
     var output;
 
     try {
         const token = config.accessToken;
         const preamble = config.preamble;
-        const model = config.model === "" ? 'gemini-1.0-pro-001/answer_gen/v1' : config.model;
+        const model = config.model === "" ? 'gemini-1.0-pro-002/answer_gen/v1' : config.model;
         const summaryResultCount = config.summaryResultCount;
         const extractiveContentSpec = config.extractiveContentSpec === null ? {} : config.extractiveContentSpec;
         const snippetSpec = config.snippetSpec === null ? {} : config.snippetSpec;
@@ -25,10 +26,10 @@ export async function callVertexAISearch(testCaseNum, query, config) {
                 extractiveContentSpec,
                 snippetSpec,
                 summarySpec: {
-                    useSemanticChunks: `${useSemanticChunks}`,
+                    useSemanticChunks: `${useSemanticChunks}`.toLowerCase(),
                     summaryResultCount: `${summaryResultCount}`,
-                    ignoreAdversarialQuery: `${ignoreAdversarialQuery}`,
-                    ignoreNonSummarySeekingQuery: `${ignoreNonSummarySeekingQuery}`,
+                    ignoreAdversarialQuery: `${ignoreAdversarialQuery}`.toLowerCase(),
+                    ignoreNonSummarySeekingQuery: `${ignoreNonSummarySeekingQuery}`.toLowerCase(),
                     modelPromptSpec: {
                         preamble: `${preamble}`
                     },

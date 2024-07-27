@@ -15,10 +15,61 @@ function getColumn(table, columnName) {
     }
 }
 
+export async function getConfig() {
+    var config;
+    await Excel.run(async (context) => {
+        
+        try {
+            const currentWorksheet = context.workbook.worksheets.getActiveWorksheet();
+            currentWorksheet.load("name");
+            await context.sync();
+            const worksheetName = currentWorksheet.name;
+            const configTable = currentWorksheet.tables.getItem(`${worksheetName}.ConfigTable`);
+            const valueColumn = getColumn(configTable, "Value");
+            await context.sync();
+
+           config =  {
+                vertexAISearchProjectNumber: valueColumn.values[1][0],
+                vertexAISearchDataStoreName: valueColumn.values[2][0],
+                vertexAIProjectID: valueColumn.values[3][0],
+                vertexAILocation: valueColumn.values[4][0],
+                extractiveContentSpec: {
+                    maxExtractiveAnswerCount: valueColumn.values[5][0] === 0 ? null : valueColumn.values[5][0],
+                    maxExtractiveSegmentCount: valueColumn.values[6][0] === 0 ? null : valueColumn.values[6][0],
+                },
+                maxSnippetCount: valueColumn.values[7][0] === 0 ? null : valueColumn.values[7][0],
+                preamble: valueColumn.values[8][0],
+                model: valueColumn.values[9][0],
+                summaryResultCount: valueColumn.values[10][0],
+                useSemanticChunks: valueColumn.values[11][0],
+                ignoreAdversarialQuery: valueColumn.values[12][0],
+                ignoreNonSummarySeekingQuery: valueColumn.values[13][0],
+                summaryMatchingAdditionalPrompt: valueColumn.values[14][0],
+                batchSize: valueColumn.values[15][0],
+                timeBetweenCallsInSec: valueColumn.values[16][0],
+                accessToken: $('#access-token').val(),
+            };
+            
+        } catch (error) {
+            console.error(`Caught Exception in createConfig: ${error} `);
+            showStatus(`Caught Exception in createConfig: ${error}`, true);
+            throw error;
+        }
+
+    });
+    return config;
+}
 export async function executeTests() {
+
+    const config = getConfig();
+    await runTests(config);
+}
+
+export async function runTests(config) {
 
     await Excel.run(async (context) => {
         try {
+
             const currentWorksheet = context.workbook.worksheets.getActiveWorksheet();
             currentWorksheet.load("name");
             await context.sync();
@@ -43,37 +94,9 @@ export async function executeTests() {
             testCasesTable.rows.load('count');
             await context.sync();
 
-            const configTable = currentWorksheet.tables.getItem(`${worksheetName}.ConfigTable`);
-            const configColumn = getColumn(configTable, "Config");
-            const valueColumn = getColumn(configTable, "Value");
-            valueColumn.load();
-            await context.sync();
-            const config = {
-                vertexAISearchProjectNumber: valueColumn.values[1][0],
-                vertexAISearchDataStoreName: valueColumn.values[2][0],
-                vertexAIProjectID: valueColumn.values[3][0],
-                vertexAILocation: valueColumn.values[4][0],
-                extractiveContentSpec: {
-                    maxExtractiveAnswerCount: valueColumn.values[5][0] === 0 ? null : valueColumn.values[5][0],
-                    maxExtractiveSegmentCount: valueColumn.values[6][0] === 0 ? null : valueColumn.values[6][0],
-                },
-                maxSnippetCount: valueColumn.values[7][0] === 0 ? null : valueColumn.values[7][0],
-                preamble: valueColumn.values[8][0],
-                model: valueColumn.values[9][0],
-                summaryResultCount: valueColumn.values[10][0],
-                useSemanticChunks: valueColumn.values[11][0],
-                ignoreAdversarialQuery: valueColumn.values[12][0],
-                ignoreNonSummarySeekingQuery: valueColumn.values[13][0],
-                summaryMatchingAdditionalPrompt: valueColumn.values[14][0],
-                batchSize: valueColumn.values[15][0],
-                timeBetweenCallsInSec: valueColumn.values[16][0],
-                accessToken: $('#access-token').val(),
-               
-            };
-
             if (config.accessToken === "") {
                 showStatus(`Error: executeTests: Access token is empty`, true);
-                return;
+                throw error("Access token is empty");
             }
 
 
@@ -103,7 +126,7 @@ export async function executeTests() {
 
             let numfails = 0;
             let errorMessages = [];
-           
+
             //console.log('Number of rows in table:' + table.rows.count);
             // Loop through the test cases table ans run the tests
             while (rowNum <= testCasesTable.rows.count && id[rowNum][0] !== null && id[rowNum][0] !== "") {
@@ -112,7 +135,7 @@ export async function executeTests() {
 
 
                 // Batch the calls to Vertex AI since there are throuput checks in place.
-            
+
                 if (rowNum % config.batchSize === 0) {
                     // sleep for 1 seconds
                     await new Promise(r => setTimeout(r, config.timeBetweenCallsInSec * 1000));
@@ -125,12 +148,12 @@ export async function executeTests() {
                     .then(async function (result) {
                         var response;
                         var testCaseNum;
-                    
+
                         try {
                             //console.log(`result: ${JSON.stringify(result)} `);
                             response = result.output;
                             testCaseNum = result.testCaseNum;
-                           
+
                             console.log(`result.output: ${JSON.stringify(result.output)} `);
                             // Check the summary first
                             if (response.hasOwnProperty('summary')) {
@@ -161,11 +184,11 @@ export async function executeTests() {
                             // ouput stacktrace for error 
                             console.error(`executeTests: Error in row: ${testCaseNum} numFails:${numfails} error: ${error} with stack: ${error.stack}`);
                             errorMessages += `executeTests: Error for row: ${testCaseNum}  error: ${error}`;
-                           
+
                         }
                     });
-                
-                
+
+
                 showStatus(`Processed ${rowNum} test cases.  numFails:${numfails} \n\n ${errorMessages}`, numfails > 0);
                 // Break out of loop if we are not authenticated or quota exceeded
                 if (not_authenticated || quota_exceeded) {
@@ -182,11 +205,14 @@ export async function executeTests() {
         } catch (error) {
             console.error(`Caught Exception in executeTests: ${error} `);
             showStatus(`Caught Exception in executeTests: ${JSON.stringify(error)}`, true);
+            throw error;
         }
 
     });
 
 }
+
+
 
 
 async function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, link_3_Column, link_p0Column, link_top2Column, expectedLink1, expectedLink2, context) {
@@ -221,7 +247,7 @@ async function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, 
     top2_cell.clear(Excel.ClearApplyTo.formats);
 
     // match first link with expected link
-    if (p0_result !==null && p0_result === expectedLink1[rowNum][0]) {
+    if (p0_result !== null && p0_result === expectedLink1[rowNum][0]) {
         link_p0_cell.values = [["TRUE"]];
     } else {
         link_p0_cell.values = [["FALSE"]];
@@ -231,7 +257,7 @@ async function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, 
     }
 
     // match if the top 2 links returned are in the top 2 expected links
-    if (p2_result !==null && p2_result === expectedLink2[rowNum][0]
+    if (p2_result !== null && p2_result === expectedLink2[rowNum][0]
         || p2_result === expectedLink1[rowNum][0]
         || p0_result === expectedLink1[rowNum][0]
         || p0_result === expectedLink2[rowNum][0]) {

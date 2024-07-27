@@ -48,8 +48,9 @@ export async function createConfigTable() {
 
         } catch (error) {
             console.error('Error createTable:' + error);
+            showStatus(`Exception when creating sample data: ${JSON.stringify(error)}`, true);
             throw error;
-            //showStatus(`Exception when creating sample data: ${JSON.stringify(error)}`, true);
+            
         }
     });
 
