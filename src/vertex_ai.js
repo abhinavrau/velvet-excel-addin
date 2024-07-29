@@ -60,6 +60,7 @@ export  async function callVertexAISearch(testCaseNum, query, config) {
             console.error(output);
         } else {
             output = await response.json();
+            
             console.log(`callVertexAISearch: Finished Successfully row: ${testCaseNum}`);
         }
         status = response.status;

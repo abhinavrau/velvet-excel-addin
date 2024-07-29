@@ -4,6 +4,21 @@ import { calculateSimilarityUsingVertexAI, callVertexAISearch } from "./vertex_a
 import { showStatus } from "./ui.js";
 
 
+class NotAuthenticatedError extends Error {
+    constructor(message = 'User is not authenticated') {
+        super(message);
+        this.name = 'NotAuthenticatedError';
+        this.statusCode = 401; // Optional: HTTP status code for API errors
+    }
+}
+
+class QuotaError extends Error {
+    constructor(message = 'Quota Exceeded') {
+        super(message);
+        this.name = 'QuotaError';
+        this.statusCode = 429; // Optional: HTTP status code for API errors
+    }
+}
 function getColumn(table, columnName) {
     try {
         const column = table.columns.getItemOrNullObject(columnName);
@@ -18,7 +33,7 @@ function getColumn(table, columnName) {
 export async function getConfig() {
     var config;
     await Excel.run(async (context) => {
-        
+
         try {
             const currentWorksheet = context.workbook.worksheets.getActiveWorksheet();
             currentWorksheet.load("name");
@@ -28,7 +43,7 @@ export async function getConfig() {
             const valueColumn = getColumn(configTable, "Value");
             await context.sync();
 
-           config =  {
+            config = {
                 vertexAISearchProjectNumber: valueColumn.values[1][0],
                 vertexAISearchDataStoreName: valueColumn.values[2][0],
                 vertexAIProjectID: valueColumn.values[3][0],
@@ -49,7 +64,7 @@ export async function getConfig() {
                 timeBetweenCallsInSec: valueColumn.values[16][0],
                 accessToken: $('#access-token').val(),
             };
-            
+
         } catch (error) {
             console.error(`Caught Exception in createConfig: ${error} `);
             showStatus(`Caught Exception in createConfig: ${error}`, true);
@@ -61,9 +76,12 @@ export async function getConfig() {
 }
 export async function executeTests() {
 
-    const config = getConfig();
+    const config = await getConfig();
     await runTests(config);
 }
+
+
+
 
 export async function runTests(config) {
 
@@ -127,75 +145,78 @@ export async function runTests(config) {
             let numfails = 0;
             let errorMessages = [];
 
+            // map of promises
+            const promiseMap = new Map();
+            let stopProcessing = false;
             //console.log('Number of rows in table:' + table.rows.count);
             // Loop through the test cases table ans run the tests
             while (rowNum <= testCasesTable.rows.count && id[rowNum][0] !== null && id[rowNum][0] !== "") {
                 console.log('ID:' + id[rowNum][0]);
                 console.log('Query: ' + query[rowNum][0]);
 
-
-                // Batch the calls to Vertex AI since there are throuput checks in place.
-
+                // Batch the calls to Vertex AI since there are throuput checks in place.\
                 if (rowNum % config.batchSize === 0) {
-                    // sleep for 1 seconds
+                    // delay calls with apropriate time
                     await new Promise(r => setTimeout(r, config.timeBetweenCallsInSec * 1000));
                 }
 
-                var not_authenticated = false;
-                var quota_exceeded = false;
-                // Call Vertex AI Search
-                callVertexAISearch(rowNum, query[rowNum][0], config)
-                    .then(async function (result) {
-                        var response;
-                        var testCaseNum;
+                // Call Vertex AI Search and add the promise to promiseMap
+                promiseMap.set(id[rowNum][0], callVertexAISearch(rowNum, query[rowNum][0], config)
+                    .then(result => {
+                        let response = result.output;
+                        let testCaseNum = result.testCaseNum;
 
-                        try {
-                            //console.log(`result: ${JSON.stringify(result)} `);
-                            response = result.output;
-                            testCaseNum = result.testCaseNum;
-
-                            console.log(`result.output: ${JSON.stringify(result.output)} `);
-                            // Check the summary first
-                            if (response.hasOwnProperty('summary')) {
-                                console.log("Got Summary");
-                                await processSummary(testCaseNum, response, actualSummaryColumn, expectedSummary, config, summaryScoreColumn, context);
-                            }
-                            // Check the documents references
-                            if (response.hasOwnProperty('results')) {
-                                console.log("Got links");
-                                await checkDocumentLinks(testCaseNum, response, link_1_Column, link_2_Column, link_3_Column, link_p0Column, link_top2Column, expectedLink1, expectedLink2, context);
-                            }
-                            // check for error json property
-                            if (response.hasOwnProperty('error') || result.status_code !== 200) {
-                                numfails++;
-                                console.error(`executeTests: VAI returned error for row: ${testCaseNum} errorcode: ${result.status_code} numFails:${numfails} error: ${JSON.stringify(response)}`);
-                                errorMessages += `VAI returned error for row:: row: ${testCaseNum} error: ${JSON.stringify(response)}`;
-                                if (result.status_code === 401) {
-                                    not_authenticated = true;
-                                }
-                                if (result.status_code === 429) {
-                                    quota_exceeded = true;
-                                }
-                            }
+                        console.log(`result.output: ${JSON.stringify(result.output)} `);
+                        // Check the summary first
+                        if (response.hasOwnProperty('summary')) {
+                            console.log("Got Summary");
+                            processSummary(testCaseNum, response, actualSummaryColumn, expectedSummary, config, summaryScoreColumn, context);
                         }
-                        catch (error) {
+                        // Check the documents references
+                        if (response.hasOwnProperty('results')) {
+                            console.log("Got links");
+                            checkDocumentLinks(testCaseNum, response, link_1_Column, link_2_Column, link_3_Column, link_p0Column, link_top2Column, expectedLink1, expectedLink2, context);
+                        }
+                        // check for error json property
+                        if (response.hasOwnProperty('error') || result.status_code !== 200) {
+                            console.error(`executeTests: VAI returned error for row: ${testCaseNum} errorcode: ${result.status_code} error: ${JSON.stringify(response)}`);
+                            errorMessages += `VAI returned error for row:: row: ${testCaseNum} error: ${JSON.stringify(response)}`;
+                            if (result.status_code === 401) {
+                                throw new NotAuthenticatedError();
+                            }
+                            if (result.status_code === 429) {
+                                throw new QuotaError();
+                            }
 
-                            numfails++;
+                        }
+                        showStatus(`Processed ${rowNum} test cases.  numFails:${numfails} \n\n ${errorMessages}`, numfails > 0);
+                    })
+                    .catch(error => {
+                        numfails++;
+                        if (error instanceof NotAuthenticatedError) {
+                            stopProcessing = true;
+                            showStatus(`User not Authenticated`, true);
+                        }
+                        if (error instanceof QuotaError) {
+                            stopProcessing = true;
+                            showStatus(`API Quota Exceeded`, true);
+                        }
+                        else {
                             // ouput stacktrace for error 
                             console.error(`executeTests: Error in row: ${testCaseNum} numFails:${numfails} error: ${error} with stack: ${error.stack}`);
                             errorMessages += `executeTests: Error for row: ${testCaseNum}  error: ${error}`;
-
                         }
-                    });
 
+                    }));
 
-                showStatus(`Processed ${rowNum} test cases.  numFails:${numfails} \n\n ${errorMessages}`, numfails > 0);
-                // Break out of loop if we are not authenticated or quota exceeded
-                if (not_authenticated || quota_exceeded) {
+                if (stopProcessing) {
                     break;
                 }
                 rowNum++;
-            }
+            } // end while
+
+            // wait for all the calls to finish
+            await Promise.allSettled(promiseMap.values());
 
             currentWorksheet.getUsedRange().format.autofitColumns();
             currentWorksheet.getUsedRange().format.autofitRows();
@@ -212,10 +233,7 @@ export async function runTests(config) {
 
 }
 
-
-
-
-async function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, link_3_Column, link_p0Column, link_top2Column, expectedLink1, expectedLink2, context) {
+function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, link_3_Column, link_p0Column, link_top2Column, expectedLink1, expectedLink2, context) {
     var p0_result = null;
     var p2_result = null;
     // Check for document info and linksin the metadata if it exists
@@ -266,10 +284,10 @@ async function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, 
         top2_cell.values = [["FALSE"]];
         top2_cell.format.fill.color = '#FFCCCB';
     }
-    await context.sync();
+    context.sync();
 }
 
-async function processSummary(rowNum, result, actualSummaryColumn, expectedSummary, config, summaryScoreColumn, context) {
+function processSummary(rowNum, result, actualSummaryColumn, expectedSummary, config, summaryScoreColumn, context) {
     console.log('Summary: ' + result.summary.summaryText);
     const cell = actualSummaryColumn.getRange().getCell(rowNum, 0);
     cell.clear(Excel.ClearApplyTo.formats);
@@ -278,7 +296,7 @@ async function processSummary(rowNum, result, actualSummaryColumn, expectedSumma
     // match summaries only if they are not null or empty
     if (expectedSummary[rowNum][0] !== null && expectedSummary[rowNum][0] !== "") {
 
-        const response = await calculateSimilarityUsingVertexAI(rowNum, result.summary.summaryText, expectedSummary[rowNum][0], config);
+        const response = calculateSimilarityUsingVertexAI(rowNum, result.summary.summaryText, expectedSummary[rowNum][0], config);
         const score = response.output;
 
         const score_cell = summaryScoreColumn.getRange().getCell(rowNum, 0);
@@ -295,6 +313,6 @@ async function processSummary(rowNum, result, actualSummaryColumn, expectedSumma
 
         }
     }
-    await context.sync();
+    context.sync();
 }
 

@@ -65,7 +65,7 @@ describe("create Test Template Tables", () => {
     let mockData;
 
     beforeEach(() => {
-         mockData = {
+        mockData = {
             context: {
                 workbook: {
                     worksheets: {
@@ -109,7 +109,7 @@ describe("create Test Template Tables", () => {
                                 return this.header_row_range;
                             },
                             resize: function (str) {
-                                
+
                             },
                             getItem: function (str) {
                                 // check is str ends with string "TestCasesTable"
@@ -121,16 +121,16 @@ describe("create Test Template Tables", () => {
                             rows: {
 
                                 values: [[]],
-                                count: 1, 
+                                count: 1,
                                 add: function (str, values) {
                                     this.values = values;;
                                 }
-                                
+
                             },
                             header_row_range: {
                                 values: [[]]
                             },
-                            
+
                         },
 
                     },
@@ -143,7 +143,7 @@ describe("create Test Template Tables", () => {
             },
         }
 
-       
+
 
     });
 
@@ -170,12 +170,12 @@ describe("create Test Template Tables", () => {
 
         // Create the final mock object from the seed object.
         const contextMock = new OfficeMockObject(mockData);
-       
+
 
         global.Excel = contextMock;
         await createDataTable();
         const worksheetName = contextMock.context.workbook.worksheets.name;
-        
+
         expect(contextMock.context.workbook.worksheets.tables.name).toEqual(`${worksheetName}.TestCasesTable`);
 
         expect(contextMock.context.workbook.worksheets.tables.getHeaderRowRange().values).toEqual(
@@ -186,6 +186,9 @@ describe("create Test Template Tables", () => {
     it("should populate the Date Table with the correct values", async () => {
 
         var mockTestData = {
+            ClearApplyTo: {
+                formats: {},
+            },
             context: {
                 workbook: {
                     worksheets: {
@@ -252,9 +255,9 @@ describe("create Test Template Tables", () => {
 
                             },
                             configTable: {
-                              
+
                                 columns: {
-                                    
+
                                     getItemOrNullObject: function (columnName) {
                                         return {
                                             values: [[]],
@@ -275,23 +278,56 @@ describe("create Test Template Tables", () => {
                                 },
                             },
                             testCaseTable: {
-                    
+                                data: Array(testCaseData.length).fill(null).map(() => Array(13).fill(null)),
                                 columns: {
                                     getItemOrNullObject: function (columnName) {
+                                        let columnIndex = -1;
+                                        // BEGIN Column object
                                         return {
                                             values: [[]],
+                                            columnIndex: -1,
                                             load: function () {
-                                                const columnIndex = testCaseData[0].indexOf(columnName);
+                                                 columnIndex = testCaseData[0].indexOf(columnName);
 
                                                 // If the column name is not found, return null
                                                 if (columnIndex === -1) {
                                                     return false;
                                                 }
+                                                
                                                 // Extract the values from the specified column
                                                 this.values = testCaseData.map(row => [row[columnIndex]]);
                                                 return true;
+                                            },
+                                            getRange: function () {
+                                                return {
+                                                    getCell: function (row, col) {
+
+                                                        // create a cell object and keep track of it in the data array 
+                                                        // Create a cell object
+                                                        var cell = {
+                                                            values: [[]],
+                                                            clear: function (arg) { },
+                                                            format: {
+                                                                font: {
+                                                                    bold: false
+                                                                },
+                                                                fill: {
+                                                                    color: "blue"
+                                                                },
+                                                            }
+                                                        };
+                                                        // access the columnIndex variable here
+                                                        
+                                                        // Assign the cell object to the correct position in the data array
+                                                        mockTestData.context.workbook.worksheets.tables.testCaseTable.data[row][columnIndex] = cell;
+
+                                                        return cell;
+
+                                                    }
+                                                }
                                             }
-                                        };
+
+                                        } // END Coumn Object
                                     },
 
                                 },
@@ -299,7 +335,7 @@ describe("create Test Template Tables", () => {
                                     count: 1,
                                 }
                             },
-                            
+
                             header_row_range: {
                                 values: [[]]
                             },
@@ -328,7 +364,7 @@ describe("create Test Template Tables", () => {
         await createConfigTable();
         // Fail the test ifshow status is called
         expect(showStatusSpy.notCalled).toBe(true);;
-    
+
         // stub out jQuery calls
         const $stub = sinon.stub(globalThis, '$').returns({
             empty: sinon.stub(),
@@ -337,17 +373,17 @@ describe("create Test Template Tables", () => {
         });
 
         // Get the config
-        
+
         const config = await getConfig();
 
         // Prepare the request response mock the call to VertexAISearch
-        const { requestJson, url, expectedResponse } = mockVertexAISearchRequestResponse(
+        const { requestJson, url, expectedResponse } =  mockVertexAISearchRequestResponse(
             1,
             200,
             './test/data/extractive_answer/test_vai_search_extractive_answer_request.json',
             './test/data/extractive_answer/test_vai_search_extractive_answer_response.json',
             config);
-        
+
 
         // Populate the test table
         await runTests(config);
@@ -357,18 +393,21 @@ describe("create Test Template Tables", () => {
         expect(JSON.parse(fetchMock.lastCall()[1].body)).toEqual(requestJson);
         // Assert URL is correct
         expect(fetchMock.lastUrl().toLowerCase()).toBe(url.toLowerCase());
-       
+
         // Check if return values get populated
-        //const actual_summary = mockTestData.context.workbook.worksheets.tables.getItem("TestCasesTable").columns.getItemOrNullObject('Actual Summary');
-       // actual_summary.load();
-       // expect(actual_summary.values[1][0]).toEqual("Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.");
+        // get the column index that is Actual Summary title
+        const columnIndex = testCaseData[0].indexOf("Actual Summary");
+
+        const actual_summary_cell = mockTestData.context.workbook.worksheets.tables
+            .testCaseTable.data[1][columnIndex].values;
+        expect(actual_summary_cell[0][0]).toEqual("Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.");
 
         $stub.restore();
-      
-        
+
+
     });
 
-    
+
 
 
 });

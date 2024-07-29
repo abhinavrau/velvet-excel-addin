@@ -1,7 +1,7 @@
 import fetchMock from 'fetch-mock';
 import fs from 'fs';
 
-export function mockVertexAISearchRequestResponse(testCaseNum, expected_status_code, expectedRequestFile, expectedResponseFile, config) {
+export  function mockVertexAISearchRequestResponse(testCaseNum, expected_status_code, expectedRequestFile, expectedResponseFile, config) {
     const requestData = fs.readFileSync(expectedRequestFile);
     const requestJson = JSON.parse(requestData);
 
@@ -19,7 +19,7 @@ export function mockVertexAISearchRequestResponse(testCaseNum, expected_status_c
     const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
 
     // mock the call with our response we want to return
-    var response = fetchMock.postOnce(url, {
+    var response =  fetchMock.postOnce(url, {
         status: expected_status_code,
         headers: {
             'Content-Type': 'application/json'
