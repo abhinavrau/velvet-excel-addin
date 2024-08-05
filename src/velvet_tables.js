@@ -1,5 +1,5 @@
 
-
+import { configValues, testCaseData } from './common.js';
 
 export async function createConfigTable() {
     await Excel.run(async (context) => {
@@ -20,26 +20,9 @@ export async function createConfigTable() {
             configTable.name = `${worksheetName}.ConfigTable`;
 
             configTable.getHeaderRowRange().values =
-                [["Config", "Value"]];
+                [configValues[0]];
 
-            configTable.rows.add(null, [
-                ["Vertex AI Search Project Number", "384473000457"],
-                ["Vertex AI Search DataStore Name", "alphabet-pdfs_1695783402380"],
-                ["Vertex AI Project ID", "argolis-arau"],
-                ["Vertex AI Location", "us-central1"],
-                ["maxExtractiveAnswerCount (1-5)", "2"], //maxExtractiveAnswerCount
-                ["maxExtractiveSegmentCount (1-5)", "0"], //maxExtractiveSegmentCount
-                ["maxSnippetCount (1-5)", "0"], //maxSnippetCount
-                ["Preamble (Customized Summaries)", ""],
-                ["Summarization Model", "gemini-1.0-pro-001/answer_gen/v1"],    
-                ["summaryResultCount (1-5)", "2"],   //summaryResultCount
-                ["useSemanticChunks (True or False)", "False"],   //useSemanticChunks
-                ["ignoreAdversarialQuery (True or False)", "True"], // ignoreAdversarialQuery
-                ["ignoreNonSummarySeekingQuery (True or False)", "True"], // ignoreNonSummarySeekingQuery
-                ["SummaryMatchingAdditionalPrompt", "If there are monetary numbers in the answers, they should be matched exactly."], // ignoreNonSummarySeekingQuery
-                ["Batch Size (1-10)", "2"], // BatchSize
-                ["Time between Batches in Seconds (1-10)", "2"], // BatchSize
-            ]);
+            configTable.rows.add(null, configValues.slice(1));
 
             currentWorksheet.getUsedRange().format.autofitColumns();
             currentWorksheet.getUsedRange().format.autofitRows();
@@ -68,7 +51,7 @@ export async function createDataTable() {
             velvetTable.name = `${worksheetName}.TestCasesTable`;
 
             velvetTable.getHeaderRowRange().values =
-                [["ID", "Query", "Expected Summary", "Actual Summary", "Expected Link 1", "Expected Link 2", "Expected Link 3", "Summary Match", "First Link Match", "Link in Top 2", "Actual Link 1", "Actual Link 2", "Actual Link 3"]];
+                [testCaseData[0]];
 
             velvetTable.resize('C17:O118');
             currentWorksheet.getUsedRange().format.autofitColumns();

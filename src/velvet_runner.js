@@ -160,13 +160,12 @@ export async function runTests(config) {
                     await new Promise(r => setTimeout(r, config.timeBetweenCallsInSec * 1000));
                 }
 
-                // Call Vertex AI Search and add the promise to promiseMap
+                // Call Vertex AI Search asynchronously and add the promise to promiseMap
                 promiseMap.set(id[rowNum][0], callVertexAISearch(rowNum, query[rowNum][0], config)
                     .then(result => {
                         let response = result.output;
                         let testCaseNum = result.testCaseNum;
 
-                        console.log(`result.output: ${JSON.stringify(result.output)} `);
                         // Check the summary first
                         if (response.hasOwnProperty('summary')) {
                             console.log("Got Summary");
@@ -208,7 +207,7 @@ export async function runTests(config) {
                         }
 
                     }));
-
+                // Stop processing if there are auth errors and quota errors
                 if (stopProcessing) {
                     break;
                 }
@@ -218,6 +217,7 @@ export async function runTests(config) {
             // wait for all the calls to finish
             await Promise.allSettled(promiseMap.values());
 
+            // autofit the content
             currentWorksheet.getUsedRange().format.autofitColumns();
             currentWorksheet.getUsedRange().format.autofitRows();
             await context.sync();

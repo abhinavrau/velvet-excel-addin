@@ -9,7 +9,9 @@ import { showStatus } from '../src/ui.js';
 import { getConfig, runTests } from '../src/velvet_runner.js';
 import { createConfigTable, createDataTable } from '../src/velvet_tables.js';
 import { calculateSimilarityUsingVertexAI, callVertexAISearch } from '../src/vertex_ai.js';
-import { mockVertexAISearchRequestResponse } from '../test/common.js';
+import { mockVertexAISearchRequestResponse } from './test_common.js';
+
+import { configValues, testCaseData } from '../src/common.js';
 
 global.showStatus = showStatus;
 
@@ -19,173 +21,16 @@ global.calculateSimilarityUsingVertexAI = calculateSimilarityUsingVertexAI;
 global.$ = $;
 global.JQuery = JQuery;
 
-
-
-
 const { OfficeMockObject } = pkg;
 
-const configValues = [
-    ["Config", "Value"],
-    ["Vertex AI Search Project Number", "384473000457"],
-    ["Vertex AI Search DataStore Name", "alphabet-pdfs_1695783402380"],
-    ["Vertex AI Project ID", "argolis-arau"],
-    ["Vertex AI Location", "us-central1"],
-    ["maxExtractiveAnswerCount (1-5)", "2"], //maxExtractiveAnswerCount
-    ["maxExtractiveSegmentCount (1-5)", "0"], //maxExtractiveSegmentCount
-    ["maxSnippetCount (1-5)", "0"], //maxSnippetCount
-    ["Preamble (Customized Summaries)", ""],
-    ["Summarization Model", "gemini-1.0-pro-001/answer_gen/v1"],
-    ["summaryResultCount (1-5)", "2"], //summaryResultCount
-    ["useSemanticChunks (True or False)", "False"], //useSemanticChunks
-    ["ignoreAdversarialQuery (True or False)", "True"], // ignoreAdversarialQuery
-    ["ignoreNonSummarySeekingQuery (True or False)", "True"], // ignoreNonSummarySeekingQuery
-    ["SummaryMatchingAdditionalPrompt", "If there are monetary numbers in the answers, they should be matched exactly."],
-    ["Batch Size (1-10)", "2"], // BatchSize
-    ["Time between Batches in Seconds (1-10)", "2"],
-];
+describe("When Execute Test is clicked ", () => {
 
-
-function testCaseTableColumns() {
-    return ["ID", "Query", "Expected Summary", "Actual Summary", "Expected Link 1", "Expected Link 2", "Expected Link 3", "Summary Match", "First Link Match", "Link in Top 2", "Actual Link 1", "Actual Link 2", "Actual Link 3"];
-}
-
-const testCaseData = [
-    ["ID", "Query", "Expected Summary", "Actual Summary", "Expected Link 1", "Expected Link 2", "Expected Link 3", "Summary Match", "First Link Match", "Link in Top 2", "Actual Link 1", "Actual Link 2", "Actual Link 3"],
-    ["1", "query", "", "", "link1", "link2", "link3", "TRUE", "TRUE", "TRUE", "", "", ""],
-];
-describe("create Test Template Tables", () => {
-
-    // Create a map to store the mock data.
-    let configTableMap = new Map();
-    configTableMap.set(0, [[]]);
-
-    let dataTableMap = new Map();
-    dataTableMap.set(0, [[]]);
-
-    let mockData;
+    var mockTestData;
 
     beforeEach(() => {
-        mockData = {
-            context: {
-                workbook: {
-                    worksheets: {
-                        name: "WorksheetName",
-                        getActiveWorksheet: function () {
-                            return this;
-                        },
-                        range: { // Config Table
-                            values: [[]],
-                            format: {
-                                font: {
-                                    bold: false
-                                },
-                                fill: {
-                                    color: "blue"
-                                },
-                                size: 16,
-                                autofitColumns: function () {
-                                    return true;
-                                },
-                                autofitRows: function () {
-                                    return true;
-                                },
-                            },
-                            getUsedRange: function () {
-                                return this.format;
-                            }
-                        },
-                        getRange: function (str) {
-                            return this.range;
-                        },
-                        getUsedRange: function () {
-                            return this.range;
-                        },
-                        tables: { // Test Cases Table
-                            name: "TestCasesTable",
-                            add: function (str, flag) {
-                                return this;
-                            },
-                            getHeaderRowRange: function () {
-                                return this.header_row_range;
-                            },
-                            resize: function (str) {
+        fetchMock.reset();
 
-                            },
-                            getItem: function (str) {
-                                // check is str ends with string "TestCasesTable"
-                                if (str.endsWith("ConfigTable")) {
-                                    return this.rows;
-                                }
-                                return this;
-                            },
-                            rows: {
-
-                                values: [[]],
-                                count: 1,
-                                add: function (str, values) {
-                                    this.values = values;;
-                                }
-
-                            },
-                            header_row_range: {
-                                values: [[]]
-                            },
-
-                        },
-
-                    },
-
-                }
-            },
-            // Mock the Excel.run method.
-            run: async function (callback) {
-                await callback(this.context);
-            },
-        }
-
-
-
-    });
-
-    it("should create th config table with the correct name and headers", async () => {
-
-        // Create the final mock object from the seed object.
-        const contextMock = new OfficeMockObject(mockData);
-
-        global.Excel = contextMock;
-        await createConfigTable();
-
-        const worksheetName = contextMock.context.workbook.worksheets.name;
-        expect(contextMock.context.workbook.worksheets.range.values).toEqual([["Vertex AI Search Parameters"]]);
-        expect(contextMock.context.workbook.worksheets.range.format.font.bold).toEqual(true);
-        expect(contextMock.context.workbook.worksheets.range.format.fill.color).toEqual('yellow');
-        expect(contextMock.context.workbook.worksheets.range.format.font.size).toEqual(16);
-
-        expect(contextMock.context.workbook.worksheets.tables.name).toEqual(`${worksheetName}.ConfigTable`);
-        expect(contextMock.context.workbook.worksheets.tables.getHeaderRowRange().values).toEqual([["Config", "Value"]]);
-        expect(contextMock.context.workbook.worksheets.tables.rows.values).toEqual(configValues.slice(1));
-    });
-
-    it("should create th Data table with the correct name and headers", async () => {
-
-        // Create the final mock object from the seed object.
-        const contextMock = new OfficeMockObject(mockData);
-
-
-        global.Excel = contextMock;
-        await createDataTable();
-        const worksheetName = contextMock.context.workbook.worksheets.name;
-
-        expect(contextMock.context.workbook.worksheets.tables.name).toEqual(`${worksheetName}.TestCasesTable`);
-
-        expect(contextMock.context.workbook.worksheets.tables.getHeaderRowRange().values).toEqual(
-            [testCaseTableColumns()]);
-
-    });
-
-    it("should populate the Date Table with the correct values", async () => {
-
-        var mockTestData = {
+        mockTestData = {
             ClearApplyTo: {
                 formats: {},
             },
@@ -278,8 +123,10 @@ describe("create Test Template Tables", () => {
                                 },
                             },
                             testCaseTable: {
+                                // Initiallize our data object that will get populated 
                                 data: Array(testCaseData.length).fill(null).map(() => Array(13).fill(null)),
                                 columns: {
+                                    // return a column object that is used to popluate the values returned from VertexAI APIs.
                                     getItemOrNullObject: function (columnName) {
                                         let columnIndex = -1;
                                         // BEGIN Column object
@@ -287,13 +134,13 @@ describe("create Test Template Tables", () => {
                                             values: [[]],
                                             columnIndex: -1,
                                             load: function () {
-                                                 columnIndex = testCaseData[0].indexOf(columnName);
+                                                columnIndex = testCaseData[0].indexOf(columnName);
 
                                                 // If the column name is not found, return null
                                                 if (columnIndex === -1) {
                                                     return false;
                                                 }
-                                                
+
                                                 // Extract the values from the specified column
                                                 this.values = testCaseData.map(row => [row[columnIndex]]);
                                                 return true;
@@ -317,10 +164,8 @@ describe("create Test Template Tables", () => {
                                                             }
                                                         };
                                                         // access the columnIndex variable here
-                                                        
                                                         // Assign the cell object to the correct position in the data array
                                                         mockTestData.context.workbook.worksheets.tables.testCaseTable.data[row][columnIndex] = cell;
-
                                                         return cell;
 
                                                     }
@@ -351,6 +196,11 @@ describe("create Test Template Tables", () => {
                 await callback(this.context);
             },
         }
+    });
+
+    it("should populate the Test Data Table with the correct values", async () => {
+
+
         // Create the final mock object from the seed object.
         const contextMock = new OfficeMockObject(mockTestData);
 
@@ -360,10 +210,16 @@ describe("create Test Template Tables", () => {
         // Spy on showStatus
         const showStatusSpy = sinon.spy(globalThis, 'showStatus');
 
-
+        // Simulate creating the Config table
         await createConfigTable();
         // Fail the test ifshow status is called
-        expect(showStatusSpy.notCalled).toBe(true);;
+        expect(showStatusSpy.notCalled).toBe(true);
+
+        // Simulate creating the Data table
+        await createDataTable();
+        // Fail the test ifshow status is called
+        expect(showStatusSpy.notCalled).toBe(true);
+
 
         // stub out jQuery calls
         const $stub = sinon.stub(globalThis, '$').returns({
@@ -372,22 +228,24 @@ describe("create Test Template Tables", () => {
             val: sinon.stub(),
         });
 
-        // Get the config
-
+        // Get the config parameters from the config table
         const config = await getConfig();
 
         // Prepare the request response mock the call to VertexAISearch
-        const { requestJson, url, expectedResponse } =  mockVertexAISearchRequestResponse(
+        const { requestJson, url, expectedResponse } = mockVertexAISearchRequestResponse(
             1,
             200,
             './test/data/extractive_answer/test_vai_search_extractive_answer_request.json',
             './test/data/extractive_answer/test_vai_search_extractive_answer_response.json',
             config);
 
-
+        
+        // Mock the call for summary similarity
+        mockSimilarityUsingVertexAI(config, 'same');   
         // Populate the test table
         await runTests(config);
-
+        
+        // Verify InspectionFile
         expect(fetchMock.called()).toBe(true);
         // Assert request body is correct
         expect(JSON.parse(fetchMock.lastCall()[1].body)).toEqual(requestJson);
@@ -402,6 +260,7 @@ describe("create Test Template Tables", () => {
             .testCaseTable.data[1][columnIndex].values;
         expect(actual_summary_cell[0][0]).toEqual("Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.");
 
+
         $stub.restore();
 
 
@@ -412,5 +271,22 @@ describe("create Test Template Tables", () => {
 
 });
 
+async function mockSimilarityUsingVertexAI(config, returnVal) {
 
 
+    var response = {
+        predictions: [
+            {
+                content: `${returnVal}`,
+            },
+        ],
+    };
+    const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/text-bison:predict`;
+    fetchMock.postOnce(url, {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(response)
+    });
+
+    
+}

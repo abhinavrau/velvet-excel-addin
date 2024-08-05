@@ -2,7 +2,7 @@ import expect from 'expect';
 import fetchMock from 'fetch-mock';
 
 import { calculateSimilarityUsingVertexAI, callVertexAISearch } from '../src/vertex_ai.js';
-import { mockVertexAISearchRequestResponse } from './common.js';
+import { mockVertexAISearchRequestResponse } from './test_common.js';
 
 describe('calculateSimilarityUsingVertexAI', () => {
     beforeEach(() => {

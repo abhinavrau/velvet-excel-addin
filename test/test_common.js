@@ -1,6 +1,8 @@
 import fetchMock from 'fetch-mock';
 import fs from 'fs';
 
+
+
 export  function mockVertexAISearchRequestResponse(testCaseNum, expected_status_code, expectedRequestFile, expectedResponseFile, config) {
     const requestData = fs.readFileSync(expectedRequestFile);
     const requestJson = JSON.parse(requestData);
