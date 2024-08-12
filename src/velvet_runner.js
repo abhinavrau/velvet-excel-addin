@@ -1,24 +1,11 @@
 
+import { NotAuthenticatedError, QuotaError } from "./common.js";
 import { calculateSimilarityUsingVertexAI, callVertexAISearch } from "./vertex_ai.js";
 
 import { showStatus } from "./ui.js";
 
 
-class NotAuthenticatedError extends Error {
-    constructor(message = 'User is not authenticated') {
-        super(message);
-        this.name = 'NotAuthenticatedError';
-        this.statusCode = 401; // Optional: HTTP status code for API errors
-    }
-}
 
-class QuotaError extends Error {
-    constructor(message = 'Quota Exceeded') {
-        super(message);
-        this.name = 'QuotaError';
-        this.statusCode = 429; // Optional: HTTP status code for API errors
-    }
-}
 function getColumn(table, columnName) {
     try {
         const column = table.columns.getItemOrNullObject(columnName);
@@ -143,7 +130,7 @@ export async function runTests(config) {
             let expectedLink2 = expected_link_2_Column.values;
 
             let numfails = 0;
-            let errorMessages = [];
+            
 
             // map of promises
             const promiseMap = new Map();
@@ -176,38 +163,29 @@ export async function runTests(config) {
                             console.log("Got links");
                             checkDocumentLinks(testCaseNum, response, link_1_Column, link_2_Column, link_3_Column, link_p0Column, link_top2Column, expectedLink1, expectedLink2, context);
                         }
-                        // check for error json property
-                        if (response.hasOwnProperty('error') || result.status_code !== 200) {
-                            console.error(`executeTests: VAI returned error for row: ${testCaseNum} errorcode: ${result.status_code} error: ${JSON.stringify(response)}`);
-                            errorMessages += `VAI returned error for row:: row: ${testCaseNum} error: ${JSON.stringify(response)}`;
-                            if (result.status_code === 401) {
-                                throw new NotAuthenticatedError();
-                            }
-                            if (result.status_code === 429) {
-                                throw new QuotaError();
-                            }
-
-                        }
-                        showStatus(`Processed ${rowNum} test cases.  numFails:${numfails} \n\n ${errorMessages}`, numfails > 0);
+                       
+                        showStatus(`Processed ${rowNum} test cases.`, false);
                     })
                     .catch(error => {
-                        numfails++;
+                        
                         if (error instanceof NotAuthenticatedError) {
                             stopProcessing = true;
-                            showStatus(`User not Authenticated`, true);
+                            showStatus(`User not Authenticated. Stopping execution. Re-authenticate and try again. \n Processed ${rowNum} test cases.`, true);
                         }
                         if (error instanceof QuotaError) {
                             stopProcessing = true;
-                            showStatus(`API Quota Exceeded`, true);
+                            showStatus(`API Quota Exceeded. Stopping execution. Reduce test cases or increase timeouts. \n Processed ${rowNum} test cases.`, true);
                         }
                         else {
+                            stopProcessing = true;
                             // ouput stacktrace for error 
                             console.error(`executeTests: Error in row: ${testCaseNum} numFails:${numfails} error: ${error} with stack: ${error.stack}`);
-                            errorMessages += `executeTests: Error for row: ${testCaseNum}  error: ${error}`;
+                            const errorMessage =  `executeTests: Error for row: ${testCaseNum}  error: ${error} with stack: ${error.stack}`;
+                            showStatus(`Errors!! Stopping execution. Processed ${rowNum} test cases. \n Error: ${errorMessage}`, true);
                         }
 
                     }));
-                // Stop processing if there are auth errors and quota errors
+                // Stop processing if there errors
                 if (stopProcessing) {
                     break;
                 }
@@ -287,7 +265,7 @@ function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, link_3
     context.sync();
 }
 
-function processSummary(rowNum, result, actualSummaryColumn, expectedSummary, config, summaryScoreColumn, context) {
+async function processSummary(rowNum, result, actualSummaryColumn, expectedSummary, config, summaryScoreColumn, context) {
     console.log('Summary: ' + result.summary.summaryText);
     const cell = actualSummaryColumn.getRange().getCell(rowNum, 0);
     cell.clear(Excel.ClearApplyTo.formats);
@@ -295,23 +273,35 @@ function processSummary(rowNum, result, actualSummaryColumn, expectedSummary, co
 
     // match summaries only if they are not null or empty
     if (expectedSummary[rowNum][0] !== null && expectedSummary[rowNum][0] !== "") {
-
-        const response = calculateSimilarityUsingVertexAI(rowNum, result.summary.summaryText, expectedSummary[rowNum][0], config);
-        const score = response.output;
-
         const score_cell = summaryScoreColumn.getRange().getCell(rowNum, 0);
         score_cell.clear(Excel.ClearApplyTo.formats);
-        //console.log('result.rowNum ' + result.rowNum + ' score: ' + score);
-        if (score.trim() === 'same') {
-            score_cell.values = [["TRUE"]];
 
-        } else {
-            score_cell.values = [["FALSE"]];
+        // Catch any errors here and report it in the cell. We don't want failures here to stop processing.
+        try {
+           
+            const response = await calculateSimilarityUsingVertexAI(rowNum, result.summary.summaryText, expectedSummary[rowNum][0], config);
+            const score = response.output;
+
+            //console.log('result.rowNum ' + result.rowNum + ' score: ' + score);
+            if (score.trim() === 'same') {
+                score_cell.values = [["TRUE"]];
+
+            } else if (score.trim() === 'different') {
+                score_cell.values = [["FALSE"]];
+                score_cell.format.fill.color = '#FFCCCB';
+                const actualSummarycell = actualSummaryColumn.getRange().getCell(rowNum, 0);
+                actualSummarycell.format.fill.color = '#FFCCCB';
+
+            } 
+        } catch(err)
+        {
+            // put the error in the cell.
+            score_cell.values = [[err.message]];
             score_cell.format.fill.color = '#FFCCCB';
             const actualSummarycell = actualSummaryColumn.getRange().getCell(rowNum, 0);
             actualSummarycell.format.fill.color = '#FFCCCB';
-
         }
+       
     }
     context.sync();
 }

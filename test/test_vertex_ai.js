@@ -1,6 +1,7 @@
 import expect from 'expect';
 import fetchMock from 'fetch-mock';
 
+import { NotAuthenticatedError, QuotaError, summaryMatching_examples, summaryMatching_prompt } from "../src/common.js";
 import { calculateSimilarityUsingVertexAI, callVertexAISearch } from '../src/vertex_ai.js';
 import { mockVertexAISearchRequestResponse } from './test_common.js';
 
@@ -16,6 +17,7 @@ describe('calculateSimilarityUsingVertexAI', () => {
             accessToken: 'YOUR_ACCESS_TOKEN',
             vertexAIProjectID: 'YOUR_PROJECT_ID',
             vertexAILocation: 'YOUR_LOCATION',
+            summaryMatchingAdditionalPrompt: 'addional prompt',
         };
 
         var response = {
@@ -41,9 +43,35 @@ describe('calculateSimilarityUsingVertexAI', () => {
         };
         expect(fetchMock.called()).toBe(true);
         expect(fetchMock.lastUrl().toLowerCase()).toBe(url.toLowerCase());
+        expect(fetchMock.lastCall()[1].headers).toEqual({
+            'Authorization': `Bearer ${config.accessToken}`,
+            'Content-Type': 'application/json',
+        });
+        
+        // validate header and body
+        var prompt = summaryMatching_prompt
+            + config.summaryMatchingAdditionalPrompt
+            + summaryMatching_examples;
+        
+        var full_prompt = `${prompt} answer_1: ${sentence1} answer_2: ${sentence2} output:`;
+
+        expect(JSON.parse(fetchMock.lastCall()[1].body)).toEqual({
+           
+                instances: [
+                    { prompt: `${full_prompt}` }
+                ],
+                parameters: {
+                    temperature: 0.2,
+                    maxOutputTokens: 256,
+                    topK: 40,
+                    topP: 0.95,
+                    logprobs: 2
+                }
+        });
+       
         expect(result).toEqual(expectedResponse);
     });
-    it('should fail when you get an error from Vertex AI', async () => {
+    it('should fail when you get an authentication error from Vertex AI', async () => {
         const sentence1 = 'sentece 1';
         const sentence2 = 'sentence 2';
 
@@ -61,21 +89,23 @@ describe('calculateSimilarityUsingVertexAI', () => {
         };
         const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/text-bison:predict`;
         fetchMock.postOnce(url, {
-            status: 500,
+            status: 401,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(response)
         });
 
-
-        const result = await calculateSimilarityUsingVertexAI(1, sentence1, sentence2, config);
-        const expectedResponse = {
-            testCaseNum: 1,
-            status_code: 500,
-            output: "calculateSimilarityUsingVertexAI: Request failed with for testCase#: 1 error: " + response.error.message,
-        };
-        expect(fetchMock.called()).toBe(true);
-        expect(fetchMock.lastUrl().toLowerCase()).toBe(url.toLowerCase());
-        expect(result).toEqual(expectedResponse);
+        try {
+            const result = await calculateSimilarityUsingVertexAI(1, sentence1, sentence2, config);
+            assert.fail();
+        } catch (err)
+        {
+            expect(fetchMock.called()).toBe(true);
+            expect(fetchMock.lastUrl().toLowerCase()).toBe(url.toLowerCase());
+            expect(err).toBeInstanceOf(NotAuthenticatedError);
+        }
+        
+        
+       
     });
 
     it('should fail when fetch throws exception', async () => {
@@ -88,29 +118,22 @@ describe('calculateSimilarityUsingVertexAI', () => {
             vertexAILocation: 'YOUR_LOCATION',
         };
 
-        var response = {
-            error:
-            {
-                message: 'Call failed with status code 500 and status message: Internal Server Error',
-            },
-        };
         const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/text-bison:predict`;
         fetchMock.postOnce(url, {
-            throws: new Error('Mocked error')
+            throws: new Error('Mocked error'),
         });
 
 
-        const result = await calculateSimilarityUsingVertexAI(1, sentence1, sentence2, config);
-        const expectedResponse = {
-            testCaseNum: 1,
-            status_code: 0,
-            output: "calculateSimilarityUsingVertexAI: Caught Exception for testCase#: 1 error: Error: Mocked error with stack: Error: Mocked error",
-        };
-        expect(fetchMock.called()).toBe(true);
-        expect(fetchMock.lastUrl().toLowerCase()).toBe(url.toLowerCase());
-        expect(result.status_code).toEqual(expectedResponse.status_code);
-        // check is result.output is a subset of expectedResponse.output
-        expect(result.output.includes(expectedResponse.output)).toBe(true);
+        try {
+            const result = await calculateSimilarityUsingVertexAI(1, sentence1, sentence2, config);
+            assert.fail();
+        } catch (err) {
+            expect(fetchMock.called()).toBe(true);
+            expect(fetchMock.lastUrl().toLowerCase()).toBe(url.toLowerCase());
+            expect(err.message).toBe('Mocked error');
+        }
+        
+        
     });
 
 });
@@ -120,7 +143,7 @@ describe('calculateSimilarityUsingVertexAI', () => {
         fetchMock.reset();
     });
         it('should return a list of search results for Extractive Answer', async () => {
-        const query = 'query';
+            const query = "What is Google's revenue for the year ending December 31, 2021";
         const config = {
             accessToken: 'YOUR_ACCESS_TOKEN',
             preamble: '',
@@ -191,8 +214,8 @@ describe('calculateSimilarityUsingVertexAI', () => {
             './test/data/snippets/test_vai_search_snippet_request.json',
             './test/data/snippets/test_vai_search_snippet_response.json');
     });
-    it('should return aan error when Vertex AI Search fails', async () => {
-        const query = 'query';
+    it('should return error when Vertex AI Search is not Authenticated', async () => {
+        const query = "What is Google's revenue for the year ending December 31, 2021";
         const config = {
             accessToken: 'YOUR_ACCESS_TOKEN',
             preamble: '',
@@ -210,13 +233,52 @@ describe('calculateSimilarityUsingVertexAI', () => {
             vertexAILocation: 'YOUR_LOCATION',
         };
 
-
-        await testRequestResponse(1, 401, config, query,
+        const { requestJson, url, expectedResponse } = mockVertexAISearchRequestResponse(1, 401, 
             './test/data/extractive_answer/test_vai_search_extractive_answer_request.json',
-            './test/data/not_authenticated.json');
+            './test/data/not_authenticated.json', config);
 
-
+        try {
+            const result = await callVertexAISearch(1, query, config);
+            assert.fail();
+        }
+        catch (err)
+        {
+            expect(err instanceof NotAuthenticatedError).toBe(true);
+            expect(err.message).toEqual("Request is missing required authentication credential. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.");
+        }
     }); 
+     it('should return error when Vertex AI Search return Quota error', async () => {
+         const query = "What is Google's revenue for the year ending December 31, 2021";
+         const config = {
+             accessToken: 'YOUR_ACCESS_TOKEN',
+             preamble: '',
+             extractiveContentSpec: {
+                 maxExtractiveAnswerCount: "2",
+                 maxExtractiveSegmentCount: "0",
+             },
+             summaryResultCount: 2,
+             model: "gemini-1.0-pro-001/answer_gen/v1",
+             useSemanticChunks: false,
+             ignoreAdversarialQuery: true,
+             ignoreNonSummarySeekingQuery: true,
+             vertexAISearchProjectNumber: 'YOUR_PROJECT_NUMBER',
+             vertexAISearchDataStoreName: 'YOUR_DATASTORE_NAME',
+             vertexAILocation: 'YOUR_LOCATION',
+         };
+
+         const { requestJson, url, expectedResponse } = mockVertexAISearchRequestResponse(1, 429,
+             './test/data/extractive_answer/test_vai_search_extractive_answer_request.json',
+             './test/data/not_authenticated.json', config);
+
+         try {
+             const result = await callVertexAISearch(1, query, config);
+             assert.fail();
+         }
+         catch (err) {
+             expect(err instanceof QuotaError).toBe(true);
+            
+         }
+     }); 
      it('should fail when fetch throws exception', async () => {
          const query = 'query';
          const config = {
@@ -241,19 +303,18 @@ describe('calculateSimilarityUsingVertexAI', () => {
          var response = fetchMock.postOnce(url, {
              throws: new Error('Mocked error')
          });
-         const result = await callVertexAISearch(1, query, config);
 
-         const expectedResponse = {
-             testCaseNum: 1,
-             status_code: 0,
-             output: "callVertexAISearch: Caught Exception for testCase#: 1 error: Error: Mocked error with stack: Error: Mocked error",
-         };
+         try {
+             const result = await callVertexAISearch(1, query, config);
+             assert.fail();
+             
+         } catch (err) { 
+             expect(fetchMock.called()).toBe(true);
+             expect(fetchMock.lastUrl().toLowerCase()).toBe(url.toLowerCase());
+             expect(err.message).toBe("Mocked error");
+         }
          
-         expect(fetchMock.called()).toBe(true);
-         expect(fetchMock.lastUrl().toLowerCase()).toBe(url.toLowerCase());
-         expect(result.status_code).toEqual(expectedResponse.status_code);
-         // check is result.output is a subset of expectedResponse.output
-         expect(result.output.includes(expectedResponse.output)).toBe(true);
+       
      }); 
 
 });
@@ -272,11 +333,7 @@ async function testRequestResponse(testCaseNum, expected_status_code, config, qu
     // Assert response is correct
     if (expected_status_code == 200) {
         expect(result).toEqual(expectedResponse);
-    } else if(expected_status_code >= 400) {
-        expect(JSON.stringify(result.output).includes("callVertexAISearch: Request failed for testCase")).toBe(true);
-    } else {
-        expect(JSON.stringify(result.output).includes("callVertexAISearch: Caught Exception for testCase")).toBe(true);
-    }
+    } 
     
 
 }

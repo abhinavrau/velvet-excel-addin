@@ -22,6 +22,8 @@ global.$ = $;
 global.JQuery = JQuery;
 
 const { OfficeMockObject } = pkg;
+export var testCaseRows = testCaseData.concat([
+    ["1", "What is Google's revenue for the year ending December 31, 2021", "Revenue is $2.2 billion", "Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.", "link1", "link2", "link3", "TRUE", "TRUE", "TRUE", "link1", "link2", "link3"]]);
 
 describe("When Execute Test is clicked ", () => {
 
@@ -124,7 +126,7 @@ describe("When Execute Test is clicked ", () => {
                             },
                             testCaseTable: {
                                 // Initiallize our data object that will get populated 
-                                data: Array(testCaseData.length).fill(null).map(() => Array(13).fill(null)),
+                                data: Array(testCaseRows.length).fill(null).map(() => Array(13).fill(null)),
                                 columns: {
                                     // return a column object that is used to popluate the values returned from VertexAI APIs.
                                     getItemOrNullObject: function (columnName) {
@@ -134,7 +136,7 @@ describe("When Execute Test is clicked ", () => {
                                             values: [[]],
                                             columnIndex: -1,
                                             load: function () {
-                                                columnIndex = testCaseData[0].indexOf(columnName);
+                                                columnIndex = testCaseRows[0].indexOf(columnName);
 
                                                 // If the column name is not found, return null
                                                 if (columnIndex === -1) {
@@ -142,7 +144,7 @@ describe("When Execute Test is clicked ", () => {
                                                 }
 
                                                 // Extract the values from the specified column
-                                                this.values = testCaseData.map(row => [row[columnIndex]]);
+                                                this.values = testCaseRows.map(row => [row[columnIndex]]);
                                                 return true;
                                             },
                                             getRange: function () {
@@ -241,25 +243,37 @@ describe("When Execute Test is clicked ", () => {
 
         
         // Mock the call for summary similarity
-        mockSimilarityUsingVertexAI(config, 'same');   
-        // Populate the test table
+        const { url: summaryMatchUrl, response: summaryResponse } = await mockSimilarityUsingVertexAI(config, 'same');   
+        // Execute the tests
         await runTests(config);
         
-        // Verify InspectionFile
+        // Verify mocks are called
         expect(fetchMock.called()).toBe(true);
-        // Assert request body is correct
-        expect(JSON.parse(fetchMock.lastCall()[1].body)).toEqual(requestJson);
-        // Assert URL is correct
-        expect(fetchMock.lastUrl().toLowerCase()).toBe(url.toLowerCase());
-
+       
+        //  check if vertex ai search
+        const callsToVertexAISearch = fetchMock.calls().filter(call  => call[0]=== url); 
+        // Check if body is sent correctly to vertex ai search
+        expect(callsToVertexAISearch[0][1] !== null).toBe(true);
+        expect(JSON.parse(callsToVertexAISearch[0][1].body)).toStrictEqual(requestJson);
+       
+        //  check if vertex ai is called for summary match
+        const callsToSummaryMatch = fetchMock.calls().filter(call => call[0] === summaryMatchUrl);
+        // Check if body is sent correctly to vertex ai search
+        expect(callsToSummaryMatch[0][1].body !== null).toBe(true);
+        
         // Check if return values get populated
-        // get the column index that is Actual Summary title
-        const columnIndex = testCaseData[0].indexOf("Actual Summary");
 
-        const actual_summary_cell = mockTestData.context.workbook.worksheets.tables
-            .testCaseTable.data[1][columnIndex].values;
-        expect(actual_summary_cell[0][0]).toEqual("Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.");
+        // Match  Actual Summary 
+        const { cell: actual_summary_cell, col_index: actual_summary_col_index } = getCellAndColumnIndexByName("Actual Summary", mockTestData);
+        expect(actual_summary_cell[0][0]).toEqual(testCaseRows[1][actual_summary_col_index]);
 
+        // Match  Summary Match 
+        const { cell: summary_match_cell, col_index: summary_match_col_index } = getCellAndColumnIndexByName("Summary Match", mockTestData);
+        expect(summary_match_cell[0][0]).toEqual(testCaseRows[1][summary_match_col_index]);
+
+        // Match first link match
+        //const { cell: first_link_match_cell, col_index: first_link_match_col_index } = getCellAndColumnIndexByName("First Link Match", mockTestData);
+        //expect(first_link_match_cell[0][0]).toEqual(testCaseRows[1][first_link_match_col_index]);
 
         $stub.restore();
 
@@ -270,6 +284,13 @@ describe("When Execute Test is clicked ", () => {
 
 
 });
+function getCellAndColumnIndexByName(column_name, mockTestData ) {
+    var col_index = testCaseRows[0].indexOf(column_name);
+
+    var cell = mockTestData.context.workbook.worksheets.tables
+        .testCaseTable.data[1][col_index].values;
+    return { cell, col_index };
+}
 
 async function mockSimilarityUsingVertexAI(config, returnVal) {
 
@@ -288,5 +309,6 @@ async function mockSimilarityUsingVertexAI(config, returnVal) {
         body: JSON.stringify(response)
     });
 
-    
+    return { url, response };
 }
+    
