@@ -62,11 +62,14 @@ export async function getConfig() {
     return config;
 }
 
+var stopProcessing;
 
 export async function executeTests(config) {
+    
     if (config == null) {
         return;
     }
+   
     await Excel.run(async (context) => {
         try {
 
@@ -130,8 +133,8 @@ export async function executeTests(config) {
 
             // map of promises
             const promiseMap = new Map();
-            let stopProcessing = false;
-            
+           
+            stopProcessing = false;
             // Loop through the test cases table ans run the tests
             while (processedCount <= countRows && id[processedCount][0] !== null && id[processedCount][0] !== "") {
                 
@@ -140,6 +143,11 @@ export async function executeTests(config) {
                 if (processedCount % config.batchSize === 0) {
                     // delay calls with apropriate time
                     await new Promise(r => setTimeout(r, config.timeBetweenCallsInSec * 1000));
+                }
+                // Stop processing if there errors
+                if (stopProcessing) {
+                    appendLog("Stopping execution.", null);
+                    break;
                 }
                 appendLog(`testCaseID: ${id[processedCount][0]} Start Processing.`);
                 showStatus(`Processing testCaseID: ${id[processedCount][0]}`, false);
@@ -164,11 +172,11 @@ export async function executeTests(config) {
                     .catch(error => {
                         var errorMessage = "";
                         if (error instanceof NotAuthenticatedError) {
-                            errorMessage = `User not Authenticated. Stopping execution. Re-authenticate and try again.`;
+                            errorMessage = `User not Authenticated. Re-authenticate and try again.`;
                             stopProcessing = true;
                         }
                         else if (error instanceof QuotaError) {
-                            errorMessage = `API Quota Exceeded for testCaseID: ${testCaseNum}  Stopping execution. Reduce test cases or increase timeouts.`;
+                            errorMessage = `API Quota Exceeded for testCaseID: ${testCaseNum}. Reduce test cases or increase timeouts.`;
                             stopProcessing = true;
                         }
                         else {
@@ -180,11 +188,7 @@ export async function executeTests(config) {
                         
                         
                     }));
-                // Stop processing if there errors
-                if (stopProcessing) {
-                    appendLog("Stopping execution.", null);
-                    break;
-                }
+                
                 processedCount++;
             } // end while
 
@@ -197,7 +201,7 @@ export async function executeTests(config) {
             if (processedCount <= countRows && ( id[processedCount][0] === null || id[processedCount][0] === "")) {
                 stoppedReason += ` Empty ID encountered after ${processedCount-1} test cases.`;
             }
-            var summary = `Finished! Successful: ${processedCount - numfails}. ${stoppedReason}`;
+            var summary = `Finished! Successful: ${(processedCount - numfails) - 1}. ${stoppedReason}`;
             appendLog(summary);
 
             showStatus(summary, numfails > 0);
@@ -217,6 +221,12 @@ export async function executeTests(config) {
     });
 
 }
+
+export async function stopTests() { 
+    stopProcessing = true; // Set the stop signal flag
+    appendLog("Cancel Tests Clicked. Stopping test execution...");
+}
+
 
 function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, link_3_Column, link_p0Column, link_top2Column, expectedLink1, expectedLink2, context) {
     var p0_result = null;
