@@ -12,7 +12,7 @@
               "snippet": "\u003cb\u003eRevenues\u003c/b\u003e Disaggregated \u003cb\u003eRevenues\u003c/b\u003e The following table presents \u003cb\u003erevenues\u003c/b\u003e disaggregated by type (in millions): \u003cb\u003eYear Ended\u003c/b\u003e December 31, 2020 2021 \u003cb\u003e2022 Google\u003c/b\u003e Search&nbsp;..."
             }
           ],
-          "link": "gs://cloud-samples-data/gen-app-builder/search/alphabet-investor-pdfs/2022_alphabet_annual_report.pdf",
+          "link": "link1",
           "title": "2022_alphabet_annual_report"
         }
       }
@@ -30,7 +30,7 @@
             }
           ],
           "title": "GOOG 10-K Q4 2022",
-          "link": "gs://cloud-samples-data/gen-app-builder/search/alphabet-investor-pdfs/20230203_alphabet_10K.pdf"
+          "link": "link2"
         }
       }
     },
@@ -47,7 +47,7 @@
               "snippet": "... \u003cb\u003eGoogle\u003c/b\u003e Services segment ... • Operating expenses were $20.8 \u003cb\u003ebillion\u003c/b\u003e, an increase of 26% \u003cb\u003eyear\u003c/b\u003e over \u003cb\u003eyear\u003c/b\u003e ... \u003cb\u003ebillion\u003c/b\u003e for the three months \u003cb\u003eended\u003c/b\u003e September 30, \u003cb\u003e2022\u003c/b\u003e."
             }
           ],
-          "link": "gs://cloud-samples-data/gen-app-builder/search/alphabet-investor-pdfs/20221025_alphabet_10Q.pdf"
+          "link": "link3"
         }
       }
     },

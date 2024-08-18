@@ -1,5 +1,6 @@
 
 import { configValues, testCaseData } from './common.js';
+import { appendError, appendLog, showStatus } from './ui.js';
 
 export async function createConfigTable() {
     await Excel.run(async (context) => {
@@ -8,7 +9,7 @@ export async function createConfigTable() {
             currentWorksheet.load("name");
             await context.sync();
             const worksheetName = currentWorksheet.name;
-            console.log(`TableName: ${worksheetName}.ConfigTable`);
+            
 
             var range = currentWorksheet.getRange('A1');
             range.values = [["Vertex AI Search Parameters"]];
@@ -30,9 +31,10 @@ export async function createConfigTable() {
             await context.sync();
 
         } catch (error) {
-            console.error('Error createTable:' + error);
-            showStatus(`Exception when creating sample data: ${JSON.stringify(error)}`, true);
-            throw error;
+            showStatus(`Exception when creating Config Table: ${error.message}`, true);
+            appendError('Error creating Config Table:', error);
+            
+            return;
             
         }
     });
@@ -60,11 +62,12 @@ export async function createDataTable() {
 
             await context.sync();
 
-            return
         } catch (error) {
-            console.error('Error createTable:' + error);
-            throw error;
-            //showStatus(`Exception when creating sample data: ${JSON.stringify(error)}`, true);
+           
+            showStatus(`Exception when creating Data Table: ${error.message}`, true);
+            appendError('Error creating Data Table:', error);
+            return;
+            
         }
     });
 

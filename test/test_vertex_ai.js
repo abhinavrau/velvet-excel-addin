@@ -1,14 +1,36 @@
 import expect from 'expect';
 import fetchMock from 'fetch-mock';
-
+import { default as $, default as JQuery } from 'jquery';
+import sinon from 'sinon';
 import { NotAuthenticatedError, QuotaError, summaryMatching_examples, summaryMatching_prompt } from "../src/common.js";
+import { showStatus } from '../src/ui.js';
 import { calculateSimilarityUsingVertexAI, callVertexAISearch } from '../src/vertex_ai.js';
 import { mockVertexAISearchRequestResponse } from './test_common.js';
 
+// mock the UI components
+global.showStatus = showStatus;
+global.$ = $;
+global.JQuery = JQuery;
+
 describe('calculateSimilarityUsingVertexAI', () => {
+
+    var $stub;
     beforeEach(() => {
+        // stub out jQuery calls
+         $stub = sinon.stub(globalThis, '$').returns({
+            empty: sinon.stub(),
+            append: sinon.stub(),
+             val: sinon.stub(),
+             tabulator: sinon.stub(),
+        });
+
         fetchMock.reset();
     });
+
+    afterEach(() => {
+        $stub.restore();
+    });
+
     it('should return a similarity  between two sentences', async () => {
         const sentence1 = 'sentece 1';
         const sentence2 = 'sentence 2';
@@ -139,9 +161,22 @@ describe('calculateSimilarityUsingVertexAI', () => {
 });
 
  describe('callVertexAISearch', () => {
-    beforeEach(() => {
-        fetchMock.reset();
-    });
+     var $stub;
+     beforeEach(() => {
+         // stub out jQuery calls
+         $stub = sinon.stub(globalThis, '$').returns({
+             empty: sinon.stub(),
+             append: sinon.stub(),
+             val: sinon.stub(),
+             tabulator: sinon.stub(),
+         });
+
+         fetchMock.reset();
+     });
+
+     afterEach(() => {
+         $stub.restore();
+     });
         it('should return a list of search results for Extractive Answer', async () => {
             const query = "What is Google's revenue for the year ending December 31, 2021";
         const config = {

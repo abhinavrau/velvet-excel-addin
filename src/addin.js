@@ -1,5 +1,4 @@
-import { showStatus } from "./ui.js";
-import { executeTests } from './velvet_runner.js';
+import { getConfig, executeTests } from './velvet_runner.js';
 import { createConfigTable, createDataTable } from './velvet_tables.js';
 
 // Initialize Office API
@@ -12,28 +11,15 @@ Office.onReady((info) => {
 });
 
 
-async function createTestTemplateTables() {
+export async function createTestTemplateTables() {
 
-    try {
-        await createConfigTable();
-    } catch (error) {
-        showStatus(`Exception when creating Config Table: ${JSON.stringify(error)}`, true);
-    }
-    try {
-        await createDataTable();
-    } catch (error) {
-        showStatus(`Exception when creating Data Table: ${JSON.stringify(error)}`, true);
-    }
-
+    await createConfigTable();
+    await createDataTable();
 }
 
-async function runTests() {
-    const status = await executeTests();
-    let message = "";
-    if (status.isError) {
-        message = `Error: ${status.message}. Number of tests failed: ${status.numFailed}`;
-    } else {
-        message = `Success: ${status.message} Num of tests done successfully ${status.numDone} Num of tests failed: ${status.numFailed}`;
-    }
-    showStatus(message, status.isError);
+export async  function runTests() {
+    const config = await getConfig();
+    if (config == null)
+        return;
+     await executeTests(config);
 }

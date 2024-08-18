@@ -1,33 +1,124 @@
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. -->
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <!-- Office JavaScript API -->
-    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script
+      type="text/javascript"
+      src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="https://code.jquery.com/ui/1.14.0/jquery-ui.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/npm/luxon@3.5.0/build/global/luxon.min.js"
+    ></script>
+    <link
+      href="https://unpkg.com/tabulator-tables@6.2.5/dist/css/tabulator.min.css"
+      rel="stylesheet"
+    />
+    <script
+      type="text/javascript"
+      src="https://unpkg.com/tabulator-tables@6.2.5/dist/js/tabulator.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="https://unpkg.com/tabulator-tables@6.2.5/dist/js/jquery_wrapper.js"
+    ></script>
+
     <script defer type="module" src="src/vertex_ai.js"></script>
     <script defer type="module" src="src/addin.js"></script>
-    <link rel="stylesheet" href="taskpane.css"/>
-     <title>Velvet</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
+    <link rel="stylesheet" href="taskpane.css" />
+    <title>Velvet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
 
-<body>
+  <body>
     <div class="container">
-        <h1 style="margin: 8px;">Vertex AI Search Eval Tool</h1>
-        
-        <p><button id="createTables">Create Test Template</button></p>
-      
-        <p>Access Token: <input type="text"  id="access-token" placeholder="Paste Access Token" size="100"/></p> 
-        
-        
-
-       </p> <button id="executeTests">Execute Tests</button></div></p>
-
+      <h1 class="title">Vertex AI Search Eval Tool</h1>
+      <section class="step">
+        <h2 class="step-title">1. Setup</h2>
+        <p><button id="createTables">Create Tables</button></p>
+        <p>
+          <label for="access-token">Access Token:</label>
+          <input
+            type="text"
+            id="access-token"
+            placeholder="Paste Access Token"
+            size="100"
+          />
+        </p>
+      </section>
+      <section class="step">
+        <h2 class="step-title">2. Run Tests</h2>
+        <p>
+          Modify Config Parameters. Populate test data in Test Table and Click
+          button below.
+        </p>
+        <button id="executeTests">Execute Tests</button>
+      </section>
+      <section class="status">
+        <h2 class="status-title">Status</h2>
         <div class="status"></div>
+      </section>
+      <section class="logs">
+        <button id="toggleLogs">Show/Hide Logs</button>
+        <div class="log-container">
+          <div id="log-pane"></div>
+        </div>
+      </section>
     </div>
-</body>
+  </body>
+  <script type="text/javascript">
+    // Create Tabulator table
+    $("#log-pane").tabulator({
+      layout: "fitDataStretch", // Adjust column widths to fit content
+      layoutColumnsOnNewData:true,
+      columns: [
+        {
+          title: "Time",
+          field: "time",
+          sorter: "time",
+          sorterParams: { format: "HH:mm:ss" },
+          minWidth: 80,
+          
+        },
+        {
+          title: "Level",
+          field: "level",
+          headerFilter: "list",
+          headerFilterParams: {
+            values: ["INFO", "ERROR"],
+          },
+          headerSort: false,
+          minWidth: 80,
+        },
+        {
+          title: "Message",
+          headerFilter: true,
+          headerSort: false,
+          field: "message",
+        },
+      ],
+      initialSort: [
+        { column: "time", dir: "desc" }, // Initial sort by time descending
+      ],
+    });
+    const toggleLogsButton = document.getElementById("toggleLogs");
+    const logPane = document.getElementById("log-pane");
 
-
-
+    toggleLogsButton.addEventListener("click", () => {
+      if (logPane.style.display === "none") {
+        logPane.style.display = "block"; // Or 'inline' depending on your layout
+      } else {
+        logPane.style.display = "none";
+      }
+    });
+  </script>
 </html>

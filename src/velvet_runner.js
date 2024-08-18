@@ -1,8 +1,8 @@
 
 import { NotAuthenticatedError, QuotaError } from "./common.js";
-import { calculateSimilarityUsingVertexAI, callVertexAISearch } from "./vertex_ai.js";
+import { callVertexAISearch } from "./vertex_ai.js";
 
-import { showStatus } from "./ui.js";
+import { appendError, appendLog, showStatus } from "./ui.js";
 
 
 
@@ -12,7 +12,7 @@ function getColumn(table, columnName) {
         column.load();
         return column;
     } catch (error) {
-        console.log('Error getColumn: ' + error);
+        appendError('Error getColumn:',error);
         showStatus(`Exception when getting column: ${JSON.stringify(error)}`, true);
     }
 }
@@ -55,23 +55,18 @@ export async function getConfig() {
         } catch (error) {
             console.error(`Caught Exception in createConfig: ${error} `);
             showStatus(`Caught Exception in createConfig: ${error}`, true);
-            throw error;
+            return null;
         }
 
     });
     return config;
 }
-export async function executeTests() {
-
-    const config = await getConfig();
-    await runTests(config);
-}
 
 
-
-
-export async function runTests(config) {
-
+export async function executeTests(config) {
+    if (config == null) {
+        return;
+    }
     await Excel.run(async (context) => {
         try {
 
@@ -99,9 +94,10 @@ export async function runTests(config) {
             testCasesTable.rows.load('count');
             await context.sync();
 
-            if (config.accessToken === "") {
-                showStatus(`Error: executeTests: Access token is empty`, true);
-                throw error("Access token is empty");
+            if (config.accessToken === null || config.accessToken === "") {
+                showStatus(`Access token is empty`, true);
+                appendError(`Error in runTests: Access token is empty`, null);
+                return;
             }
 
 
@@ -112,17 +108,17 @@ export async function runTests(config) {
 
             if (!isValid) {
                 // None, multiple, or all variables are non-null    
-                showStatus(`Error: executeTests: Only one of the maxExtractiveAnswerCount, maxExtractiveSegmentCount, or maxSnippetCount should be set to a non-zero value`, true);
+                showStatus(`Error in runTests: Only one of the maxExtractiveAnswerCount, maxExtractiveSegmentCount, or maxSnippetCount should be set to a non-zero value`, true);
                 return;
             }
 
             if (queryColumn.isNullObject || idColumn.isNullObject) {
-                showStatus(`Error: executeTests: No Query or ID column found in Test Cases Table. Make sure there is an ID and Query column in the Test Cases Table.`, true);
+                showStatus(`Error in runTests: No Query or ID column found in Test Cases Table. Make sure there is an ID and Query column in the Test Cases Table.`, true);
                 return;
             }
 
 
-            let rowNum = 1;
+            let processedCount = 1;
             let id = idColumn.values;
             let query = queryColumn.values;
             let expectedSummary = expectedSummaryColumn.values;
@@ -130,71 +126,82 @@ export async function runTests(config) {
             let expectedLink2 = expected_link_2_Column.values;
 
             let numfails = 0;
-            
+            const countRows = testCasesTable.rows.count;
 
             // map of promises
             const promiseMap = new Map();
             let stopProcessing = false;
-            //console.log('Number of rows in table:' + table.rows.count);
+            
             // Loop through the test cases table ans run the tests
-            while (rowNum <= testCasesTable.rows.count && id[rowNum][0] !== null && id[rowNum][0] !== "") {
-                console.log('ID:' + id[rowNum][0]);
-                console.log('Query: ' + query[rowNum][0]);
+            while (processedCount <= countRows && id[processedCount][0] !== null && id[processedCount][0] !== "") {
+                
 
                 // Batch the calls to Vertex AI since there are throuput checks in place.\
-                if (rowNum % config.batchSize === 0) {
+                if (processedCount % config.batchSize === 0) {
                     // delay calls with apropriate time
                     await new Promise(r => setTimeout(r, config.timeBetweenCallsInSec * 1000));
                 }
-
+                appendLog(`testCaseID: ${id[processedCount][0]} Start Processing.`);
+                showStatus(`Processing testCaseID: ${id[processedCount][0]}`, false);
                 // Call Vertex AI Search asynchronously and add the promise to promiseMap
-                promiseMap.set(id[rowNum][0], callVertexAISearch(rowNum, query[rowNum][0], config)
+                promiseMap.set(id[processedCount][0], callVertexAISearch(processedCount, query[processedCount][0], config)
                     .then(result => {
                         let response = result.output;
                         let testCaseNum = result.testCaseNum;
-
+                        
                         // Check the summary first
                         if (response.hasOwnProperty('summary')) {
-                            console.log("Got Summary");
                             processSummary(testCaseNum, response, actualSummaryColumn, expectedSummary, config, summaryScoreColumn, context);
+                            appendLog(`testCaseID: ${testCaseNum} Processed Summary.`);
                         }
                         // Check the documents references
                         if (response.hasOwnProperty('results')) {
-                            console.log("Got links");
                             checkDocumentLinks(testCaseNum, response, link_1_Column, link_2_Column, link_3_Column, link_p0Column, link_top2Column, expectedLink1, expectedLink2, context);
+                            appendLog(`testCaseID: ${testCaseNum} Processed Doc Links.`);
                         }
                        
-                        showStatus(`Processed ${rowNum} test cases.`, false);
                     })
                     .catch(error => {
-                        
+                        var errorMessage = "";
                         if (error instanceof NotAuthenticatedError) {
+                            errorMessage = `User not Authenticated. Stopping execution. Re-authenticate and try again.`;
                             stopProcessing = true;
-                            showStatus(`User not Authenticated. Stopping execution. Re-authenticate and try again. \n Processed ${rowNum} test cases.`, true);
                         }
-                        if (error instanceof QuotaError) {
+                        else if (error instanceof QuotaError) {
+                            errorMessage = `API Quota Exceeded for testCaseID: ${testCaseNum}  Stopping execution. Reduce test cases or increase timeouts.`;
                             stopProcessing = true;
-                            showStatus(`API Quota Exceeded. Stopping execution. Reduce test cases or increase timeouts. \n Processed ${rowNum} test cases.`, true);
                         }
                         else {
-                            stopProcessing = true;
-                            // ouput stacktrace for error 
-                            console.error(`executeTests: Error in row: ${testCaseNum} numFails:${numfails} error: ${error} with stack: ${error.stack}`);
-                            const errorMessage =  `executeTests: Error for row: ${testCaseNum}  error: ${error} with stack: ${error.stack}`;
-                            showStatus(`Errors!! Stopping execution. Processed ${rowNum} test cases. \n Error: ${errorMessage}`, true);
+                            errorMessage = `Error for testCaseID: ${testCaseNum}  error: ${error} with stack: ${error.stack}`;
+                            
                         }
-
+                        numfails++;
+                        appendError(errorMessage, error);
+                        
+                        
                     }));
                 // Stop processing if there errors
                 if (stopProcessing) {
+                    appendLog("Stopping execution.", null);
                     break;
                 }
-                rowNum++;
+                processedCount++;
             } // end while
 
             // wait for all the calls to finish
             await Promise.allSettled(promiseMap.values());
+            var stoppedReason = "";
+            if (numfails > 0) {
+                stoppedReason = `Failed: ${numfails}. See logs for details.`;
+            }
+            if (processedCount <= countRows && ( id[processedCount][0] === null || id[processedCount][0] === "")) {
+                stoppedReason += ` Empty ID encountered after ${processedCount-1} test cases.`;
+            }
+            var summary = `Finished! Successful: ${processedCount - numfails}. ${stoppedReason}`;
+            appendLog(summary);
 
+            showStatus(summary, numfails > 0);
+            
             // autofit the content
             currentWorksheet.getUsedRange().format.autofitColumns();
             currentWorksheet.getUsedRange().format.autofitRows();
@@ -214,31 +221,34 @@ export async function runTests(config) {
 function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, link_3_Column, link_p0Column, link_top2Column, expectedLink1, expectedLink2, context) {
     var p0_result = null;
     var p2_result = null;
+    const link_1_cell = link_1_Column.getRange().getCell(rowNum, 0);
+    const link_2_cell = link_2_Column.getRange().getCell(rowNum, 0);
+    const link_3_cell = link_3_Column.getRange().getCell(rowNum, 0);
+
     // Check for document info and linksin the metadata if it exists
     if (result.results[0].document.hasOwnProperty('structData')) {
-        link_1_Column.getRange().getCell(rowNum, 0).values = [[result.results[0].document.structData.sharepoint_ref]];
+        link_1_cell.values = [[result.results[0].document.structData.sharepoint_ref]];
         p0_result = result.results[0].document.structData.title;
     } else if (result.results[0].document.hasOwnProperty('derivedStructData')) {
-        link_1_Column.getRange().getCell(rowNum, 0).values = [[result.results[0].document.derivedStructData.link]];
+        link_1_cell.values = [[result.results[0].document.derivedStructData.link]];
         p0_result = result.results[0].document.derivedStructData.link;
     }
     if (result.results[1].document.hasOwnProperty('structData')) {
-        link_2_Column.getRange().getCell(rowNum, 0).values = [[result.results[1].document.structData.sharepoint_ref]];
+        link_2_cell.values = [[result.results[1].document.structData.sharepoint_ref]];
     } else if (result.results[1].document.hasOwnProperty('derivedStructData')) {
-        link_2_Column.getRange().getCell(rowNum, 0).values = [[result.results[1].document.derivedStructData.link]];
+        link_2_cell.values = [[result.results[1].document.derivedStructData.link]];
         p2_result = result.results[1].document.derivedStructData.link;
     }
     if (result.results[2].document.hasOwnProperty('structData')) {
-        link_3_Column.getRange().getCell(rowNum, 0).values = [[result.results[2].document.structData.sharepoint_ref]];
+        link_3_cell.values = [[result.results[2].document.structData.sharepoint_ref]];
     } else if (result.results[2].document.hasOwnProperty('derivedStructData')) {
-        link_3_Column.getRange().getCell(rowNum, 0).values = [[result.results[2].document.derivedStructData.link]];
+        link_3_cell.values = [[result.results[2].document.derivedStructData.link]];
     }
 
     // clear the formatting in the cells 
     const link_p0_cell = link_p0Column.getRange().getCell(rowNum, 0);
     link_p0_cell.clear(Excel.ClearApplyTo.formats);
-    const link1_cell = link_1_Column.getRange().getCell(rowNum, 0);
-    link1_cell.clear(Excel.ClearApplyTo.formats);
+    link_1_cell.clear(Excel.ClearApplyTo.formats);
     const top2_cell = link_top2Column.getRange().getCell(rowNum, 0);
     top2_cell.clear(Excel.ClearApplyTo.formats);
 
@@ -248,7 +258,7 @@ function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, link_3
     } else {
         link_p0_cell.values = [["FALSE"]];
         link_p0_cell.format.fill.color = '#FFCCCB';
-        link1_cell.format.fill.color = '#FFCCCB';
+        link_1_cell.format.fill.color = '#FFCCCB';
 
     }
 
@@ -266,7 +276,7 @@ function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, link_3
 }
 
 async function processSummary(rowNum, result, actualSummaryColumn, expectedSummary, config, summaryScoreColumn, context) {
-    console.log('Summary: ' + result.summary.summaryText);
+    
     const cell = actualSummaryColumn.getRange().getCell(rowNum, 0);
     cell.clear(Excel.ClearApplyTo.formats);
     cell.values = [[result.summary.summaryText]];
@@ -282,7 +292,6 @@ async function processSummary(rowNum, result, actualSummaryColumn, expectedSumma
             const response = await calculateSimilarityUsingVertexAI(rowNum, result.summary.summaryText, expectedSummary[rowNum][0], config);
             const score = response.output;
 
-            //console.log('result.rowNum ' + result.rowNum + ' score: ' + score);
             if (score.trim() === 'same') {
                 score_cell.values = [["TRUE"]];
 

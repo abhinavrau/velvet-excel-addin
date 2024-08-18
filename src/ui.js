@@ -1,7 +1,6 @@
 
 
 
-
 export function showStatus(message, isError) {
     $('.status').empty();
     
@@ -15,4 +14,26 @@ export function showStatus(message, isError) {
     }));
         
     $('.status').append(element);
+}
+
+export function appendLog(message) {
+    appendError(message, null);
+}
+export function appendError(message, error) {
+   
+
+    const newLogEntry = {
+        time: new Date().toLocaleTimeString(), // Get only time
+        level: error !== null ? "ERROR" : "INFO",
+        message: error !== null ? message + '\n' + error.message : message
+    };
+
+    $("#log-pane").tabulator("addRow", newLogEntry, "top"); // Add the new log entry to the top of the table
+
+    if (error !== null) {
+        console.error(message + '\n' + error.message);
+    } else {
+        console.log(message);
+    }
+
 }

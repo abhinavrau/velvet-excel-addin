@@ -1,5 +1,6 @@
 
 import { NotAuthenticatedError, QuotaError, summaryMatching_examples, summaryMatching_prompt } from "./common.js";
+import { appendLog } from "./ui.js";
 
 export async function callVertexAISearch(testCaseNum, query, config) {
     var status;
@@ -75,7 +76,7 @@ export async function callVertexAISearch(testCaseNum, query, config) {
     } else {
         output = await response.json();
 
-        console.log(`callVertexAISearch: Finished Successfully row: ${testCaseNum}`);
+        appendLog(`testCaseID: ${testCaseNum}: Search Query Finished Successfully`);
     }
     status = response.status;
 
@@ -126,8 +127,7 @@ export async function calculateSimilarityUsingVertexAI(testCaseNum, sentence1, s
     });
 
     if (!response.ok) {
-        const log = `calculateSimilarityUsingVertexAI: Request failed with for testCase#: ${testCaseNum} error: ${response.status}`;
-        console.error(log);
+        
         if (response.status === 401) {
             const json = await response.json();
             throw new NotAuthenticatedError(json.error.message);
@@ -145,6 +145,7 @@ export async function calculateSimilarityUsingVertexAI(testCaseNum, sentence1, s
         output = json.predictions[0].content;
     }
     status = response.status;
+    appendLog(`testCaseID: ${testCaseNum}: SummaryMatch Finished Successfully `);
 
     return { testCaseNum: testCaseNum, status_code: status, output: `${output}` };
 }

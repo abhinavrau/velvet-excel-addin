@@ -20,11 +20,25 @@ export const configValues = [
 
 
 export const testCaseData = [
-    ["ID", "Query", "Expected Summary", "Actual Summary", "Expected Link 1", "Expected Link 2", "Expected Link 3", "Summary Match", "First Link Match", "Link in Top 2", "Actual Link 1", "Actual Link 2", "Actual Link 3"],
+    [
+        "ID",
+        "Query",
+        "Expected Summary",
+        "Actual Summary",
+        "Expected Link 1",
+        "Expected Link 2",
+        "Expected Link 3",
+        "Summary Match",
+        "First Link Match",
+        "Link in Top 2",
+        "Actual Link 1",
+        "Actual Link 2",
+        "Actual Link 3",
+    ],
 ];
 
 export var summaryMatching_prompt = "You will get two answers to a question, you should determine if they are semantically similar or not. ";
-export var summaryMatching_examples =  " examples - answer_1: I was created by X. answer_2: X created me. output:same "
+export var summaryMatching_examples = " examples - answer_1: I was created by X. answer_2: X created me. output:same "
     + "answer_1:There are 52 days in a year. answer_2: A year is fairly long. output:different ";
 
 

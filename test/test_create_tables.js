@@ -2,13 +2,19 @@
 import expect from 'expect';
 import pkg from 'office-addin-mock';
 
+import { default as $, default as JQuery } from 'jquery';
+
+import sinon from 'sinon';
 import { showStatus } from '../src/ui.js';
 import { createConfigTable, createDataTable } from '../src/velvet_tables.js';
 import { calculateSimilarityUsingVertexAI, callVertexAISearch } from '../src/vertex_ai.js';
 
 
 import { configValues, testCaseData } from '../src/common.js';
+// mock the UI components
 global.showStatus = showStatus;
+global.$ = $;
+global.JQuery = JQuery;
 
 global.callVertexAISearch = callVertexAISearch;
 global.calculateSimilarityUsingVertexAI = calculateSimilarityUsingVertexAI;
@@ -20,8 +26,15 @@ const { OfficeMockObject } = pkg;
 describe("When Create Test Template Tables is clicked", () => {
 
     let mockData;
-
+    var $stub;
     beforeEach(() => {
+         $stub = sinon.stub(globalThis, '$').returns({
+            empty: sinon.stub(),
+            append: sinon.stub(),
+            val: sinon.stub(),
+            tabulator: sinon.stub(),
+        });
+
         mockData = {
             context: {
                 workbook: {
@@ -100,7 +113,9 @@ describe("When Create Test Template Tables is clicked", () => {
             },
         }
     });
-
+    afterEach(() => {
+        $stub.restore();
+    });
 
     it("should create the Config table with the correct name and headers", async () => {
 

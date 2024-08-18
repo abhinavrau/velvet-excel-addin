@@ -6,30 +6,71 @@ import pkg from 'office-addin-mock';
 import sinon from 'sinon';
 
 import { showStatus } from '../src/ui.js';
-import { getConfig, runTests } from '../src/velvet_runner.js';
+import { executeTests, getConfig } from '../src/velvet_runner.js';
 import { createConfigTable, createDataTable } from '../src/velvet_tables.js';
 import { calculateSimilarityUsingVertexAI, callVertexAISearch } from '../src/vertex_ai.js';
 import { mockVertexAISearchRequestResponse } from './test_common.js';
 
 import { configValues, testCaseData } from '../src/common.js';
 
+// mock the UI components
 global.showStatus = showStatus;
+global.$ = $;
+global.JQuery = JQuery;
+
 
 global.callVertexAISearch = callVertexAISearch;
 global.calculateSimilarityUsingVertexAI = calculateSimilarityUsingVertexAI;
 
-global.$ = $;
-global.JQuery = JQuery;
+
 
 const { OfficeMockObject } = pkg;
 export var testCaseRows = testCaseData.concat([
-    ["1", "What is Google's revenue for the year ending December 31, 2021", "Revenue is $2.2 billion", "Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.", "link1", "link2", "link3", "TRUE", "TRUE", "TRUE", "link1", "link2", "link3"]]);
+    [
+        "1", // ID
+        "What is Google's revenue for the year ending December 31, 2021", //Query
+        "Revenue is $2.2 billion",//Expected Summary
+        "Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.", // Actual Summary
+        "link1", //Expected Link 1
+        "link2", //Expected Link 2
+        "link3", // Expected Link 3
+        "TRUE", // Summary Match
+        "TRUE",// First Link Match
+        "TRUE", // Link in Top 2
+        "link1", // Actual Link 1
+        "link2", // Actual Link 2
+        "link3", // Actual Link 3
+    ],
+    [
+        "2", // ID
+        "What is Google's revenue for the year ending December 31, 2021", //Query
+        "Revenue is $2.2 billion",//Expected Summary
+        "Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.", // Actual Summary
+        "link1", //Expected Link 1
+        "link2", //Expected Link 2
+        "link3", // Expected Link 3
+        "TRUE", // Summary Match
+        "TRUE",// First Link Match
+        "TRUE", // Link in Top 2
+        "link1", // Actual Link 1
+        "link2", // Actual Link 2
+        "link3", // Actual Link 3
+    ]
+]);
 
 describe("When Execute Test is clicked ", () => {
 
     var mockTestData;
-
+    var $stub;
     beforeEach(() => {
+        // stub out jQuery calls
+        $stub = sinon.stub(globalThis, '$').returns({
+            empty: sinon.stub(),
+            append: sinon.stub(),
+            val: sinon.stub(),
+            tabulator: sinon.stub(),
+        });
+
         fetchMock.reset();
 
         mockTestData = {
@@ -153,8 +194,8 @@ describe("When Execute Test is clicked ", () => {
 
                                                         // create a cell object and keep track of it in the data array 
                                                         // Create a cell object
-                                                        var cell = {
-                                                            values: [[]],
+                                                        var cell =  {
+                                                            values: [[""]],
                                                             clear: function (arg) { },
                                                             format: {
                                                                 font: {
@@ -200,6 +241,11 @@ describe("When Execute Test is clicked ", () => {
         }
     });
 
+    afterEach(() => {
+        $stub.restore();
+    });
+
+
     it("should populate the Test Data Table with the correct values", async () => {
 
 
@@ -213,26 +259,19 @@ describe("When Execute Test is clicked ", () => {
         const showStatusSpy = sinon.spy(globalThis, 'showStatus');
 
         // Simulate creating the Config table
-        await createConfigTable();
-        // Fail the test ifshow status is called
-        expect(showStatusSpy.notCalled).toBe(true);
-
-        // Simulate creating the Data table
         await createDataTable();
         // Fail the test ifshow status is called
         expect(showStatusSpy.notCalled).toBe(true);
 
+        // Simulate creating the Config table
+        await createConfigTable();
+        // Fail the test ifshow status is called
+        expect(showStatusSpy.notCalled).toBe(true);
 
-        // stub out jQuery calls
-        const $stub = sinon.stub(globalThis, '$').returns({
-            empty: sinon.stub(),
-            append: sinon.stub(),
-            val: sinon.stub(),
-        });
 
         // Get the config parameters from the config table
         const config = await getConfig();
-
+        
         // Prepare the request response mock the call to VertexAISearch
         const { requestJson, url, expectedResponse } = mockVertexAISearchRequestResponse(
             1,
@@ -241,27 +280,27 @@ describe("When Execute Test is clicked ", () => {
             './test/data/extractive_answer/test_vai_search_extractive_answer_response.json',
             config);
 
-        
+
         // Mock the call for summary similarity
-        const { url: summaryMatchUrl, response: summaryResponse } = await mockSimilarityUsingVertexAI(config, 'same');   
+        const { url: summaryMatchUrl, response: summaryResponse } = await mockSimilarityUsingVertexAI(config, 'same');
         // Execute the tests
-        await runTests(config);
-        
+        await executeTests(config);
+
         // Verify mocks are called
         expect(fetchMock.called()).toBe(true);
-       
-        //  check if vertex ai search
-        const callsToVertexAISearch = fetchMock.calls().filter(call  => call[0]=== url); 
+
+        //  check if vertex ai search is called
+        const callsToVertexAISearch = fetchMock.calls().filter(call => call[0] === url);
         // Check if body is sent correctly to vertex ai search
         expect(callsToVertexAISearch[0][1] !== null).toBe(true);
         expect(JSON.parse(callsToVertexAISearch[0][1].body)).toStrictEqual(requestJson);
-       
+
         //  check if vertex ai is called for summary match
         const callsToSummaryMatch = fetchMock.calls().filter(call => call[0] === summaryMatchUrl);
         // Check if body is sent correctly to vertex ai search
         expect(callsToSummaryMatch[0][1].body !== null).toBe(true);
-        
-        // Check if return values get populated
+
+        // Check if  values get populated
 
         // Match  Actual Summary 
         const { cell: actual_summary_cell, col_index: actual_summary_col_index } = getCellAndColumnIndexByName("Actual Summary", mockTestData);
@@ -272,10 +311,28 @@ describe("When Execute Test is clicked ", () => {
         expect(summary_match_cell[0][0]).toEqual(testCaseRows[1][summary_match_col_index]);
 
         // Match first link match
-        //const { cell: first_link_match_cell, col_index: first_link_match_col_index } = getCellAndColumnIndexByName("First Link Match", mockTestData);
-        //expect(first_link_match_cell[0][0]).toEqual(testCaseRows[1][first_link_match_col_index]);
+        const { cell: first_link_match_cell, col_index: first_link_match_col_index } = getCellAndColumnIndexByName("First Link Match", mockTestData);
+        expect(first_link_match_cell[0][0]).toEqual(testCaseRows[1][first_link_match_col_index]);
 
-        $stub.restore();
+        // Match link in top 2
+        const { cell: top2_link_match_cell, col_index: top2_link_match_col_index } = getCellAndColumnIndexByName("Link in Top 2", mockTestData);
+        expect(top2_link_match_cell[0][0]).toEqual(testCaseRows[1][top2_link_match_col_index]);
+
+
+        // Match links
+        const {  col_index: expected_link1_col_index } = getCellAndColumnIndexByName("Expected Link 1", mockTestData);
+        const { cell: actual_link1_cell} = getCellAndColumnIndexByName("Actual Link 1", mockTestData);
+        expect(actual_link1_cell[0][0]).toEqual(testCaseRows[1][expected_link1_col_index]);
+
+        const { col_index: expected_link2_col_index } = getCellAndColumnIndexByName("Expected Link 2", mockTestData);
+        const { cell: actual_link2_cell } = getCellAndColumnIndexByName("Actual Link 2", mockTestData);
+        expect(actual_link2_cell[0][0]).toEqual(testCaseRows[1][expected_link2_col_index]);
+
+        const { col_index: expected_link3_col_index } = getCellAndColumnIndexByName("Expected Link 3", mockTestData);
+        const { cell: actual_link3_cell } = getCellAndColumnIndexByName("Actual Link 3", mockTestData);
+        expect(actual_link3_cell[0][0]).toEqual(testCaseRows[1][expected_link3_col_index]);
+
+      
 
 
     });
@@ -284,11 +341,12 @@ describe("When Execute Test is clicked ", () => {
 
 
 });
-function getCellAndColumnIndexByName(column_name, mockTestData ) {
+function getCellAndColumnIndexByName(column_name, mockTestData) {
     var col_index = testCaseRows[0].indexOf(column_name);
 
     var cell = mockTestData.context.workbook.worksheets.tables
-        .testCaseTable.data[1][col_index].values;
+        .testCaseTable.data[1][col_index] !== null ? mockTestData.context.workbook.worksheets.tables
+            .testCaseTable.data[1][col_index].values : null;
     return { cell, col_index };
 }
 
@@ -311,4 +369,3 @@ async function mockSimilarityUsingVertexAI(config, returnVal) {
 
     return { url, response };
 }
-    
