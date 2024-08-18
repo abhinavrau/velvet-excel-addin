@@ -7,7 +7,6 @@ import { default as $, default as JQuery } from 'jquery';
 import sinon from 'sinon';
 import { showStatus } from '../src/ui.js';
 import { createConfigTable, createDataTable } from '../src/velvet_tables.js';
-import { calculateSimilarityUsingVertexAI, callVertexAISearch } from '../src/vertex_ai.js';
 
 
 import { configValues, testCaseData } from '../src/common.js';
@@ -16,8 +15,6 @@ global.showStatus = showStatus;
 global.$ = $;
 global.JQuery = JQuery;
 
-global.callVertexAISearch = callVertexAISearch;
-global.calculateSimilarityUsingVertexAI = calculateSimilarityUsingVertexAI;
 
 
 const { OfficeMockObject } = pkg;

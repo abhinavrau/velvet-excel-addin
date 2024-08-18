@@ -2,7 +2,7 @@
 import { NotAuthenticatedError, QuotaError, summaryMatching_examples, summaryMatching_prompt } from "./common.js";
 import { appendLog } from "./ui.js";
 
-export async function callVertexAISearch(testCaseNum, query, config) {
+export async function callVertexAISearch(testCaseRowNum, query, config) {
     var status;
     var output;
 
@@ -58,7 +58,7 @@ export async function callVertexAISearch(testCaseNum, query, config) {
    
     if (!response.ok) {
         
-        const log = `callVertexAISearch: Request failed for testCase#: ${testCaseNum} error: ${response.status}`;
+        const log = `callVertexAISearch: Request failed for testCase#: ${testCaseRowNum} error: ${response.status}`;
         console.error(log);
         if (response.status === 401) {
             const json = await response.json();
@@ -76,11 +76,11 @@ export async function callVertexAISearch(testCaseNum, query, config) {
     } else {
         output = await response.json();
 
-        appendLog(`testCaseID: ${testCaseNum}: Search Query Finished Successfully`);
+        appendLog(`testCaseID: ${testCaseRowNum}: Search Query Finished Successfully`);
     }
     status = response.status;
 
-    return { testCaseNum: testCaseNum, status_code: status, output: output };
+    return { testCaseRowNum: testCaseRowNum, status_code: status, output: output };
 
 }
 

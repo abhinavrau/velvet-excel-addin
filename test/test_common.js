@@ -17,7 +17,7 @@ export function mockVertexAISearchRequestResponse(testCaseNum, expected_status_c
 
     // expected response with row number
     const expectedResponse = {
-        testCaseNum: testCaseNum,
+        testCaseRowNum: testCaseNum,
         status_code: expected_status_code,
         output: responseJson
     };

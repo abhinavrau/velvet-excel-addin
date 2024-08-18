@@ -1,6 +1,6 @@
 
 import { NotAuthenticatedError, QuotaError } from "./common.js";
-import { callVertexAISearch } from "./vertex_ai.js";
+import { calculateSimilarityUsingVertexAI, callVertexAISearch } from "./vertex_ai.js";
 
 import { appendError, appendLog, showStatus } from "./ui.js";
 
@@ -152,20 +152,20 @@ export async function executeTests(config) {
                 appendLog(`testCaseID: ${id[processedCount][0]} Start Processing.`);
                 showStatus(`Processing testCaseID: ${id[processedCount][0]}`, false);
                 // Call Vertex AI Search asynchronously and add the promise to promiseMap
-                promiseMap.set(id[processedCount][0], callVertexAISearch(processedCount, query[processedCount][0], config)
-                    .then(result => {
+                promiseMap.set(processedCount, callVertexAISearch(processedCount, query[processedCount][0], config)
+                    .then(async result => {
                         let response = result.output;
-                        let testCaseNum = result.testCaseNum;
+                        let testCaseRowNum = result.testCaseRowNum;
                         
                         // Check the summary first
                         if (response.hasOwnProperty('summary')) {
-                            processSummary(testCaseNum, response, actualSummaryColumn, expectedSummary, config, summaryScoreColumn, context);
-                            appendLog(`testCaseID: ${testCaseNum} Processed Summary.`);
+                            await processSummary(testCaseRowNum, response, actualSummaryColumn, expectedSummary, config, summaryScoreColumn, context);
+                            appendLog(`testCaseID: ${testCaseRowNum} Processed Summary.`);
                         }
                         // Check the documents references
                         if (response.hasOwnProperty('results')) {
-                            checkDocumentLinks(testCaseNum, response, link_1_Column, link_2_Column, link_3_Column, link_p0Column, link_top2Column, expectedLink1, expectedLink2, context);
-                            appendLog(`testCaseID: ${testCaseNum} Processed Doc Links.`);
+                            checkDocumentLinks(testCaseRowNum, response, link_1_Column, link_2_Column, link_3_Column, link_p0Column, link_top2Column, expectedLink1, expectedLink2, context);
+                            appendLog(`testCaseID: ${testCaseRowNum} Processed Doc Links.`);
                         }
                        
                     })
@@ -284,9 +284,9 @@ function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, link_3
     }
     context.sync();
 }
-
-async function processSummary(rowNum, result, actualSummaryColumn, expectedSummary, config, summaryScoreColumn, context) {
+ async function processSummary(rowNum, result, actualSummaryColumn, expectedSummary, config, summaryScoreColumn, context) {
     
+     // Set the actual summary
     const cell = actualSummaryColumn.getRange().getCell(rowNum, 0);
     cell.clear(Excel.ClearApplyTo.formats);
     cell.values = [[result.summary.summaryText]];
@@ -305,23 +305,25 @@ async function processSummary(rowNum, result, actualSummaryColumn, expectedSumma
             if (score.trim() === 'same') {
                 score_cell.values = [["TRUE"]];
 
-            } else if (score.trim() === 'different') {
+            } else  {
                 score_cell.values = [["FALSE"]];
                 score_cell.format.fill.color = '#FFCCCB';
                 const actualSummarycell = actualSummaryColumn.getRange().getCell(rowNum, 0);
                 actualSummarycell.format.fill.color = '#FFCCCB';
 
             } 
-        } catch(err)
-        {
+        } catch(err) {
             // put the error in the cell.
             score_cell.values = [[err.message]];
             score_cell.format.fill.color = '#FFCCCB';
             const actualSummarycell = actualSummaryColumn.getRange().getCell(rowNum, 0);
             actualSummarycell.format.fill.color = '#FFCCCB';
         }
+        finally {
+            context.sync();
+        }
        
     }
-    context.sync();
+    
 }
 
