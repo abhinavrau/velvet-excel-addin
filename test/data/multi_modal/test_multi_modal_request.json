@@ -1,0 +1,43 @@
+{
+    "contents": [
+        {
+            "role": "user",
+            "parts": [
+                {
+                    "fileData": {
+                        "mimeType": "application/pdf",
+                        "fileUri": "gs://argolis-arau-gemini-bank/Consumer Deposit Product APY Rate Sheet.pdf"
+                    }
+                },
+                {
+                    "text": "Generate 2 questions with expected answers from the attached document. Return it in a json format"
+                }
+            ]
+        }
+    ],
+    "generationConfig": {
+        "maxOutputTokens": 8192,
+        "temperature": 1,
+        "topP": 0.95,
+        "response_mime_type": "application/json"
+
+    },
+    "safetySettings": [
+        {
+            "category": "HARM_CATEGORY_HATE_SPEECH",
+            "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+            "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+            "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+            "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+            "category": "HARM_CATEGORY_HARASSMENT",
+            "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+        }
+    ]
+}

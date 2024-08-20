@@ -1,0 +1,51 @@
+{
+    "candidates": [
+        {
+            "candidates": {
+                "role": "model",
+                "parts": [
+                    {
+                        "text": "[\n{\n\"question\": \"What is the minimum opening deposit required for a 36-month CD?\",\n\"answer\": \"$1,000\"\n},\n{\n\"question\": \"What is the APY for Everyday Savings?\",\n\"answer\": \"3.75%\"\n}\n]\n"
+                    }
+                ]
+            },
+            "finishReason": "STOP",
+            "safetyRatings": [
+                {
+                    "category": "HARM_CATEGORY_HATE_SPEECH",
+                    "probability": "NEGLIGIBLE",
+                    "probabilityScore": 0.06298828,
+                    "severity": "HARM_SEVERITY_NEGLIGIBLE",
+                    "severityScore": 0.1484375
+                },
+                {
+                    "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                    "probability": "NEGLIGIBLE",
+                    "probabilityScore": 0.34375,
+                    "severity": "HARM_SEVERITY_LOW",
+                    "severityScore": 0.30664063
+                },
+                {
+                    "category": "HARM_CATEGORY_HARASSMENT",
+                    "probability": "NEGLIGIBLE",
+                    "probabilityScore": 0.060058594,
+                    "severity": "HARM_SEVERITY_NEGLIGIBLE",
+                    "severityScore": 0.06640625
+                },
+                {
+                    "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                    "probability": "NEGLIGIBLE",
+                    "probabilityScore": 0.06298828,
+                    "severity": "HARM_SEVERITY_NEGLIGIBLE",
+                    "severityScore": 0.057373047
+                }
+            ],
+            "avgLogprobs": -0.07972021663890165
+        }
+    ],
+    "usageMetadata": {
+        "promptTokenCount": 276,
+        "candidatesTokenCount": 68,
+        "totalTokenCount": 344
+    }
+}

@@ -4,7 +4,7 @@ import { default as $, default as JQuery } from 'jquery';
 import sinon from 'sinon';
 import { NotAuthenticatedError, QuotaError, summaryMatching_examples, summaryMatching_prompt } from "../src/common.js";
 import { showStatus } from '../src/ui.js';
-import { calculateSimilarityUsingVertexAI, callVertexAISearch } from '../src/vertex_ai.js';
+import { calculateSimilarityUsingPalm2, callVertexAISearch } from '../src/vertex_ai.js';
 import { mockVertexAISearchRequestResponse } from './test_common.js';
 
 // mock the UI components
@@ -12,7 +12,7 @@ global.showStatus = showStatus;
 global.$ = $;
 global.JQuery = JQuery;
 
-describe('calculateSimilarityUsingVertexAI', () => {
+describe('When calculateSimilarityUsingVertexAI is called ', () => {
 
     var $stub;
     beforeEach(() => {
@@ -57,7 +57,7 @@ describe('calculateSimilarityUsingVertexAI', () => {
         });
 
 
-        const result = await calculateSimilarityUsingVertexAI(1, sentence1, sentence2, config);
+        const result = await calculateSimilarityUsingPalm2(1, sentence1, sentence2, config);
         const expectedResponse = {
             testCaseNum: 1,
             status_code: 200,
@@ -117,7 +117,7 @@ describe('calculateSimilarityUsingVertexAI', () => {
         });
 
         try {
-            const result = await calculateSimilarityUsingVertexAI(1, sentence1, sentence2, config);
+            const result = await calculateSimilarityUsingPalm2(1, sentence1, sentence2, config);
             assert.fail();
         } catch (err)
         {
@@ -147,7 +147,7 @@ describe('calculateSimilarityUsingVertexAI', () => {
 
 
         try {
-            const result = await calculateSimilarityUsingVertexAI(1, sentence1, sentence2, config);
+            const result = await calculateSimilarityUsingPalm2(1, sentence1, sentence2, config);
             assert.fail();
         } catch (err) {
             expect(fetchMock.called()).toBe(true);
@@ -160,7 +160,7 @@ describe('calculateSimilarityUsingVertexAI', () => {
 
 });
 
- describe('callVertexAISearch', () => {
+ describe('When callVertexAISearch is called', () => {
      var $stub;
      beforeEach(() => {
          // stub out jQuery calls

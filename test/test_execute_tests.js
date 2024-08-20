@@ -8,7 +8,7 @@ import sinon from 'sinon';
 import { showStatus } from '../src/ui.js';
 import { executeTests, getConfig } from '../src/velvet_runner.js';
 import { createConfigTable, createDataTable } from '../src/velvet_tables.js';
-import { calculateSimilarityUsingVertexAI, callVertexAISearch } from '../src/vertex_ai.js';
+import { calculateSimilarityUsingPalm2, callVertexAISearch } from '../src/vertex_ai.js';
 import { mockVertexAISearchRequestResponse } from './test_common.js';
 
 import { configValues, testCaseData } from '../src/common.js';
@@ -20,7 +20,7 @@ global.JQuery = JQuery;
 
 
 global.callVertexAISearch = callVertexAISearch;
-global.calculateSimilarityUsingVertexAI = calculateSimilarityUsingVertexAI;
+global.calculateSimilarityUsingVertexAI = calculateSimilarityUsingPalm2;
 
 
 
@@ -271,7 +271,7 @@ describe("When Execute Test is clicked ", () => {
 
         // Get the config parameters from the config table
         const config = await getConfig();
-        
+
         // Prepare the request response mock the call to VertexAISearch
         const { requestJson, url, expectedResponse } = mockVertexAISearchRequestResponse(
             1,

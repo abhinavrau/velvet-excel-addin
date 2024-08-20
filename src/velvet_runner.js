@@ -1,6 +1,6 @@
 
 import { NotAuthenticatedError, QuotaError } from "./common.js";
-import { calculateSimilarityUsingVertexAI, callVertexAISearch } from "./vertex_ai.js";
+import { calculateSimilarityUsingPalm2, callVertexAISearch } from "./vertex_ai.js";
 
 import { appendError, appendLog, showStatus } from "./ui.js";
 
@@ -299,7 +299,7 @@ function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, link_3
         // Catch any errors here and report it in the cell. We don't want failures here to stop processing.
         try {
            
-            const response = await calculateSimilarityUsingVertexAI(rowNum, result.summary.summaryText, expectedSummary[rowNum][0], config);
+            const response = await calculateSimilarityUsingPalm2(rowNum, result.summary.summaryText, expectedSummary[rowNum][0], config);
             const score = response.output;
 
             if (score.trim() === 'same') {
