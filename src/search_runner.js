@@ -27,7 +27,7 @@ export async function getSearchConfig() {
             const worksheetName = currentWorksheet.name;
             const configTable = currentWorksheet.tables.getItem(`${worksheetName}.ConfigTable`);
             const valueColumn = getColumn(configTable, "Value");
-            await context.sync();
+           
 
             config = {
                 vertexAISearchProjectNumber: valueColumn.values[1][0],

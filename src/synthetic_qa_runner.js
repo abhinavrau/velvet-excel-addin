@@ -27,7 +27,7 @@ export async function getSyntheticQAConfig() {
             const worksheetName = currentWorksheet.name;
             const configTable = currentWorksheet.tables.getItem(`${worksheetName}.ConfigTable`);
             const valueColumn = getColumn(configTable, "Value");
-            await context.sync();
+            
 
             config = {
                 vertexAIProjectID: valueColumn.values[1][0],
@@ -220,7 +220,7 @@ async function processResponse(rowNum, output, generatedQuestionColumn, expected
         cell_status.format.fill.color = '#FFCCCB';
         cell_status.values = [["Failed. Error: " + err.message]];
     } finally {
-        context.sync();
+        await context.sync();
     }
    
    
