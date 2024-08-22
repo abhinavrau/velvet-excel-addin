@@ -1,5 +1,4 @@
 
-import { NotAuthenticatedError, QuotaError } from "./common.js";
 
 import { appendError, appendLog, showStatus } from "./ui.js";
 
@@ -42,7 +41,7 @@ export async function getSummarizationConfig() {
             };
 
         } catch (error) {
-            console.error(`Caught Exception in Summarization createConfig: ${error} `);
+            appendError(`Caught Exception in Summarization createConfig: ${error} `, error);
             showStatus(`Caught Exception in Summarization createConfig: ${error}`, true);
             return null;
         }
@@ -154,22 +153,9 @@ export async function createSummarizationData(config) {
                        
                     })
                     .catch(error => {
-                        var errorMessage = "";
-                        if (error instanceof NotAuthenticatedError) {
-                            errorMessage = `User not Authenticated. Re-authenticate and try again.`;
-                            stopProcessing = true;
-                        }
-                        else if (error instanceof QuotaError) {
-                            errorMessage = `API Quota Exceeded for sumCaseID:: ${testCaseNum}. Reduce test cases or increase timeouts.`;
-                            stopProcessing = true;
-                        }
-                        else {
-                            errorMessage = `Error for sumCaseID:: ${testCaseNum}  error: ${error} with stack: ${error.stack}`;
-                            
-                        }
                         numfails++;
-                        appendError(errorMessage, error);
-                        
+                        stopProcessing = true;
+                        appendError(`Error for testCaseID: ${error.id} calling callVertexAISearch`, error);
                         
                     }));
                 
@@ -197,7 +183,7 @@ export async function createSummarizationData(config) {
 
 
         } catch (error) {
-            console.error(`Caught Exception in createSummarizationData: ${error} `);
+            appendError(`Caught Exception in createSummarizationData `, error);
             showStatus(`Caught Exception in createSummarizationData: ${JSON.stringify(error)}`, true);
             throw error;
         }

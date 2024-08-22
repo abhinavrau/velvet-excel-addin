@@ -3,18 +3,20 @@ import fetchMock from 'fetch-mock';
 import { default as $, default as JQuery } from 'jquery';
 import sinon from 'sinon';
 import { NotAuthenticatedError, QuotaError, summaryMatching_examples, summaryMatching_prompt } from "../src/common.js";
-import { showStatus } from '../src/ui.js';
+import { appendError, showStatus } from '../src/ui.js';
 import { calculateSimilarityUsingPalm2, callVertexAISearch } from '../src/vertex_ai.js';
 import { mockVertexAISearchRequestResponse } from './test_common.js';
 
 // mock the UI components
 global.showStatus = showStatus;
+
 global.$ = $;
 global.JQuery = JQuery;
 
 describe('When calculateSimilarityUsingVertexAI is called ', () => {
 
     var $stub;
+    
     beforeEach(() => {
         // stub out jQuery calls
          $stub = sinon.stub(globalThis, '$').returns({
@@ -23,12 +25,13 @@ describe('When calculateSimilarityUsingVertexAI is called ', () => {
              val: sinon.stub(),
              tabulator: sinon.stub(),
         });
-
+        
         fetchMock.reset();
     });
 
     afterEach(() => {
         $stub.restore();
+        sinon.reset();
     });
 
     it('should return a similarity  between two sentences', async () => {
@@ -145,7 +148,6 @@ describe('When calculateSimilarityUsingVertexAI is called ', () => {
             throws: new Error('Mocked error'),
         });
 
-
         try {
             const result = await calculateSimilarityUsingPalm2(1, sentence1, sentence2, config);
             assert.fail();
@@ -153,6 +155,7 @@ describe('When calculateSimilarityUsingVertexAI is called ', () => {
             expect(fetchMock.called()).toBe(true);
             expect(fetchMock.lastUrl().toLowerCase()).toBe(url.toLowerCase());
             expect(err.message).toBe('Mocked error');
+   
         }
         
         
@@ -280,6 +283,7 @@ describe('When calculateSimilarityUsingVertexAI is called ', () => {
         {
             expect(err instanceof NotAuthenticatedError).toBe(true);
             expect(err.message).toEqual("Request is missing required authentication credential. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.");
+           
         }
     }); 
      it('should return error when Vertex AI Search return Quota error', async () => {

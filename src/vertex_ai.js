@@ -1,5 +1,5 @@
 
-import { NotAuthenticatedError, QuotaError, summaryMatching_examples, summaryMatching_prompt } from "./common.js";
+import { NotAuthenticatedError, PermissionDeniedError, QuotaError, summaryMatching_examples, summaryMatching_prompt, VelvetError } from "./common.js";
 import { appendLog } from "./ui.js";
 
 export async function callVertexAISearch(id, query, config) {
@@ -42,7 +42,7 @@ export async function callVertexAISearch(id, query, config) {
 
     const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${projectNumber}/locations/global/collections/default_collection/dataStores/${datastoreName}/servingConfigs/default_search:search`;
 
-    const { status, json_output } = await callVertexAI(url, token, data);
+    const { status, json_output } = await callVertexAI(url, token, data, id);
 
     appendLog(`testCaseID: ${id}: Search Query Finished Successfully`);
 
@@ -78,7 +78,7 @@ export async function calculateSimilarityUsingPalm2(id, sentence1, sentence2, co
 
     const url = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/text-bison:predict`;
 
-    const { status, json_output } = await callVertexAI(url, token, data);
+    const { status, json_output } = await callVertexAI(url, token, data,id);
     const output = json_output.predictions[0].content;
 
     appendLog(`testCaseID: ${id}: SummaryMatch Finished Successfully `);
@@ -86,7 +86,7 @@ export async function calculateSimilarityUsingPalm2(id, sentence1, sentence2, co
     return { id: id, status_code: status, output: `${output}` };
 }
 
-export async function callVertexAI(url, token, data) {
+export async function callVertexAI(url, token, data, id) {
     const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -100,15 +100,19 @@ export async function callVertexAI(url, token, data) {
 
         if (response.status === 401) {
             const json = await response.json();
-            throw new NotAuthenticatedError(json.error.message);
+            throw new NotAuthenticatedError(id, json.error.message);
         }
         else if (response.status === 429) {
             const json = await response.json();
-            throw new QuotaError(json.error.message);
+            throw new QuotaError(id, json.error.message);
+        }
+        else if (response.status === 403) {
+            const json = await response.json();
+            throw new PermissionDeniedError(id, json.error.message);
         }
         else {
             
-            throw new Error(`Error calling VertexAI for Summary, HTTP Code: ${response.status} Reason: ${response.body}`);
+            throw new VelvetError(id, `Error calling VertexAI for Summary, HTTP Code: ${response.status} Reason: ${response.body}`);
         }
     }
 
@@ -223,7 +227,7 @@ export async function callGeminiMultitModal(id, prompt, fileUri, mimeType, confi
 
         const url = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${model_id}:generateContent`;
 
-        const { status, json_output } = await callVertexAI(url, token, data);
+        const { status, json_output } = await callVertexAI(url, token, data, id);
         const output = json_output.candidates[0].content.parts[0].text;
 
         appendLog(`callGeminiMultitModal: Finished Successfully.`);

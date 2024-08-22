@@ -1,5 +1,4 @@
 
-import { NotAuthenticatedError, QuotaError } from "./common.js";
 import { calculateSimilarityUsingPalm2, callVertexAISearch } from "./vertex_ai.js";
 
 import { appendError, appendLog, showStatus } from "./ui.js";
@@ -56,7 +55,7 @@ export async function getSearchConfig() {
             };
 
         } catch (error) {
-            console.error(`Caught Exception in createConfig: ${error} `);
+            appendError(`Caught Exception in createConfig `, error);
             showStatus(`Caught Exception in createConfig: ${error}`, true);
             return null;
         }
@@ -173,22 +172,9 @@ export async function executeSearchTests(config) {
                        
                     })
                     .catch(error => {
-                        var errorMessage = "";
-                        if (error instanceof NotAuthenticatedError) {
-                            errorMessage = `User not Authenticated. Re-authenticate and try again.`;
-                            stopProcessing = true;
-                        }
-                        else if (error instanceof QuotaError) {
-                            errorMessage = `API Quota Exceeded for testCaseID: ${testCaseNum}. Reduce test cases or increase timeouts.`;
-                            stopProcessing = true;
-                        }
-                        else {
-                            errorMessage = `Error for testCaseID: ${testCaseNum}  error: ${error} with stack: ${error.stack}`;
-                            
-                        }
                         numfails++;
-                        appendError(errorMessage, error);
-                        
+                        stopProcessing = true;
+                        appendError(`Error for testCaseID: ${error.id} calling callVertexAISearch`, error);
                         
                     }));
                 
@@ -216,7 +202,7 @@ export async function executeSearchTests(config) {
 
 
         } catch (error) {
-            console.error(`Caught Exception in executeSearchTests: ${error} `);
+            appendLog(`Caught Exception in executeSearchTests: ${error.message} `, error);
             showStatus(`Caught Exception in executeSearchTests: ${JSON.stringify(error)}`, true);
             throw error;
         }

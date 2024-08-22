@@ -99,20 +99,37 @@ export const summarization_TableHeader = [
     ],
 ];
 
-
+export class VelvetError extends Error {
+    constructor(id, message = 'Processing Error') {
+        super(message);
+        this.name = 'VelvetError';
+        this.id = id;
+    }
+}
 
 export class NotAuthenticatedError extends Error {
-    constructor(message = 'User is not authenticated') {
+    constructor(id, message = 'User is not authenticated') {
         super(message);
         this.name = 'NotAuthenticatedError';
+        this.id = id;
         this.statusCode = 401; // Optional: HTTP status code for API errors
     }
 }
 
 export class QuotaError extends Error {
-    constructor(message = 'Quota Exceeded') {
+    constructor(id, message = 'Quota Exceeded') {
         super(message);
         this.name = 'QuotaError';
+        this.id = id;
         this.statusCode = 429; // Optional: HTTP status code for API errors
+    }
+}
+
+export class PermissionDeniedError extends Error {
+    constructor(id, message = 'Permission Denied') {
+        super(message);
+        this.name = 'PermissionDeniedError';
+        this.id = id;
+        this.statusCode = 403; // Optional: HTTP status code for API errors
     }
 }

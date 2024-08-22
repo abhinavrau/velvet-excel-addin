@@ -1,5 +1,4 @@
 
-import { NotAuthenticatedError, QuotaError } from "./common.js";
 
 import { appendError, appendLog, showStatus } from "./ui.js";
 
@@ -41,7 +40,7 @@ export async function getSyntheticQAConfig() {
             };
 
         } catch (error) {
-            console.error(`Caught Exception in Gemini createConfig: ${error} `);
+            appendError(`Caught Exception in Gemini createConfig`, error);
             showStatus(`Caught Exception in Gemini createConfig: ${error}`, true);
             return null;
         }
@@ -137,25 +136,10 @@ export async function createSyntheticQAData(config) {
                        
                     })
                     .catch(error => {
-                        var errorMessage = "";
-                        if (error instanceof NotAuthenticatedError) {
-                            errorMessage = `User not Authenticated. Re-authenticate and try again.`;
-                            stopProcessing = true;
-                        }
-                        else if (error instanceof QuotaError) {
-                            errorMessage = `API Quota Exceeded for genSynQID: ${testCaseNum}. Reduce test cases or increase timeouts.`;
-                            stopProcessing = true;
-                        }
-                        else {
-                            errorMessage = `Error for genSynQID: ${testCaseNum}  error: ${error} with stack: ${error.stack}`;
-                            
-                        }
                         numfails++;
-                        appendError(errorMessage, error);
+                        stopProcessing = true;
+                        appendError(`Error for testCaseID: ${error.id} calling callVertexAISearch`, error);
                         
-                        
-                    }).finally(()=> {
-                        appendLog(`genSynQID: ${rowNum} Generated Question and Answer.`);
                     }));
                 
                 processedCount++;
@@ -182,7 +166,7 @@ export async function createSyntheticQAData(config) {
 
 
         } catch (error) {
-            console.error(`Caught Exception in executeTests: ${error} `);
+            appendError(`Caught Exception in executeTests `, error);
             showStatus(`Caught Exception in executeTests: ${JSON.stringify(error)}`, true);
             throw error;
         }

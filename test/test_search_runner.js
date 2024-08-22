@@ -7,7 +7,7 @@ import sinon from 'sinon';
 
 import { executeSearchTests, getSearchConfig } from '../src/search_runner.js';
 import { createVAIConfigTable, createVAIDataTable } from '../src/search_tables.js';
-import { showStatus } from '../src/ui.js';
+import { appendError, showStatus } from '../src/ui.js';
 import { calculateSimilarityUsingPalm2, callVertexAISearch } from '../src/vertex_ai.js';
 import { mockVertexAISearchRequestResponse } from './test_common.js';
 
@@ -15,6 +15,7 @@ import { vertex_ai_search_configValues, vertex_ai_search_testTableHeader } from 
 
 // mock the UI components
 global.showStatus = showStatus;
+global.appendError = appendError;
 global.$ = $;
 global.JQuery = JQuery;
 
@@ -61,6 +62,7 @@ export var testCaseRows = vertex_ai_search_testTableHeader.concat([
 describe("When Search Run Tests is clicked ", () => {
 
     var showStatusSpy;
+    var appendErrorSpy;
     var mockTestData;
     var $stub;
     beforeEach(() => {
@@ -72,6 +74,7 @@ describe("When Search Run Tests is clicked ", () => {
             tabulator: sinon.stub(),
         });
         showStatusSpy = sinon.spy(globalThis, 'showStatus');
+        appendErrorSpy = sinon.spy(globalThis, 'appendError');
         fetchMock.reset();
 
         mockTestData = {
@@ -245,6 +248,7 @@ describe("When Search Run Tests is clicked ", () => {
     afterEach(() => {
         $stub.restore();
         showStatusSpy.restore();
+        appendErrorSpy.restore();
         sinon.reset();
     });
 
@@ -337,7 +341,57 @@ describe("When Search Run Tests is clicked ", () => {
 
     });
 
+    it("should log error when there is error in vertex ai api", async () => {
 
+
+        // Create the final mock object from the seed object.
+        const contextMock = new OfficeMockObject(mockTestData);
+
+
+        global.Excel = contextMock;
+
+        
+        // Simulate creating the Config table
+        await createVAIDataTable();
+        // Fail the test ifshow status is called
+        expect(showStatusSpy.notCalled).toBe(true);
+
+        // Simulate creating the Config table
+        await createVAIConfigTable();
+        // Fail the test ifshow status is called
+        expect(showStatusSpy.notCalled).toBe(true);
+
+
+        // Get the config parameters from the config table
+        const config = await getSearchConfig();
+
+        // Prepare the request response mock the call to VertexAISearch
+        const { requestJson, url, expectedResponse } = mockVertexAISearchRequestResponse(
+            1,
+            403,
+            './test/data/extractive_answer/test_vai_search_extractive_answer_request.json',
+            './test/data/extractive_answer/test_vai_search_extractive_answer_response.json',
+            config);
+
+        // Execute the tests
+        await executeSearchTests(config);
+
+        // Verify mocks are called
+        expect(fetchMock.called()).toBe(true);
+       
+
+        //  check if vertex ai search is called
+        const callsToVertexAISearch = fetchMock.calls().filter(call => call[0] === url);
+        // Check if body is sent correctly to vertex ai search
+        expect(callsToVertexAISearch[0][1] !== null).toBe(true);
+        expect(JSON.parse(callsToVertexAISearch[0][1].body)).toStrictEqual(requestJson);
+        
+        // TODO: Figure out how to detect errors here
+        
+
+
+
+    });
 
 
 });
