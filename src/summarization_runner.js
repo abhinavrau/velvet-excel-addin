@@ -26,7 +26,7 @@ export async function getSummarizationConfig() {
             const worksheetName = currentWorksheet.name;
             const configTable = currentWorksheet.tables.getItem(`${worksheetName}.ConfigTable`);
             const valueColumn = getColumn(configTable, "Value");
-            await context.sync();
+            
 
             config = {
                 vertexAIProjectID: valueColumn.values[1][0],
@@ -227,7 +227,7 @@ async function processResponse(rowNum,
     const cell_summary = summaryColumn.getRange().getCell(rowNum, 0);
     cell_summary.clear(Excel.ClearApplyTo.formats);
     cell_summary.values = [[output]];
-    context.sync();
+    await context.sync();
     
 
     try {
@@ -262,7 +262,7 @@ async function processResponse(rowNum,
         cell_status.format.fill.color = '#FFCCCB';
         cell_status.values = [["Failed. Error: " + err.message]];
     } finally {
-        context.sync();
+        await context.sync();
     }
    
    
