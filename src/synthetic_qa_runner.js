@@ -2,6 +2,7 @@
 
 import { appendError, appendLog, showStatus } from "./ui.js";
 
+import { NotAuthenticatedError, PermissionDeniedError, QuotaError, VelvetError } from "./common.js";
 import { callGeminiMultitModal } from "./vertex_ai.js";
 
 function getColumn(table, columnName) {
@@ -138,8 +139,14 @@ export async function createSyntheticQAData(config) {
                     .catch(error => {
                         numfails++;
                         stopProcessing = true;
-                        appendError(`Error for testCaseID: ${error.id} calling callVertexAISearch`, error);
-                        
+                        if (error instanceof NotAuthenticatedError
+                            || error instanceof QuotaError
+                            || error instanceof VelvetError
+                            || error instanceof PermissionDeniedError) {
+                            appendError(`Error for testCaseID: ${error.id} calling callVertexAISearch`, error);
+                        } else {
+                            appendError(`Error calling callVertexAISearch`, error);
+                        }
                     }));
                 
                 processedCount++;

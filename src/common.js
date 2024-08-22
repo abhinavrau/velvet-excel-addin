@@ -101,7 +101,7 @@ export const summarization_TableHeader = [
 
 export class VelvetError extends Error {
     constructor(id, message = 'Processing Error') {
-        super(message);
+        super(`message`);
         this.name = 'VelvetError';
         this.id = id;
     }

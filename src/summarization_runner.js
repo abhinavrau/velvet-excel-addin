@@ -2,8 +2,8 @@
 
 import { appendError, appendLog, showStatus } from "./ui.js";
 
+import { NotAuthenticatedError, PermissionDeniedError, QuotaError, VelvetError } from "./common.js";
 import { callGeminiMultitModal, callVertexAI } from "./vertex_ai.js";
-
 function getColumn(table, columnName) {
     try {
         const column = table.columns.getItemOrNullObject(columnName);
@@ -155,7 +155,14 @@ export async function createSummarizationData(config) {
                     .catch(error => {
                         numfails++;
                         stopProcessing = true;
-                        appendError(`Error for testCaseID: ${error.id} calling callVertexAISearch`, error);
+                        if (error instanceof NotAuthenticatedError
+                            || error instanceof QuotaError
+                            || error instanceof VelvetError
+                            || error instanceof PermissionDeniedError) {
+                            appendError(`Error for testCaseID: ${error.id} calling callVertexAISearch`, error);
+                        } else {
+                            appendError(`Error calling callVertexAISearch`, error);
+                        }
                         
                     }));
                 

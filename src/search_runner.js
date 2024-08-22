@@ -3,7 +3,7 @@ import { calculateSimilarityUsingPalm2, callVertexAISearch } from "./vertex_ai.j
 
 import { appendError, appendLog, showStatus } from "./ui.js";
 
-
+import { NotAuthenticatedError, PermissionDeniedError, QuotaError, VelvetError } from "./common.js";
 
 function getColumn(table, columnName) {
     try {
@@ -174,8 +174,14 @@ export async function executeSearchTests(config) {
                     .catch(error => {
                         numfails++;
                         stopProcessing = true;
-                        appendError(`Error for testCaseID: ${error.id} calling callVertexAISearch`, error);
-                        
+                        if (error instanceof NotAuthenticatedError
+                            || error instanceof QuotaError
+                            || error instanceof VelvetError
+                            || error instanceof PermissionDeniedError) {
+                            appendError(`Error for testCaseID: ${error.id} calling callVertexAISearch`, error);
+                        } else {
+                            appendError(`Error calling callVertexAISearch`, error);
+                        }
                     }));
                 
                 processedCount++;
