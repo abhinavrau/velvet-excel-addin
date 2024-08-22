@@ -1,15 +1,14 @@
-
 import expect from 'expect';
 import pkg from 'office-addin-mock';
 
 import { default as $, default as JQuery } from 'jquery';
 
 import sinon from 'sinon';
+import { createSummarizationEvalConfigTable, createSummarizationEvalDataTable } from '../src/summarization_tables.js';
 import { showStatus } from '../src/ui.js';
-import { createConfigTable, createDataTable } from '../src/velvet_tables.js';
 
 
-import { configValues, testCaseData } from '../src/common.js';
+import { summarization_configValues, summarization_TableHeader } from '../src/common.js';
 // mock the UI components
 global.showStatus = showStatus;
 global.$ = $;
@@ -20,7 +19,7 @@ global.JQuery = JQuery;
 const { OfficeMockObject } = pkg;
 
 
-describe("When Create Test Template Tables is clicked", () => {
+describe("When Summarization Eval Tables is clicked", () => {
 
     let mockData;
     var $stub;
@@ -120,17 +119,17 @@ describe("When Create Test Template Tables is clicked", () => {
         const contextMock = new OfficeMockObject(mockData);
 
         global.Excel = contextMock;
-        await createConfigTable();
+        await createSummarizationEvalConfigTable();
 
         const worksheetName = contextMock.context.workbook.worksheets.name;
-        expect(contextMock.context.workbook.worksheets.range.values).toEqual([["Vertex AI Search Parameters"]]);
+        expect(contextMock.context.workbook.worksheets.range.values).toEqual([["Summarization Evaluation"]]);
         expect(contextMock.context.workbook.worksheets.range.format.font.bold).toEqual(true);
         expect(contextMock.context.workbook.worksheets.range.format.fill.color).toEqual('yellow');
         expect(contextMock.context.workbook.worksheets.range.format.font.size).toEqual(16);
 
         expect(contextMock.context.workbook.worksheets.tables.name).toEqual(`${worksheetName}.ConfigTable`);
-        expect(contextMock.context.workbook.worksheets.tables.getHeaderRowRange().values).toEqual([configValues[0]]);
-        expect(contextMock.context.workbook.worksheets.tables.rows.values).toEqual(configValues.slice(1));
+        expect(contextMock.context.workbook.worksheets.tables.getHeaderRowRange().values).toEqual([summarization_configValues[0]]);
+        expect(contextMock.context.workbook.worksheets.tables.rows.values).toEqual(summarization_configValues.slice(1));
     });
 
     it("should create the Test Data table with the correct name and headers", async () => {
@@ -140,13 +139,13 @@ describe("When Create Test Template Tables is clicked", () => {
 
 
         global.Excel = contextMock;
-        await createDataTable();
+        await createSummarizationEvalDataTable();
         const worksheetName = contextMock.context.workbook.worksheets.name;
 
         expect(contextMock.context.workbook.worksheets.tables.name).toEqual(`${worksheetName}.TestCasesTable`);
 
         expect(contextMock.context.workbook.worksheets.tables.getHeaderRowRange().values).toEqual(
-            [testCaseData[0]]);
+            [summarization_TableHeader[0]]);
 
     });
 });

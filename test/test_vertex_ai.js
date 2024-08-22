@@ -59,7 +59,7 @@ describe('When calculateSimilarityUsingVertexAI is called ', () => {
 
         const result = await calculateSimilarityUsingPalm2(1, sentence1, sentence2, config);
         const expectedResponse = {
-            testCaseNum: 1,
+            id: 1,
             status_code: 200,
             output: 'same',
         };

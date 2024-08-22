@@ -1,58 +1,119 @@
-import { executeTests, getConfig, stopTests } from './velvet_runner.js';
-import { createConfigTable, createDataTable } from './velvet_tables.js';
+import { executeSearchTests, getSearchConfig, stopSearchTests } from './search_runner.js';
+import { createVAIConfigTable, createVAIDataTable } from './search_tables.js';
+
+import { createSyntheticQAData, getSyntheticQAConfig, stopSyntheticData } from './synthetic_qa_runner.js';
+import { createSyntheticQAConfigTable, createSyntheticQADataTable } from './synthetic_qa_tables.js';
+
+import { createSummarizationData, getSummarizationConfig, stopSummarizationData } from './summarization_runner.js';
+import { createSummarizationEvalConfigTable, createSummarizationEvalDataTable } from './summarization_tables.js';
+
 
 // Initialize Office API
 Office.onReady((info) => {
     // Check that we loaded into Excel
     if (info.host === Office.HostType.Excel) {
-        document.getElementById("createTables").onclick = createTestTemplateTables;
-        const executeTestsButton = document.getElementById("executeTests");
-        const cancelTestsButton = document.getElementById("cancelTests");
-
-        executeTestsButton.addEventListener("click", async () => {
-    
-            executeTestsButton.style.visibility = "hidden";
-            cancelTestsButton.style.visibility = "visible";
+        setupButtonEvents(
+            "createSearchTables",
+            createSearchTables,
+            "executeSearchTests",
+            async function () { await runSearchTests(); },
+            "cancelSearchTests",
+            async function () { await stopSearchTests(); });
         
-            try {
-                 await runTests();
-            } finally {
-                
-                executeTestsButton.style.visibility = "visible";
-                cancelTestsButton.style.visibility = "hidden";
-            }
-        });
+        setupButtonEvents(
+            "createGenQATables",
+            createSyntheticQATables,
+            "generateQAData",
+            async function () { await createSyntheticData(); },
+            "cancelGenerateQAData",
+            async function () { await stopSyntheticData(); });
         
-
-        cancelTestsButton.addEventListener("click", async () => {
-
-            try {
-                 await cancelTests();
-            } finally {
-
-                executeTestsButton.style.visibility = "visible";
-                cancelTestsButton.style.visibility = "hidden";
-
-            }
-        });
+        setupButtonEvents(
+            "createSummarizationTables",
+            createSummarizationTables,
+            "genSummarizationData",
+            async function () { await genSummarizationData(); },
+            "cancelSummarizationData",
+            async function () { await stopSummarizationData(); });
+        
     }
 });
 
 
-export async function createTestTemplateTables() {
+function setupButtonEvents(createTableButtonId, fn_createTables, runTaskButtonId, fn_runTask, cancelJobButtonId,  fn_cancelTask) {
+    document.getElementById(createTableButtonId).onclick = fn_createTables;
+    const runTaskButton = document.getElementById(runTaskButtonId);
+    const cancelJobButton = document.getElementById(cancelJobButtonId);
 
-    await createConfigTable();
-    await createDataTable();
+    runTaskButton.addEventListener("click", async () => {
+        $("#log-pane").tabulator("clearData");
+        runTaskButton.style.visibility = "hidden";
+        cancelJobButton.style.visibility = "visible";
+
+        try {
+            await fn_runTask();
+        } finally {
+
+            runTaskButton.style.visibility = "visible";
+            cancelJobButton.style.visibility = "hidden";
+        }
+    });
+
+
+    cancelJobButton.addEventListener("click", async () => {
+
+        try {
+            await fn_cancelTask();
+        } finally {
+
+            runTaskButton.style.visibility = "visible";
+            cancelJobButton.style.visibility = "hidden";
+
+        }
+    });
 }
 
-export async  function runTests() {
-    const config = await getConfig();
+ async function createSearchTables() {
+
+    await createVAIConfigTable();
+    await createVAIDataTable();
+}
+
+ async  function runSearchTests() {
+    const config = await getSearchConfig();
     if (config == null)
         return;
-     await executeTests(config);
+     await executeSearchTests(config);
 }
 
-export async function cancelTests() {
 
-    await stopTests();
+ async function createSyntheticQATables() {
+
+    await createSyntheticQAConfigTable();
+    await createSyntheticQADataTable();
 }
+
+ async function createSyntheticData() {
+    const config = await getSyntheticQAConfig();
+    if (config == null)
+        return;
+    await createSyntheticQAData(config);
+}
+
+
+
+async function createSummarizationTables() {
+
+    await createSummarizationEvalConfigTable();
+    await createSummarizationEvalDataTable();
+}
+
+async function genSummarizationData() {
+    const config = await getSummarizationConfig();
+    if (config == null)
+        return;
+    await createSummarizationData(config);
+}
+
+
+

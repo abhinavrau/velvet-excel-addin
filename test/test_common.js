@@ -1,6 +1,5 @@
 import fetchMock from 'fetch-mock';
 import fs from 'fs';
-import { testCaseData } from '../src/common.js';
 
 
 
@@ -17,7 +16,7 @@ export function mockVertexAISearchRequestResponse(testCaseNum, expected_status_c
 
     // expected response with row number
     const expectedResponse = {
-        testCaseRowNum: testCaseNum,
+        id: testCaseNum,
         status_code: expected_status_code,
         output: responseJson
     };

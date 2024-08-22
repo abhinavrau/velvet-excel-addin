@@ -17,7 +17,7 @@ function getColumn(table, columnName) {
     }
 }
 
-export async function getConfig() {
+export async function getSearchConfig() {
     var config;
     await Excel.run(async (context) => {
 
@@ -50,6 +50,9 @@ export async function getConfig() {
                 batchSize: valueColumn.values[15][0],
                 timeBetweenCallsInSec: valueColumn.values[16][0],
                 accessToken: $('#access-token').val(),
+                systemInstruction: "",
+                responseMimeType: "text/plain",
+                
             };
 
         } catch (error) {
@@ -64,7 +67,7 @@ export async function getConfig() {
 
 var stopProcessing;
 
-export async function executeTests(config) {
+export async function executeSearchTests(config) {
     
     if (config == null) {
         return;
@@ -155,7 +158,7 @@ export async function executeTests(config) {
                 promiseMap.set(processedCount, callVertexAISearch(processedCount, query[processedCount][0], config)
                     .then(async result => {
                         let response = result.output;
-                        let testCaseRowNum = result.testCaseRowNum;
+                        let testCaseRowNum = result.id;
                         
                         // Check the summary first
                         if (response.hasOwnProperty('summary')) {
@@ -213,8 +216,8 @@ export async function executeTests(config) {
 
 
         } catch (error) {
-            console.error(`Caught Exception in executeTests: ${error} `);
-            showStatus(`Caught Exception in executeTests: ${JSON.stringify(error)}`, true);
+            console.error(`Caught Exception in executeSearchTests: ${error} `);
+            showStatus(`Caught Exception in executeSearchTests: ${JSON.stringify(error)}`, true);
             throw error;
         }
 
@@ -222,7 +225,7 @@ export async function executeTests(config) {
 
 }
 
-export async function stopTests() { 
+export async function stopSearchTests() { 
     stopProcessing = true; // Set the stop signal flag
     appendLog("Cancel Tests Clicked. Stopping test execution...");
 }
@@ -312,12 +315,14 @@ function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, link_3
                 actualSummarycell.format.fill.color = '#FFCCCB';
 
             } 
-        } catch(err) {
+        } catch (err) {
+            appendError(`testCaseID: ${rowNum} Error getting Similarity. Error: ${err.message} `, err);
             // put the error in the cell.
-            score_cell.values = [[err.message]];
+            score_cell.values = [["Failed. Error: " + err.message]];
             score_cell.format.fill.color = '#FFCCCB';
             const actualSummarycell = actualSummaryColumn.getRange().getCell(rowNum, 0);
             actualSummarycell.format.fill.color = '#FFCCCB';
+            
         }
         finally {
             context.sync();

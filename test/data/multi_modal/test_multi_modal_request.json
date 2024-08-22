@@ -4,23 +4,29 @@
             "role": "user",
             "parts": [
                 {
-                    "fileData": {
-                        "mimeType": "application/pdf",
-                        "fileUri": "gs://argolis-arau-gemini-bank/Consumer Deposit Product APY Rate Sheet.pdf"
-                    }
+                    "text": "Generate 1 question and answer"
                 },
                 {
-                    "text": "Generate 2 questions with expected answers from the attached document. Return it in a json format"
+                    "fileData": {
+                        "mimeType": "application/pdf",
+                        "fileUri": "gs://argolis-arau-gemini-bank/Procedure - Savings Account Opening.pdf"
+                    }
                 }
             ]
         }
     ],
+    "systemInstruction": {
+        "parts": [
+            {
+                "text": "You are an expert in reading call center policy and procedure documents.Given the attached document, generate a question and answer that customers are likely to ask a call center agent.The question should only be sourced from the provided the document.Do not use any other information other than the attached document. Explain your reasoning for the answer by quoting verbatim where in the document the answer is found. Return the results in JSON format.Example: {'question': 'Here is a question?', 'answer': 'Here is the answer', 'reasoning': 'Quote from document'}"
+            }
+        ]
+    },
     "generationConfig": {
         "maxOutputTokens": 8192,
         "temperature": 1,
         "topP": 0.95,
         "response_mime_type": "application/json"
-
     },
     "safetySettings": [
         {

@@ -1,17 +1,18 @@
 
 import expect from 'expect';
 import fetchMock from 'fetch-mock';
+import fs from 'fs';
 import { default as $, default as JQuery } from 'jquery';
 import pkg from 'office-addin-mock';
 import sinon from 'sinon';
 
+import { createSyntheticQAData, getSyntheticQAConfig } from '../src/synthetic_qa_runner.js';
+import { createSyntheticQAConfigTable, createSyntheticQADataTable } from '../src/synthetic_qa_tables.js';
 import { showStatus } from '../src/ui.js';
-import { executeTests, getConfig } from '../src/velvet_runner.js';
-import { createConfigTable, createDataTable } from '../src/velvet_tables.js';
-import { calculateSimilarityUsingPalm2, callVertexAISearch } from '../src/vertex_ai.js';
-import { mockVertexAISearchRequestResponse } from './test_common.js';
+import { callGeminiMultitModal } from '../src/vertex_ai.js';
 
-import { configValues, testCaseData } from '../src/common.js';
+
+import { synth_q_and_a_configValues, synth_q_and_a_TableHeader } from '../src/common.js';
 
 // mock the UI components
 global.showStatus = showStatus;
@@ -19,47 +20,28 @@ global.$ = $;
 global.JQuery = JQuery;
 
 
-global.callVertexAISearch = callVertexAISearch;
-global.calculateSimilarityUsingVertexAI = calculateSimilarityUsingPalm2;
+global.callGeminiMultitModal = callGeminiMultitModal;
+
 
 
 
 const { OfficeMockObject } = pkg;
-export var testCaseRows = testCaseData.concat([
+export var testCaseRows = synth_q_and_a_TableHeader.concat([
     [
         "1", // ID
-        "What is Google's revenue for the year ending December 31, 2021", //Query
-        "Revenue is $2.2 billion",//Expected Summary
-        "Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.", // Actual Summary
-        "link1", //Expected Link 1
-        "link2", //Expected Link 2
-        "link3", // Expected Link 3
-        "TRUE", // Summary Match
-        "TRUE",// First Link Match
-        "TRUE", // Link in Top 2
-        "link1", // Actual Link 1
-        "link2", // Actual Link 2
-        "link3", // Actual Link 3
+        "gs://argolis-arau-gemini-bank/Procedure - Savings Account Opening.pdf", //GCS File URI
+        "application/pdf",//Mime Type
+        "If I close my new savings account within 30 days of opening it, will I be charged a fee?", // Generated Question
+        "Yes, you will be charged a $25 fee unless the closure is due to a Gemini Bank error in account opening or customer dissatisfaction with a product or service disclosed during the opening process.", //Expected Answer
+        "“Account Closure: A customer who closes their new savings account within 30 days of opening will be subject to a $25 fee unless the closure is due to:\nΟ Gemini Bank error in account opening.\nΟ Customer dissatisfaction with a product or service disclosed during the opening process.”", //Reasoning
+        "Success", // Status
+        "10ms", // Response Time
     ],
-    [
-        "2", // ID
-        "What is Google's revenue for the year ending December 31, 2021", //Query
-        "Revenue is $2.2 billion",//Expected Summary
-        "Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.", // Actual Summary
-        "link1", //Expected Link 1
-        "link2", //Expected Link 2
-        "link3", // Expected Link 3
-        "TRUE", // Summary Match
-        "TRUE",// First Link Match
-        "TRUE", // Link in Top 2
-        "link1", // Actual Link 1
-        "link2", // Actual Link 2
-        "link3", // Actual Link 3
-    ]
 ]);
 
-describe("When Execute Test is clicked ", () => {
+describe("When Generate Synthetic Q&A is clicked ", () => {
 
+    var showStatusSpy;
     var mockTestData;
     var $stub;
     beforeEach(() => {
@@ -70,6 +52,8 @@ describe("When Execute Test is clicked ", () => {
             val: sinon.stub(),
             tabulator: sinon.stub(),
         });
+        // Spy on showStatus
+        showStatusSpy = sinon.spy(globalThis, 'showStatus');
 
         fetchMock.reset();
 
@@ -150,14 +134,14 @@ describe("When Execute Test is clicked ", () => {
                                         return {
                                             values: [[]],
                                             load: function () {
-                                                const columnIndex = configValues[0].indexOf(columnName);
+                                                const columnIndex = synth_q_and_a_configValues[0].indexOf(columnName);
 
                                                 // If the column name is not found, return null
                                                 if (columnIndex === -1) {
                                                     return false;
                                                 }
                                                 // Extract the values from the specified column
-                                                this.values = configValues.map(row => [row[columnIndex]]);
+                                                this.values = synth_q_and_a_configValues.map(row => [row[columnIndex]]);
                                                 return true;
                                             }
                                         };
@@ -167,7 +151,7 @@ describe("When Execute Test is clicked ", () => {
                             },
                             testCaseTable: {
                                 // Initiallize our data object that will get populated 
-                                data: Array(testCaseRows.length).fill(null).map(() => Array(13).fill(null)),
+                                data: Array(testCaseRows.length).fill(null).map(() => Array(testCaseRows.length).fill(null)),
                                 columns: {
                                     // return a column object that is used to popluate the values returned from VertexAI APIs.
                                     getItemOrNullObject: function (columnName) {
@@ -243,6 +227,9 @@ describe("When Execute Test is clicked ", () => {
 
     afterEach(() => {
         $stub.restore();
+        showStatusSpy.restore();
+        sinon.reset();
+        
     });
 
 
@@ -255,84 +242,55 @@ describe("When Execute Test is clicked ", () => {
 
         global.Excel = contextMock;
         // Spy on the Showstatus function
-        // Spy on showStatus
-        const showStatusSpy = sinon.spy(globalThis, 'showStatus');
-
+       
         // Simulate creating the Config table
-        await createDataTable();
+        await createSyntheticQAConfigTable();
         // Fail the test ifshow status is called
         expect(showStatusSpy.notCalled).toBe(true);
 
         // Simulate creating the Config table
-        await createConfigTable();
+        await createSyntheticQADataTable();
         // Fail the test ifshow status is called
         expect(showStatusSpy.notCalled).toBe(true);
-
+        
 
         // Get the config parameters from the config table
-        const config = await getConfig();
+        const config = await getSyntheticQAConfig();
 
-        // Prepare the request response mock the call to VertexAISearch
-        const { requestJson, url, expectedResponse } = mockVertexAISearchRequestResponse(
-            1,
-            200,
-            './test/data/extractive_answer/test_vai_search_extractive_answer_request.json',
-            './test/data/extractive_answer/test_vai_search_extractive_answer_response.json',
-            config);
+        // read the request from json file
+        const requestData = fs.readFileSync("./test/data/multi_modal/test_multi_modal_request.json");
+        const requestJson = JSON.parse(requestData);
 
+        // Read response  json from file into variable 
+        const responseData = fs.readFileSync("./test/data/multi_modal/test_multi_modal_response.json");
+        const responseJson = JSON.parse(responseData);
 
-        // Mock the call for summary similarity
-        const { url: summaryMatchUrl, response: summaryResponse } = await mockSimilarityUsingVertexAI(config, 'same');
+        const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/${config.model}:generateContent`;
+        fetchMock.postOnce(url, {
+            status: 200,
+            headers: { 'Content-Type': `application/json` },
+            body: JSON.stringify(responseJson)
+        });
+
+        
         // Execute the tests
-        await executeTests(config);
+        await createSyntheticQAData(config);
 
         // Verify mocks are called
         expect(fetchMock.called()).toBe(true);
 
         //  check if vertex ai search is called
-        const callsToVertexAISearch = fetchMock.calls().filter(call => call[0] === url);
+        const callsToVertexAI = fetchMock.calls().filter(call => call[0] === url);
         // Check if body is sent correctly to vertex ai search
-        expect(callsToVertexAISearch[0][1] !== null).toBe(true);
-        expect(JSON.parse(callsToVertexAISearch[0][1].body)).toStrictEqual(requestJson);
+        expect(callsToVertexAI[0][1] !== null).toBe(true);
+        expect(JSON.parse(callsToVertexAI[0][1].body)).toEqual(requestJson);
 
-        //  check if vertex ai is called for summary match
-        const callsToSummaryMatch = fetchMock.calls().filter(call => call[0] === summaryMatchUrl);
-        // Check if body is sent correctly to vertex ai search
-        expect(callsToSummaryMatch[0][1].body !== null).toBe(true);
-
+        
         // Check if  values get populated
 
         // Match  Actual Summary 
-        const { cell: actual_summary_cell, col_index: actual_summary_col_index } = getCellAndColumnIndexByName("Actual Summary", mockTestData);
-        expect(actual_summary_cell[0][0]).toEqual(testCaseRows[1][actual_summary_col_index]);
-
-        // Match  Summary Match 
-        const { cell: summary_match_cell, col_index: summary_match_col_index } = getCellAndColumnIndexByName("Summary Match", mockTestData);
-        expect(summary_match_cell[0][0]).toEqual(testCaseRows[1][summary_match_col_index]);
-
-        // Match first link match
-        const { cell: first_link_match_cell, col_index: first_link_match_col_index } = getCellAndColumnIndexByName("First Link Match", mockTestData);
-        expect(first_link_match_cell[0][0]).toEqual(testCaseRows[1][first_link_match_col_index]);
-
-        // Match link in top 2
-        const { cell: top2_link_match_cell, col_index: top2_link_match_col_index } = getCellAndColumnIndexByName("Link in Top 2", mockTestData);
-        expect(top2_link_match_cell[0][0]).toEqual(testCaseRows[1][top2_link_match_col_index]);
-
-
-        // Match links
-        const {  col_index: expected_link1_col_index } = getCellAndColumnIndexByName("Expected Link 1", mockTestData);
-        const { cell: actual_link1_cell} = getCellAndColumnIndexByName("Actual Link 1", mockTestData);
-        expect(actual_link1_cell[0][0]).toEqual(testCaseRows[1][expected_link1_col_index]);
-
-        const { col_index: expected_link2_col_index } = getCellAndColumnIndexByName("Expected Link 2", mockTestData);
-        const { cell: actual_link2_cell } = getCellAndColumnIndexByName("Actual Link 2", mockTestData);
-        expect(actual_link2_cell[0][0]).toEqual(testCaseRows[1][expected_link2_col_index]);
-
-        const { col_index: expected_link3_col_index } = getCellAndColumnIndexByName("Expected Link 3", mockTestData);
-        const { cell: actual_link3_cell } = getCellAndColumnIndexByName("Actual Link 3", mockTestData);
-        expect(actual_link3_cell[0][0]).toEqual(testCaseRows[1][expected_link3_col_index]);
-
-      
+        const { cell: actual_generated_question, col_index: actual_generated_question_col_index } = getCellAndColumnIndexByName("Generated Question", mockTestData);
+        expect(actual_generated_question[0][0]).toEqual(testCaseRows[1][actual_generated_question_col_index]);
 
 
     });
@@ -350,22 +308,3 @@ function getCellAndColumnIndexByName(column_name, mockTestData) {
     return { cell, col_index };
 }
 
-async function mockSimilarityUsingVertexAI(config, returnVal) {
-
-
-    var response = {
-        predictions: [
-            {
-                content: `${returnVal}`,
-            },
-        ],
-    };
-    const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/text-bison:predict`;
-    fetchMock.postOnce(url, {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(response)
-    });
-
-    return { url, response };
-}

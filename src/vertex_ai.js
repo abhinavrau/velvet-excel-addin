@@ -2,7 +2,7 @@
 import { NotAuthenticatedError, QuotaError, summaryMatching_examples, summaryMatching_prompt } from "./common.js";
 import { appendLog } from "./ui.js";
 
-export async function callVertexAISearch(testCaseRowNum, query, config) {
+export async function callVertexAISearch(id, query, config) {
 
     const token = config.accessToken;
     const preamble = config.preamble;
@@ -42,15 +42,15 @@ export async function callVertexAISearch(testCaseRowNum, query, config) {
 
     const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${projectNumber}/locations/global/collections/default_collection/dataStores/${datastoreName}/servingConfigs/default_search:search`;
 
-    const { status, json_output } = await callVettexAI(url, token, data);
-    
-    appendLog(`testCaseID: ${testCaseRowNum}: Search Query Finished Successfully`);
-    
-    return { testCaseRowNum: testCaseRowNum, status_code: status, output: json_output };
+    const { status, json_output } = await callVertexAI(url, token, data);
+
+    appendLog(`testCaseID: ${id}: Search Query Finished Successfully`);
+
+    return { id: id, status_code: status, output: json_output };
 
 }
 
-export async function calculateSimilarityUsingPalm2(testCaseNum, sentence1, sentence2, config) {
+export async function calculateSimilarityUsingPalm2(id, sentence1, sentence2, config) {
 
     const token = config.accessToken;
     const projectId = config.vertexAIProjectID;
@@ -78,15 +78,15 @@ export async function calculateSimilarityUsingPalm2(testCaseNum, sentence1, sent
 
     const url = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/text-bison:predict`;
 
-    const { status, json_output } = await callVettexAI(url, token, data);
+    const { status, json_output } = await callVertexAI(url, token, data);
     const output = json_output.predictions[0].content;
-    
-    appendLog(`testCaseID: ${testCaseNum}: SummaryMatch Finished Successfully `);
 
-    return { testCaseNum: testCaseNum, status_code: status, output: `${output}` };
+    appendLog(`testCaseID: ${id}: SummaryMatch Finished Successfully `);
+
+    return { id: id, status_code: status, output: `${output}` };
 }
 
-async function callVettexAI(url, token, data) {
+export async function callVertexAI(url, token, data) {
     const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -107,72 +107,127 @@ async function callVettexAI(url, token, data) {
             throw new QuotaError(json.error.message);
         }
         else {
-
-            throw new Error("Error calling VertexAI for Summary, HTTP Status: " + response.status);
+            
+            throw new Error(`Error calling VertexAI for Summary, HTTP Code: ${response.status} Reason: ${response.body}`);
         }
-    } 
-    
+    }
+
     const json = await response.json();
 
     return { status: response.status, json_output: json };
 }
 
-export async function callGeminiMultitModal(prompt,fileUri, mimeType, config) {
+export async function callGeminiMultitModal(id, prompt, fileUri, mimeType, config) {
 
-    const token = config.accessToken;
-    const projectId = config.vertexAIProjectID;
-    const location = config.vertexAILocation;
-    const model_id = config.function_model_id;
-   
-    var data = {
-        contents: [
-            {
-                role: "user",
+        const token = config.accessToken;
+        const projectId = config.vertexAIProjectID;
+        const location = config.vertexAILocation;
+        const model_id = config.model;
+        const system_instruction = config.systemInstruction === null ? "" : config.systemInstruction;
+       
+        
+        var data = {
+            contents: [
+                {
+                    role: "user",
+                    parts: [
+                        {
+                            text: `${prompt}`
+                        },
+                        {
+                            fileData: {
+                                mimeType: `${mimeType}`,
+                                fileUri: `${fileUri}`
+                            }
+                        }
+                    ]
+                }
+            ],
+            systemInstruction: {
                 parts: [
                     {
-                        fileData: {
-                            mimeType: `${mimeType}`,
-                            fileUri: `${fileUri}`
-                        }
-                    },
-                    {
-                        text: `${prompt}`
+                        text: `${system_instruction}`
                     },
                 ]
-            }
-        ],
-        generationConfig: {
-            maxOutputTokens: 8192,
-            temperature: 1,
-            topP: 0.95,
-            response_mime_type: "application/json"
-        },
-        safetySettings: [
-            {
-                category: "HARM_CATEGORY_HATE_SPEECH",
-                threshold: "BLOCK_MEDIUM_AND_ABOVE"
             },
-            {
-                category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-                threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            generationConfig: {
+                maxOutputTokens: 8192,
+                temperature: 1,
+                topP: 0.95,
+                response_mime_type: `${config.responseMimeType}`
             },
-            {
-                category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                threshold: "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-                category: "HARM_CATEGORY_HARASSMENT",
-                threshold: "BLOCK_MEDIUM_AND_ABOVE"
-            }
-        ],
-    };
-   
-    const url = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${model_id}:generateContent`;
+            safetySettings: [
+                {
+                    category: "HARM_CATEGORY_HATE_SPEECH",
+                    threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                },
+                {
+                    category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+                    threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                },
+                {
+                    category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                    threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                },
+                {
+                    category: "HARM_CATEGORY_HARASSMENT",
+                    threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                }
+            ],
+        };
+        if (fileUri === null) {
+            data = {
+                contents: [
+                    {
+                        role: "user",
+                        parts: [
+                            {
+                                text: `${prompt}`
+                            },
+                        ]
+                    }
+                ],
+                systemInstruction: {
+                    parts: [
+                        {
+                            text: `${system_instruction}`
+                        },
+                    ]
+                },
+                generationConfig: {
+                    maxOutputTokens: 8192,
+                    temperature: 1,
+                    topP: 0.95,
+                    response_mime_type: `${config.responseMimeType}`
+                },
+                safetySettings: [
+                    {
+                        category: "HARM_CATEGORY_HATE_SPEECH",
+                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                    },
+                    {
+                        category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                    },
+                    {
+                        category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                    },
+                    {
+                        category: "HARM_CATEGORY_HARASSMENT",
+                        threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                    }
+                ],
+            };
+        }
 
-    const { status, json_output } = await callVettexAI(url, token, data);
-    const output = json_output.candidates[0].candidates.parts[0].text;
-   
-    appendLog(`GeminiFn: Generate Finished Successfully.`);
-    
-    return {status_code: status, output: `${output}` };
+        const url = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${model_id}:generateContent`;
+
+        const { status, json_output } = await callVertexAI(url, token, data);
+        const output = json_output.candidates[0].content.parts[0].text;
+
+        appendLog(`callGeminiMultitModal: Finished Successfully.`);
+
+        return { id: id, status_code: status, output: `${output}` };
+
 }

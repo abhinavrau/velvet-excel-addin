@@ -3,35 +3,35 @@
  * See LICENSE in the project root for license information.
  */
 
-
- .container {
-   /* Other container styles */
+.container {
+  /* Other container styles */
   font-family: sans-serif;
-    padding: 20px;
- }
-
- .title {
-    text-align: center;
-    margin-bottom: 20px;
+  padding: 20px;
 }
 
-.step-title, .status-title {
-    margin-bottom: 10px;
-    font-size:18px;
-    color: #333; /* Dark gray text */
+.title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.step-title,
+.status-title {
+  margin-bottom: 10px;
+  font-size: 18px;
+  color: #333; /* Dark gray text */
 }
 
 h1 {
-    font-family:Arial, sans-serif;
-    color:#2d66eb;
+  font-family: Arial, sans-serif;
+  color: #2d66eb;
 }
 
 p {
-    font-family:Arial;
-    font-size:14px;
-    font-style:normal;
-    font-weight:normal;
-    color:#000000;
+  font-family: Arial;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: normal;
+  color: #000000;
 }
 
 .styled-text p {
@@ -43,83 +43,122 @@ p {
 }
 
 button {
-	color: #ffffff;
-	background-color: #2d63c8;
-    font-size: 14px;
-	border: 1px solid #2d63c8;
-	padding: 10px 30px;
-	cursor: pointer
+  color: #ffffff;
+  background-color: #2d63c8;
+  font-size: 14px;
+  border: 1px solid #2d63c8;
+  padding: 10px 30px;
+  cursor: pointer;
+  border-radius: 5px;
+  
 }
 
 button:hover {
-	color: #2d63c8;
-	background-color: #ffffff;
+  color: #2d63c8;
+  background-color: #ffffff;
 }
 
 input[type="text"] {
-    width: calc(100% - 10px); /* Adjust width for padding */
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+  width: calc(100% - 10px); /* Adjust width for padding */
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
-
 
 .status {
-    margin: 0;
-    height: 140px;
-  }
-  
-  .status-card {
-    padding: 1em;
-  }
-
-  .success-msg {
-    background-color: #dff6dd;
-  }
-  
-  .error-msg {
-    background-color: #fde7e9;
-  }
-
-   .log-container {
-   /* Other container styles */
-    position: relative; 
-    width: 100%;
-    height: 300px; 
-   }
-
-  #log-pane {
-    width: 100%;
-    height: 100%;
-    box-sizing: border-box; /* Include padding and border in the width/height */
-    position: absolute; /* Fill the parent container */
-    top: 0;
-    left: 0;
+  margin: 0;
+  height: 140px;
 }
 
-  .fixed-footer {
-    position: relative;
-    bottom: 0;
-    width: 100%;
-    background-color: #f8f9fa;
-    padding: 5px;
-    font-family: Arial, sans-serif;
-    color: #333;
-    border-top: 1px solid #e0e0e0;
-    /* Other styles as needed */
-  }
+.status-card {
+  padding: 1em;
+}
 
-  .fixed-footer p {
-    margin: 0.5em 0;
-  }
+.success-msg {
+  background-color: #dff6dd;
+}
 
-  .fixed-footer a {
-    color: #2d63c8;
-    text-decoration: none;
-  }
+.error-msg {
+  background-color: #fde7e9;
+}
 
-  .fixed-footer a:hover {
-    color: #052d58;
-    text-decoration: underline;
-  }
-  
+.log-container {
+  /* Other container styles */
+  position: relative;
+  width: 100%;
+  height: 300px;
+}
+
+#log-pane {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box; /* Include padding and border in the width/height */
+  position: absolute; /* Fill the parent container */
+  top: 0;
+  left: 0;
+}
+
+.fixed-footer {
+  position: relative;
+  bottom: 0;
+  width: 100%;
+  background-color: #f8f9fa;
+  padding: 5px;
+  font-family: Arial, sans-serif;
+  color: #333;
+  border-top: 1px solid #e0e0e0;
+  /* Other styles as needed */
+}
+
+.fixed-footer p {
+  margin: 0.5em 0;
+}
+
+.fixed-footer a {
+  color: #2d63c8;
+  text-decoration: none;
+}
+
+.fixed-footer a:hover {
+  color: #052d58;
+  text-decoration: underline;
+}
+
+/* Basic tab styling - customize as needed */
+.tabs {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin-bottom: 10px;
+}
+
+.tab {
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-bottom: none;
+  cursor: pointer;
+  background-color: #f0f0f0;
+  /* Add rounded corners */
+  border-top-left-radius: 10px; /* Adjust radius as needed */
+  border-top-right-radius: 10px; /* Adjust radius as needed */
+}
+
+/* Optional: Remove bottom corners on active tab */
+.tab.active {
+  background-color: #fff;
+  border-bottom: 1px solid #fff;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* Tab content styling */
+
+.tab-content {
+  border: 1px solid #ccc;
+  padding: 15px;
+  display: none; /* Hide all tab content by default */
+}
+
+.tab-content.active {
+  display: block;
+}

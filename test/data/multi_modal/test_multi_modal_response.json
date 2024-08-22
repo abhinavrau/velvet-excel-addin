@@ -1,11 +1,11 @@
 {
     "candidates": [
         {
-            "candidates": {
+            "content": {
                 "role": "model",
                 "parts": [
                     {
-                        "text": "[\n{\n\"question\": \"What is the minimum opening deposit required for a 36-month CD?\",\n\"answer\": \"$1,000\"\n},\n{\n\"question\": \"What is the APY for Everyday Savings?\",\n\"answer\": \"3.75%\"\n}\n]\n"
+                        "text": "{\"question\": \"If I close my new savings account within 30 days of opening it, will I be charged a fee?\", \"answer\": \"Yes, you will be charged a $25 fee unless the closure is due to a Gemini Bank error in account opening, customer dissatisfaction with a product or service disclosed during the opening process, or insufficient funds.\", \"reasoning\": \"• Account Closure: A customer who closes their new savings account within 30 days of opening will be subject to a $25 fee unless the closure is due to:\\nΟ Gemini Bank error in account opening.\\nΟ Customer dissatisfaction with a product or service disclosed during the opening process.\\nInsufficient Funds: Customers will be notified of non-sufficient funds (NSF) fees according to the standard Gemini Bank NSF Fee Schedule.\"}\n"
                     }
                 ]
             },
@@ -14,38 +14,38 @@
                 {
                     "category": "HARM_CATEGORY_HATE_SPEECH",
                     "probability": "NEGLIGIBLE",
-                    "probabilityScore": 0.06298828,
+                    "probabilityScore": 0.1328125,
                     "severity": "HARM_SEVERITY_NEGLIGIBLE",
-                    "severityScore": 0.1484375
+                    "severityScore": 0.16015625
                 },
                 {
                     "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
                     "probability": "NEGLIGIBLE",
-                    "probabilityScore": 0.34375,
-                    "severity": "HARM_SEVERITY_LOW",
-                    "severityScore": 0.30664063
+                    "probabilityScore": 0.17773438,
+                    "severity": "HARM_SEVERITY_NEGLIGIBLE",
+                    "severityScore": 0.12402344
                 },
                 {
                     "category": "HARM_CATEGORY_HARASSMENT",
                     "probability": "NEGLIGIBLE",
-                    "probabilityScore": 0.060058594,
+                    "probabilityScore": 0.10498047,
                     "severity": "HARM_SEVERITY_NEGLIGIBLE",
-                    "severityScore": 0.06640625
+                    "severityScore": 0.06738281
                 },
                 {
                     "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
                     "probability": "NEGLIGIBLE",
-                    "probabilityScore": 0.06298828,
+                    "probabilityScore": 0.06738281,
                     "severity": "HARM_SEVERITY_NEGLIGIBLE",
-                    "severityScore": 0.057373047
+                    "severityScore": 0.045410156
                 }
             ],
-            "avgLogprobs": -0.07972021663890165
+            "avgLogprobs": -0.036875785115253495
         }
     ],
     "usageMetadata": {
-        "promptTokenCount": 276,
-        "candidatesTokenCount": 68,
-        "totalTokenCount": 344
+        "promptTokenCount": 634,
+        "candidatesTokenCount": 166,
+        "totalTokenCount": 800
     }
 }

@@ -37,14 +37,17 @@
     <link rel="stylesheet" href="taskpane.css" />
     <title>Velvet</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+
+    </style>
   </head>
 
   <body>
     <div class="container">
-      <h1 class="title">Vertex AI Search Eval Tool</h1>
+      <h1 class="title">Vertex AI Tools</h1>
       <section class="step">
-        <h2 class="step-title">1. Setup</h2>
-        <p><button id="createTables">Create Tables</button></p>
+        <h2 class="step-title">Authentication</h2>
+        
         <p>
           <label for="access-token">Access Token:</label>
           <input
@@ -55,15 +58,54 @@
           />
         </p>
       </section>
-      <section class="step">
-        <h2 class="step-title">2. Run Tests</h2>
-        <p>
-          Modify Config Parameters. Populate test data in Test Table and Click
-          button below.
-        </p>
-        <button id="executeTests">Execute Tests</button>
-        <button id="cancelTests"  style="visibility: hidden; background: red;">Cancel Tests</button>
-      </section>
+       <ul class="tabs">
+        <li class="tab active" data-target="search-tab">Search Eval</li>
+        <li class="tab" data-target="qa-tab">Synthetic Q&A</li>
+        <li class="tab" data-target="summarization-tab">Summarization</li>
+      </ul>
+
+      <div class="tab-content active" id="search-tab">
+        <section class="step">
+          <h2 class="step-title">Agent Builder Search Testing</h2>
+          <p><button id="createSearchTables">Create Search Tables</button></p>
+          <p>
+            1. Modify Config Parameters in first table.
+            2. Populate ID, Query, Actual Summary, Expected Summary etc. and Click
+            button below.
+          </p>
+          <button id="executeSearchTests">Run Tests</button>
+          <button id="cancelSearchTests" style="visibility: hidden; background: red;">Cancel Tests</button>
+        </section>
+      </div>
+
+      <div class="tab-content" id="qa-tab">
+        <section class="step">
+          <h2 class="step-title">Synthetic Q&A Generation</h2>
+          <p><button id="createGenQATables">Create Q&A Tables</button></p>
+          <p>
+            1. Modify Config Parameters in first table.
+            2. Populate ID, FileUri and mimeType in second table and Click
+            button below.
+          </p>
+          <button id="generateQAData">Generate Q&A</button>
+          <button id="cancelGenerateQAData" style="visibility: hidden; background: red;">Cancel Generate Q&A</button>
+        </section>
+      </div>
+
+      <div class="tab-content" id="summarization-tab">
+        <section class="step">
+          <h2 class="step-title">Summarization Eval</h2>
+          <p><button id="createSummarizationTables">Create Summarization Tables</button></p>
+          <p>
+            1. Modify Config Parameters in first table.
+            2. Populate ID and Context in second table and Click
+            button below.
+          </p>
+          <button id="genSummarizationData">Run Eval</button>
+          <button id="cancelSummarizationData" style="visibility: hidden; background: red;">Cancel Summary Eval</button>
+        </section>
+      </div>
+
       <section class="status">
         <h2 class="status-title">Status</h2>
         <div class="status"></div>
@@ -71,11 +113,11 @@
       <section class="logs">
         <button id="toggleLogs">Show/Hide Logs</button>
         <div class="log-container">
-          <div id="log-pane"></div>
+          <div id="log-pane" style="display:none"></div>
         </div>
       </section>
     </div>
-  </body>
+  
   <script type="text/javascript">
     // Create Tabulator table
     $("#log-pane").tabulator({
@@ -121,5 +163,19 @@
         logPane.style.display = "none";
       }
     });
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        // Remove active class from all tabs and content
+        tabs.forEach(t => t.classList.remove('active'));
+        tabContents.forEach(tc => tc.classList.remove('active'));
+
+        // Add active class to clicked tab and corresponding content
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.target).classList.add('active');
+      });
+    })
   </script>
+  </body>
 </html>
