@@ -285,7 +285,7 @@ function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, link_3
     const cell = actualSummaryColumn.getRange().getCell(rowNum, 0);
     cell.clear(Excel.ClearApplyTo.formats);
     cell.values = [[result.summary.summaryText]];
-    await context.sync();
+    context.sync();
     // match summaries only if they are not null or empty
     if (expectedSummary[rowNum][0] !== null && expectedSummary[rowNum][0] !== "") {
         const score_cell = summaryScoreColumn.getRange().getCell(rowNum, 0);
@@ -317,7 +317,7 @@ function checkDocumentLinks(rowNum, result, link_1_Column, link_2_Column, link_3
             
         }
         finally {
-            await context.sync();
+            context.sync();
         }
        
     }
