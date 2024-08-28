@@ -2,13 +2,12 @@ import expect from 'expect';
 import fetchMock from 'fetch-mock';
 import { default as $, default as JQuery } from 'jquery';
 import sinon from 'sinon';
-import { NotAuthenticatedError, QuotaError, summaryMatching_examples, summaryMatching_prompt } from "../src/common.js";
-import { appendError, showStatus } from '../src/ui.js';
+import { NotAuthenticatedError, QuotaError, ResourceNotFoundError, VelvetError,summaryMatching_examples, summaryMatching_prompt } from "../src/common.js";
+
 import { calculateSimilarityUsingPalm2, callVertexAISearch } from '../src/vertex_ai.js';
 import { mockVertexAISearchRequestResponse } from './test_common.js';
 
-// mock the UI components
-global.showStatus = showStatus;
+
 
 global.$ = $;
 global.JQuery = JQuery;
@@ -355,6 +354,79 @@ describe('When calculateSimilarityUsingVertexAI is called ', () => {
          
        
      }); 
+
+       it("should return error when Vertex AI Search returns 404 error", async () => {
+         const query =
+           "What is Google's revenue for the year ending December 31, 2021";
+         const config = {
+           accessToken: "YOUR_ACCESS_TOKEN",
+           preamble: "",
+           extractiveContentSpec: {
+             maxExtractiveAnswerCount: "2",
+             maxExtractiveSegmentCount: "0",
+           },
+           summaryResultCount: 2,
+           model: "gemini-1.0-pro-001/answer_gen/v1",
+           useSemanticChunks: false,
+           ignoreAdversarialQuery: true,
+           ignoreNonSummarySeekingQuery: true,
+           vertexAISearchProjectNumber: "YOUR_PROJECT_NUMBER",
+           vertexAISearchDataStoreName: "YOUR_DATASTORE_NAME",
+           vertexAILocation: "YOUR_LOCATION",
+         };
+
+         const { requestJson, url, expectedResponse } =
+           mockVertexAISearchRequestResponse(
+             1,
+             404,
+             "./test/data/extractive_answer/test_vai_search_extractive_answer_request.json",
+             "./test/data/not_authenticated.json",
+             config
+           );
+
+         try {
+           const result = await callVertexAISearch(1, query, config);
+           assert.fail();
+         } catch (err) {
+           expect(err instanceof ResourceNotFoundError).toBe(true);
+         }
+       });
+      it("should return error when Vertex AI Search returns any other error", async () => {
+        const query =
+          "What is Google's revenue for the year ending December 31, 2021";
+        const config = {
+          accessToken: "YOUR_ACCESS_TOKEN",
+          preamble: "",
+          extractiveContentSpec: {
+            maxExtractiveAnswerCount: "2",
+            maxExtractiveSegmentCount: "0",
+          },
+          summaryResultCount: 2,
+          model: "gemini-1.0-pro-001/answer_gen/v1",
+          useSemanticChunks: false,
+          ignoreAdversarialQuery: true,
+          ignoreNonSummarySeekingQuery: true,
+          vertexAISearchProjectNumber: "YOUR_PROJECT_NUMBER",
+          vertexAISearchDataStoreName: "YOUR_DATASTORE_NAME",
+          vertexAILocation: "YOUR_LOCATION",
+        };
+
+        const { requestJson, url, expectedResponse } =
+          mockVertexAISearchRequestResponse(
+            1,
+            405,
+            "./test/data/extractive_answer/test_vai_search_extractive_answer_request.json",
+            "./test/data/not_authenticated.json",
+            config
+          );
+
+        try {
+          const result = await callVertexAISearch(1, query, config);
+          assert.fail();
+        } catch (err) {
+          expect(err instanceof VelvetError).toBe(true);
+        }
+      });
 
 });
 

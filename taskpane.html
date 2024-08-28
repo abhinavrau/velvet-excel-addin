@@ -37,9 +37,7 @@
     <link rel="stylesheet" href="taskpane.css" />
     <title>Velvet</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
-
-    </style>
+    <style></style>
   </head>
 
   <body>
@@ -47,7 +45,7 @@
       <h1 class="title">Vertex AI Tools</h1>
       <section class="step">
         <h2 class="step-title">Authentication</h2>
-        
+
         <p>
           <label for="access-token">Access Token:</label>
           <input
@@ -58,7 +56,7 @@
           />
         </p>
       </section>
-       <ul class="tabs">
+      <ul class="tabs">
         <li class="tab active" data-target="search-tab">Search Eval</li>
         <li class="tab" data-target="qa-tab">Synthetic Q&A</li>
         <li class="tab" data-target="summarization-tab">Summarization</li>
@@ -69,12 +67,16 @@
           <h2 class="step-title">Agent Builder Search Testing</h2>
           <p><button id="createSearchTables">Create Search Tables</button></p>
           <p>
-            1. Modify Config Parameters in first table.
-            2. Populate ID, Query, Actual Summary, Expected Summary etc. and Click
-            button below.
+            1. Modify Config Parameters in first table. 2. Populate ID, Query,
+            Actual Summary, Expected Summary etc. and Click button below.
           </p>
           <button id="executeSearchTests">Run Tests</button>
-          <button id="cancelSearchTests" style="visibility: hidden; background: red;">Cancel Tests</button>
+          <button
+            id="cancelSearchTests"
+            style="visibility: hidden; background: red"
+          >
+            Cancel Tests
+          </button>
         </section>
       </div>
 
@@ -83,26 +85,38 @@
           <h2 class="step-title">Synthetic Q&A Generation</h2>
           <p><button id="createGenQATables">Create Q&A Tables</button></p>
           <p>
-            1. Modify Config Parameters in first table.
-            2. Populate ID, FileUri and mimeType in second table and Click
-            button below.
+            1. Modify Config Parameters in first table. 2. Populate ID, FileUri
+            and mimeType in second table and Click button below.
           </p>
           <button id="generateQAData">Generate Q&A</button>
-          <button id="cancelGenerateQAData" style="visibility: hidden; background: red;">Cancel Generate Q&A</button>
+          <button
+            id="cancelGenerateQAData"
+            style="visibility: hidden; background: red"
+          >
+            Cancel Generate Q&A
+          </button>
         </section>
       </div>
 
       <div class="tab-content" id="summarization-tab">
         <section class="step">
           <h2 class="step-title">Summarization Eval</h2>
-          <p><button id="createSummarizationTables">Create Summarization Tables</button></p>
           <p>
-            1. Modify Config Parameters in first table.
-            2. Populate ID and Context in second table and Click
-            button below.
+            <button id="createSummarizationTables">
+              Create Summarization Tables
+            </button>
+          </p>
+          <p>
+            1. Modify Config Parameters in first table. 2. Populate ID and
+            Context in second table and Click button below.
           </p>
           <button id="genSummarizationData">Run Eval</button>
-          <button id="cancelSummarizationData" style="visibility: hidden; background: red;">Cancel Summary Eval</button>
+          <button
+            id="cancelSummarizationData"
+            style="visibility: hidden; background: red"
+          >
+            Cancel Summary Eval
+          </button>
         </section>
       </div>
 
@@ -113,69 +127,70 @@
       <section class="logs">
         <button id="toggleLogs">Show/Hide Logs</button>
         <div class="log-container">
-          <div id="log-pane" style="display:none"></div>
+          <div id="log-pane" style="display: none"></div>
         </div>
       </section>
     </div>
-  
-  <script type="text/javascript">
-    // Create Tabulator table
-    $("#log-pane").tabulator({
-      layout: "fitDataStretch", // Adjust column widths to fit content
-      layoutColumnsOnNewData:true,
-      columns: [
-        {
-          title: "Time",
-          field: "time",
-          sorter: "time",
-          sorterParams: { format: "HH:mm:ss" },
-          minWidth: 80,
-          
-        },
-        {
-          title: "Level",
-          field: "level",
-          headerFilter: "list",
-          headerFilterParams: {
-            values: ["INFO", "ERROR"],
+
+    <script type="text/javascript">
+      // Create Tabulator table
+      $("#log-pane").tabulator({
+        layout: "fitDataStretch", // Adjust column widths to fit content
+        layoutColumnsOnNewData: true,
+        columns: [
+          {
+            title: "Time",
+            field: "time",
+            sorter: "time",
+            sorterParams: { format: "HH:mm:ss" },
+            minWidth: 80,
           },
-          headerSort: false,
-          minWidth: 80,
-        },
-        {
-          title: "Message",
-          headerFilter: true,
-          headerSort: false,
-          field: "message",
-        },
-      ],
-      initialSort: [
-        { column: "time", dir: "desc" }, // Initial sort by time descending
-      ],
-    });
-    const toggleLogsButton = document.getElementById("toggleLogs");
-    const logPane = document.getElementById("log-pane");
-
-    toggleLogsButton.addEventListener("click", () => {
-      if (logPane.style.display === "none") {
-        logPane.style.display = "block"; // Or 'inline' depending on your layout
-      } else {
-        logPane.style.display = "none";
-      }
-    });
-    const tabs = document.querySelectorAll('.tab');
-    const tabContents = document.querySelectorAll('.tab-content');
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        // Remove active class from all tabs and content
-        tabs.forEach(t => t.classList.remove('active'));
-        tabContents.forEach(tc => tc.classList.remove('active'));
-
-        // Add active class to clicked tab and corresponding content
-        tab.classList.add('active');
-        document.getElementById(tab.dataset.target).classList.add('active');
+          {
+            title: "Level",
+            field: "level",
+            headerFilter: "list",
+            headerFilterParams: {
+              values: ["INFO", "ERROR"],
+            },
+            headerSort: false,
+            minWidth: 80,
+          },
+          {
+            title: "Message",
+            headerFilter: true,
+            headerSort: false,
+            field: "message",
+            formatter: "textarea",
+            variableHeight: true,
+          },
+        ],
+        initialSort: [
+          { column: "time", dir: "desc" }, // Initial sort by time descending
+        ],
       });
-    })
-  </script>
+      const toggleLogsButton = document.getElementById("toggleLogs");
+      const logPane = document.getElementById("log-pane");
+
+      toggleLogsButton.addEventListener("click", () => {
+        if (logPane.style.display === "none") {
+          logPane.style.display = "block"; // Or 'inline' depending on your layout
+        } else {
+          logPane.style.display = "none";
+        }
+      });
+      const tabs = document.querySelectorAll(".tab");
+      const tabContents = document.querySelectorAll(".tab-content");
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          // Remove active class from all tabs and content
+          tabs.forEach((t) => t.classList.remove("active"));
+          tabContents.forEach((tc) => tc.classList.remove("active"));
+
+          // Add active class to clicked tab and corresponding content
+          tab.classList.add("active");
+          document.getElementById(tab.dataset.target).classList.add("active");
+        });
+      });
+    </script>
   </body>
 </html>

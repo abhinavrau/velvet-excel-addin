@@ -29,6 +29,7 @@
     "office-addin-manifest": "^1.12.11",
     "office-addin-mock": "^2.3.18",
     "pre-commit": "^1.2.2",
+    "prettier": "3.3.3",
     "sinon": "^17.0.1",
     "supertest": "^6.3.3"
   },

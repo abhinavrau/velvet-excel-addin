@@ -24,7 +24,7 @@ export function mockVertexAISearchRequestResponse(testCaseNum, expected_status_c
     const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
 
     // mock the call with our response we want to return
-    var response =  fetchMock.postOnce(url, {
+    var response =  fetchMock.post(url, {
         status: expected_status_code,
         headers: {
             'Content-Type': 'application/json'
