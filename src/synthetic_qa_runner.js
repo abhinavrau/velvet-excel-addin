@@ -4,7 +4,7 @@ import {
   NotAuthenticatedError,
   PermissionDeniedError,
   QuotaError,
-  VelvetError,
+  VertexAIError,
 } from "./common.js";
 import { callGeminiMultitModal } from "./vertex_ai.js";
 
@@ -27,9 +27,7 @@ export async function getSyntheticQAConfig() {
       currentWorksheet.load("name");
       await context.sync();
       const worksheetName = currentWorksheet.name;
-      const configTable = currentWorksheet.tables.getItem(
-        `${worksheetName}.ConfigTable`
-      );
+      const configTable = currentWorksheet.tables.getItem(`${worksheetName}.ConfigTable`);
       const valueColumn = getColumn(configTable, "Value");
       await context.sync();
 
@@ -66,16 +64,11 @@ export async function createSyntheticQAData(config) {
       await context.sync();
       const worksheetName = currentWorksheet.name;
 
-      const testCasesTable = currentWorksheet.tables.getItem(
-        `${worksheetName}.TestCasesTable`
-      );
+      const testCasesTable = currentWorksheet.tables.getItem(`${worksheetName}.TestCasesTable`);
       const idColumn = getColumn(testCasesTable, "ID");
       const fileUriColumn = getColumn(testCasesTable, "GCS File URI");
       const mimeTypeColumn = getColumn(testCasesTable, "Mime Type");
-      const generatedQuestionColumn = getColumn(
-        testCasesTable,
-        "Generated Question"
-      );
+      const generatedQuestionColumn = getColumn(testCasesTable, "Generated Question");
       const expectedAnswerColumn = getColumn(testCasesTable, "Expected Answer");
       const reasoningAColumn = getColumn(testCasesTable, "Reasoning");
       const statusColumn = getColumn(testCasesTable, "Status");
@@ -86,17 +79,14 @@ export async function createSyntheticQAData(config) {
 
       if (config.accessToken === null || config.accessToken === "") {
         showStatus(`Access token is empty`, true);
-        appendError(
-          `Error in createSyntheticQAData: Access token is empty`,
-          null
-        );
+        appendError(`Error in createSyntheticQAData: Access token is empty`, null);
         return;
       }
 
       if (fileUriColumn.isNullObject || idColumn.isNullObject) {
         showStatus(
           `Error in createSyntheticQAData: No fileUriColumn or ID column found in Test Cases Table. Make sure there is an ID and Query column in the Test Cases Table.`,
-          true
+          true,
         );
         return;
       }
@@ -123,9 +113,7 @@ export async function createSyntheticQAData(config) {
         // Batch the calls to Vertex AI since there are throuput checks in place.\
         if (processedCount % config.batchSize === 0) {
           // delay calls with apropriate time
-          await new Promise((r) =>
-            setTimeout(r, config.timeBetweenCallsInSec * 1000)
-          );
+          await new Promise((r) => setTimeout(r, config.timeBetweenCallsInSec * 1000));
         }
         // Stop processing if there errors
         if (stopProcessing) {
@@ -142,7 +130,7 @@ export async function createSyntheticQAData(config) {
             prompt,
             fileUri[processedCount][0],
             mimeType[processedCount][0],
-            config
+            config,
           )
             .then(async (result) => {
               let output = result.output;
@@ -160,11 +148,9 @@ export async function createSyntheticQAData(config) {
                   statusColumn,
                   responseTimeColumn,
                   config,
-                  context
+                  context,
                 );
-                appendLog(
-                  `genSynQID: ${rowNum} Generated Question and Answer.`
-                );
+                appendLog(`genSynQID: ${rowNum} Generated Question and Answer.`);
               }
             })
             .catch((error) => {
@@ -173,17 +159,14 @@ export async function createSyntheticQAData(config) {
               if (
                 error instanceof NotAuthenticatedError ||
                 error instanceof QuotaError ||
-                error instanceof VelvetError ||
+                error instanceof VertexAIError ||
                 error instanceof PermissionDeniedError
               ) {
-                appendError(
-                  `Error for testCaseID: ${error.id} calling callVertexAISearch`,
-                  error
-                );
+                appendError(`Error for testCaseID: ${error.id} calling callVertexAISearch`, error);
               } else {
                 appendError(`Error calling callVertexAISearch`, error);
               }
-            })
+            }),
         );
 
         processedCount++;
@@ -199,13 +182,9 @@ export async function createSyntheticQAData(config) {
         processedCount <= countRows &&
         (id[processedCount][0] === null || id[processedCount][0] === "")
       ) {
-        stoppedReason += ` Empty ID encountered after ${
-          processedCount - 1
-        } test cases.`;
+        stoppedReason += ` Empty ID encountered after ${processedCount - 1} test cases.`;
       }
-      var summary = `Finished! Successful: ${
-        processedCount - numfails - 1
-      }. ${stoppedReason}`;
+      var summary = `Finished! Successful: ${processedCount - numfails - 1}. ${stoppedReason}`;
       appendLog(summary);
 
       showStatus(summary, numfails > 0);
@@ -216,10 +195,7 @@ export async function createSyntheticQAData(config) {
       await context.sync();
     } catch (error) {
       appendError(`Caught Exception in executeTests `, error);
-      showStatus(
-        `Caught Exception in executeTests: ${JSON.stringify(error)}`,
-        true
-      );
+      showStatus(`Caught Exception in executeTests: ${JSON.stringify(error)}`, true);
       throw error;
     }
   });
@@ -239,22 +215,18 @@ async function processResponse(
   statusColumn,
   responseTimeColumn,
   config,
-  context
+  context,
 ) {
   try {
     // Set the generated question
     var response = JSON.parse(output);
 
-    const cell_generatedQuestion = generatedQuestionColumn
-      .getRange()
-      .getCell(rowNum, 0);
+    const cell_generatedQuestion = generatedQuestionColumn.getRange().getCell(rowNum, 0);
     cell_generatedQuestion.clear(Excel.ClearApplyTo.formats);
     cell_generatedQuestion.values = [[response.question]];
 
     // Set the answer
-    const cell_expectedAnswer = expectedAnswerColumn
-      .getRange()
-      .getCell(rowNum, 0);
+    const cell_expectedAnswer = expectedAnswerColumn.getRange().getCell(rowNum, 0);
     cell_expectedAnswer.clear(Excel.ClearApplyTo.formats);
     cell_expectedAnswer.values = [[response.answer]];
 
@@ -268,10 +240,7 @@ async function processResponse(
     cell_status.clear(Excel.ClearApplyTo.formats);
     cell_status.values = [["Success"]];
   } catch (err) {
-    appendError(
-      `testCaseID: ${rowNum} Error getting Similarity. Error: ${err.message} `,
-      err
-    );
+    appendError(`testCaseID: ${rowNum} Error getting Similarity. Error: ${err.message} `, err);
     const cell_status = statusColumn.getRange().getCell(rowNum, 0);
     cell_status.clear(Excel.ClearApplyTo.formats);
     cell_status.format.fill.color = "#FFCCCB";

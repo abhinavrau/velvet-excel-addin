@@ -6,10 +6,7 @@ import {
   getSyntheticQAConfig,
   stopSyntheticData,
 } from "./synthetic_qa_runner.js";
-import {
-  createSyntheticQAConfigTable,
-  createSyntheticQADataTable,
-} from "./synthetic_qa_tables.js";
+import { createSyntheticQAConfigTable, createSyntheticQADataTable } from "./synthetic_qa_tables.js";
 
 import {
   createSummarizationData,
@@ -40,7 +37,7 @@ Office.onReady((info) => {
       "cancelSearchTests",
       async function () {
         await excelSearchRunner.stopSearchTests();
-      }
+      },
     );
 
     setupButtonEvents(
@@ -53,7 +50,7 @@ Office.onReady((info) => {
       "cancelGenerateQAData",
       async function () {
         await stopSyntheticData();
-      }
+      },
     );
 
     setupButtonEvents(
@@ -66,7 +63,7 @@ Office.onReady((info) => {
       "cancelSummarizationData",
       async function () {
         await stopSummarizationData();
-      }
+      },
     );
   }
 });
@@ -77,7 +74,7 @@ function setupButtonEvents(
   runTaskButtonId,
   fn_runTask,
   cancelJobButtonId,
-  fn_cancelTask
+  fn_cancelTask,
 ) {
   document.getElementById(createTableButtonId).onclick = fn_createTables;
   const runTaskButton = document.getElementById(runTaskButtonId);

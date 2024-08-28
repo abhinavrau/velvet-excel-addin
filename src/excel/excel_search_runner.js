@@ -1,41 +1,31 @@
-import { calculateSimilarityUsingPalm2 } from "../vertex_ai.js";
+import { calculateSimilarityUsingPalm2, callVertexAISearch } from "../vertex_ai.js";
 
 import { appendError, appendLog, showStatus } from "../ui.js";
 
-import { SearchRunner } from "../search_runner.js";
+import { TaskRunner } from "../task_runner.js";
 
-export class ExcelSearchRunner extends SearchRunner {
+import { getColumn } from "./excel_common.js";
+
+export class ExcelSearchRunner extends TaskRunner {
   constructor() {
     super();
   }
 
-  getColumn(table, columnName) {
-    try {
-      const column = table.columns.getItemOrNullObject(columnName);
-      column.load();
-      return column;
-    } catch (error) {
-      appendError("Error getColumn:", error);
-      showStatus(
-        `Exception when getting column: ${JSON.stringify(error)}`,
-        true
-      );
-    }
+  async getResultFromExternalAPI(context, rowNum, config, testCasesTable) {
+    var query = this.queryColumn.values;
+    return callVertexAISearch(rowNum, query[rowNum][0], config);
   }
 
   async getSearchConfig() {
     var config;
     await Excel.run(async (context) => {
       try {
-        const currentWorksheet =
-          context.workbook.worksheets.getActiveWorksheet();
+        const currentWorksheet = context.workbook.worksheets.getActiveWorksheet();
         currentWorksheet.load("name");
         await context.sync();
         const worksheetName = currentWorksheet.name;
-        const configTable = currentWorksheet.tables.getItem(
-          `${worksheetName}.ConfigTable`
-        );
-        const valueColumn = this.getColumn(configTable, "Value");
+        const configTable = currentWorksheet.tables.getItem(`${worksheetName}.ConfigTable`);
+        const valueColumn = getColumn(configTable, "Value");
         await context.sync();
 
         config = {
@@ -49,8 +39,7 @@ export class ExcelSearchRunner extends SearchRunner {
             maxExtractiveSegmentCount:
               valueColumn.values[6][0] === 0 ? null : valueColumn.values[6][0],
           },
-          maxSnippetCount:
-            valueColumn.values[7][0] === 0 ? null : valueColumn.values[7][0],
+          maxSnippetCount: valueColumn.values[7][0] === 0 ? null : valueColumn.values[7][0],
           preamble: valueColumn.values[8][0],
           model: valueColumn.values[9][0],
           summaryResultCount: valueColumn.values[10][0],
@@ -66,10 +55,7 @@ export class ExcelSearchRunner extends SearchRunner {
         };
       } catch (error) {
         appendError(`Caught Exception in getSearchConfig `, error);
-        showStatus(
-          `Caught Exception in getSearchConfig: ${error}. Trace: ${error.stack}`,
-          true
-        );
+        showStatus(`Caught Exception in getSearchConfig: ${error}. Trace: ${error.stack}`, true);
         return null;
       }
     });
@@ -83,51 +69,26 @@ export class ExcelSearchRunner extends SearchRunner {
 
     await Excel.run(async (context) => {
       try {
-        const currentWorksheet =
-          context.workbook.worksheets.getActiveWorksheet();
+        const currentWorksheet = context.workbook.worksheets.getActiveWorksheet();
         currentWorksheet.load("name");
         await context.sync();
         const worksheetName = currentWorksheet.name;
 
-        const testCasesTable = currentWorksheet.tables.getItem(
-          `${worksheetName}.TestCasesTable`
-        );
-        const queryColumn = this.getColumn(testCasesTable, "Query");
-        const idColumn = this.getColumn(testCasesTable, "ID");
-        const actualSummaryColumn = this.getColumn(
-          testCasesTable,
-          "Actual Summary"
-        );
-        const expectedSummaryColumn = this.getColumn(
-          testCasesTable,
-          "Expected Summary"
-        );
-        const summaryScoreColumn = this.getColumn(
-          testCasesTable,
-          "Summary Match"
-        );
-
-        const link_1_Column = this.getColumn(testCasesTable, "Actual Link 1");
-        const link_2_Column = this.getColumn(testCasesTable, "Actual Link 2");
-        const link_3_Column = this.getColumn(testCasesTable, "Actual Link 3");
-        const expected_link_1_Column = this.getColumn(
-          testCasesTable,
-          "Expected Link 1"
-        );
-        const expected_link_2_Column = this.getColumn(
-          testCasesTable,
-          "Expected Link 2"
-        );
-        const expected_link_3_Column = this.getColumn(
-          testCasesTable,
-          "Expected Link 3"
-        );
-        const link_p0Column = this.getColumn(
-          testCasesTable,
-          "First Link Match"
-        );
-        const link_top2Column = this.getColumn(testCasesTable, "Link in Top 2");
-
+        const testCasesTable = currentWorksheet.tables.getItem(`${worksheetName}.TestCasesTable`);
+        this.queryColumn = getColumn(testCasesTable, "Query");
+        this.idColumn = getColumn(testCasesTable, "ID");
+        this.link_1_Column = getColumn(testCasesTable, "Actual Link 1");
+        this.link_2_Column = getColumn(testCasesTable, "Actual Link 2");
+        this.link_3_Column = getColumn(testCasesTable, "Actual Link 3");
+        this.expected_link_1_Column = getColumn(testCasesTable, "Expected Link 1");
+        this.expected_link_2_Column = getColumn(testCasesTable, "Expected Link 2");
+        this.expected_link_3_Column = getColumn(testCasesTable, "Expected Link 3");
+        this.link_p0Column = getColumn(testCasesTable, "First Link Match");
+        this.link_top2Column = getColumn(testCasesTable, "Link in Top 2");
+        this.actualSummaryColumn = getColumn(testCasesTable, "Actual Summary");
+        this.expectedSummaryColumn = getColumn(testCasesTable, "Expected Summary");
+        this.summaryScoreColumn = getColumn(testCasesTable, "Summary Match");
+        await context.sync();
         testCasesTable.rows.load("count");
         await context.sync();
 
@@ -147,116 +108,136 @@ export class ExcelSearchRunner extends SearchRunner {
           // None, multiple, or all variables are non-null
           showStatus(
             `Error in runTests: Only one of the maxExtractiveAnswerCount, maxExtractiveSegmentCount, or maxSnippetCount should be set to a non-zero value`,
-            true
+            true,
           );
           return;
         }
 
-        if (queryColumn.isNullObject || idColumn.isNullObject) {
+        if (this.queryColumn.isNullObject || this.idColumn.isNullObject) {
           showStatus(
             `Error in runTests: No Query or ID column found in Test Cases Table. Make sure there is an ID and Query column in the Test Cases Table.`,
-            true
+            true,
           );
           return;
         }
         const countRows = testCasesTable.rows.count;
 
-        await this.processsAllRows(
-          context,
-          config,
-          countRows,
-          idColumn,
-          queryColumn,
-          expectedSummaryColumn,
-          expected_link_1_Column,
-          expected_link_2_Column,
-          actualSummaryColumn,
-          summaryScoreColumn,
-          link_1_Column,
-          link_2_Column,
-          link_3_Column,
-          link_p0Column,
-          link_top2Column
-        );
+        await this.processsAllRows(context, config, countRows, this.idColumn.values);
 
         // autofit the content
         currentWorksheet.getUsedRange().format.autofitColumns();
         currentWorksheet.getUsedRange().format.autofitRows();
         await context.sync();
       } catch (error) {
-        appendLog(
-          `Caught Exception in executeSearchTests: ${error.message} `,
-          error
-        );
-        showStatus(
-          `Caught Exception in executeSearchTests: ${JSON.stringify(error)}`,
-          true
-        );
+        appendLog(`Caught Exception in executeSearchTests: ${error.message} `, error);
+        showStatus(`Caught Exception in executeSearchTests: ${JSON.stringify(error)}`, true);
         throw error;
       }
     });
   }
 
   async stopSearchTests() {
-    this.stopProcessing = true; // Set the stop signal flag
-    appendLog("Cancel  Clicked. Stopping SearchTests execution...");
+    // Set the cancel signal flag
+    this.cancelPressed = true;
+    appendLog("Cancel Requested. Stopping SearchTests execution...");
+  }
+  async processRow(response_json, context, config, rowNum) {
+    if (response_json.hasOwnProperty("summary")) {
+      await this.processSummary(
+        context,
+        config,
+        rowNum,
+        response_json,
+        this.expectedSummaryColumn.values,
+      );
+      appendLog(`testCaseID: ${rowNum} Processed Summary.`);
+    }
+    // Check the documents references
+    if (response_json.hasOwnProperty("results")) {
+      this.checkDocumentLinks(
+        context,
+        rowNum,
+        response_json,
+        this.expected_link_1_Column.values,
+        this.expected_link_2_Column.values,
+      );
+
+      appendLog(`testCaseID: ${rowNum} Processed Doc Links.`);
+    }
   }
 
-  checkDocumentLinks(
-    context,
-    rowNum,
-    result,
-    link_1_Column,
-    link_2_Column,
-    link_3_Column,
-    link_p0Column,
-    link_top2Column,
-    expectedLink1,
-    expectedLink2
-  ) {
+  async processSummary(context, config, rowNum, result, expectedSummary) {
+    // Set the actual summary
+    try {
+      const actualSummarycell = this.actualSummaryColumn.getRange().getCell(rowNum, 0);
+      actualSummarycell.clear(Excel.ClearApplyTo.formats);
+      actualSummarycell.values = [[result.summary.summaryText]];
+      // match summaries only if they are not null or empty
+      if (expectedSummary[rowNum][0] !== null && expectedSummary[rowNum][0] !== "") {
+        const score_cell = this.summaryScoreColumn.getRange().getCell(rowNum, 0);
+        score_cell.clear(Excel.ClearApplyTo.formats);
+
+        // Catch any errors here and report it in the cell. We don't want failures here to stop processing.
+
+        const response = await calculateSimilarityUsingPalm2(
+          rowNum,
+          result.summary.summaryText,
+          expectedSummary[rowNum][0],
+          config,
+        );
+        const score = response.output;
+
+        if (score.trim() === "same") {
+          score_cell.values = [["TRUE"]];
+        } else {
+          score_cell.values = [["FALSE"]];
+          score_cell.format.fill.color = "#FFCCCB";
+          actualSummarycell.format.fill.color = "#FFCCCB";
+        }
+      }
+    } catch (err) {
+      appendError(`testCaseID: ${rowNum} Error getting Similarity. Error: ${err.message} `, err);
+      /*  // put the error in the cell.
+        score_cell.values = [["Failed. Error: " + err.message]];
+        score_cell.format.fill.color = "#FFCCCB";
+        actualSummarycell.format.fill.color = "#FFCCCB"; */
+    } finally {
+      //await context.sync();
+    }
+  }
+
+  checkDocumentLinks(context, rowNum, result, expectedLink1, expectedLink2) {
     var p0_result = null;
     var p2_result = null;
-    const link_1_cell = link_1_Column.getRange().getCell(rowNum, 0);
-    const link_2_cell = link_2_Column.getRange().getCell(rowNum, 0);
-    const link_3_cell = link_3_Column.getRange().getCell(rowNum, 0);
+    const link_1_cell = this.link_1_Column.getRange().getCell(rowNum, 0);
+    const link_2_cell = this.link_2_Column.getRange().getCell(rowNum, 0);
+    const link_3_cell = this.link_3_Column.getRange().getCell(rowNum, 0);
 
     // Check for document info and linksin the metadata if it exists
     if (result.results[0].document.hasOwnProperty("structData")) {
-      link_1_cell.values = [
-        [result.results[0].document.structData.sharepoint_ref],
-      ];
+      link_1_cell.values = [[result.results[0].document.structData.sharepoint_ref]];
       p0_result = result.results[0].document.structData.title;
     } else if (result.results[0].document.hasOwnProperty("derivedStructData")) {
-      link_1_cell.values = [
-        [result.results[0].document.derivedStructData.link],
-      ];
+      link_1_cell.values = [[result.results[0].document.derivedStructData.link]];
       p0_result = result.results[0].document.derivedStructData.link;
     }
     if (result.results[1].document.hasOwnProperty("structData")) {
-      link_2_cell.values = [
-        [result.results[1].document.structData.sharepoint_ref],
-      ];
+      link_2_cell.values = [[result.results[1].document.structData.sharepoint_ref]];
     } else if (result.results[1].document.hasOwnProperty("derivedStructData")) {
-      link_2_cell.values = [
-        [result.results[1].document.derivedStructData.link],
-      ];
+      link_2_cell.values = [[result.results[1].document.derivedStructData.link]];
       p2_result = result.results[1].document.derivedStructData.link;
     }
     if (result.results[2].document.hasOwnProperty("structData")) {
-      link_3_cell.values = [
-        [result.results[2].document.structData.sharepoint_ref],
-      ];
+      link_3_cell.values = [[result.results[2].document.structData.sharepoint_ref]];
     } else if (result.results[2].document.hasOwnProperty("derivedStructData")) {
-      link_3_cell.values = [
-        [result.results[2].document.derivedStructData.link],
-      ];
+      link_3_cell.values = [[result.results[2].document.derivedStructData.link]];
     }
 
     // clear the formatting in the cells
-    const link_p0_cell = link_p0Column.getRange().getCell(rowNum, 0);
+    const link_p0_cell = this.link_p0Column.getRange().getCell(rowNum, 0);
     link_p0_cell.clear(Excel.ClearApplyTo.formats);
     link_1_cell.clear(Excel.ClearApplyTo.formats);
-    const top2_cell = link_top2Column.getRange().getCell(rowNum, 0);
+    const top2_cell = this.link_top2Column.getRange().getCell(rowNum, 0);
     top2_cell.clear(Excel.ClearApplyTo.formats);
 
     // match first link with expected link
@@ -279,112 +260,6 @@ export class ExcelSearchRunner extends SearchRunner {
     } else {
       top2_cell.values = [["FALSE"]];
       top2_cell.format.fill.color = "#FFCCCB";
-    }
-    context.sync();
-  }
-
-  async processSummary(
-    context,
-    config,
-    rowNum,
-    result,
-    actualSummaryColumn,
-    expectedSummary,
-    summaryScoreColumn
-  ) {
-    // Set the actual summary
-    const cell = actualSummaryColumn.getRange().getCell(rowNum, 0);
-    cell.clear(Excel.ClearApplyTo.formats);
-    cell.values = [[result.summary.summaryText]];
-    context.sync();
-    // match summaries only if they are not null or empty
-    if (
-      expectedSummary[rowNum][0] !== null &&
-      expectedSummary[rowNum][0] !== ""
-    ) {
-      const score_cell = summaryScoreColumn.getRange().getCell(rowNum, 0);
-      score_cell.clear(Excel.ClearApplyTo.formats);
-
-      // Catch any errors here and report it in the cell. We don't want failures here to stop processing.
-      try {
-        const response = await calculateSimilarityUsingPalm2(
-          rowNum,
-          result.summary.summaryText,
-          expectedSummary[rowNum][0],
-          config
-        );
-        const score = response.output;
-
-        if (score.trim() === "same") {
-          score_cell.values = [["TRUE"]];
-        } else {
-          score_cell.values = [["FALSE"]];
-          score_cell.format.fill.color = "#FFCCCB";
-          const actualSummarycell = actualSummaryColumn
-            .getRange()
-            .getCell(rowNum, 0);
-          actualSummarycell.format.fill.color = "#FFCCCB";
-        }
-      } catch (err) {
-        appendError(
-          `testCaseID: ${rowNum} Error getting Similarity. Error: ${err.message} `,
-          err
-        );
-        // put the error in the cell.
-        score_cell.values = [["Failed. Error: " + err.message]];
-        score_cell.format.fill.color = "#FFCCCB";
-        const actualSummarycell = actualSummaryColumn
-          .getRange()
-          .getCell(rowNum, 0);
-        actualSummarycell.format.fill.color = "#FFCCCB";
-      } finally {
-        context.sync();
-      }
-    }
-  }
-  async processRow(
-    response_json,
-    context,
-    config,
-    rowNum,
-    actualSummaryColumn,
-    expectedSummary,
-    summaryScoreColumn,
-    link_1_Column,
-    link_2_Column,
-    link_3_Column,
-    link_p0Column,
-    link_top2Column,
-    expectedLink1,
-    expectedLink2
-  ) {
-    if (response_json.hasOwnProperty("summary")) {
-      await this.processSummary(
-        context,
-        config,
-        rowNum,
-        response_json,
-        actualSummaryColumn,
-        expectedSummary,
-        summaryScoreColumn
-      );
-      appendLog(`testCaseID: ${rowNum} Processed Summary.`);
-    }
-    // Check the documents references
-    if (response_json.hasOwnProperty("results")) {
-      this.checkDocumentLinks(
-        context,
-        rowNum,
-        response_json,
-        link_1_Column,
-        link_2_Column,
-        link_3_Column,
-        link_p0Column,
-        link_top2Column,
-        expectedLink1,
-        expectedLink2
-      );
-      appendLog(`testCaseID: ${rowNum} Processed Doc Links.`);
     }
   }
 }

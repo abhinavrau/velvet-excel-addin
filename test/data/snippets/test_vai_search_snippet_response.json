@@ -93,18 +93,8 @@
   "summary": {
     "summaryText": "Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.",
     "safetyAttributes": {
-      "categories": [
-        "Dangerous Content",
-        "Harassment",
-        "Hate Speech",
-        "Sexually Explicit"
-      ],
-      "scores": [
-        0.1,
-        0.1,
-        0.1,
-        0.1
-      ]
+      "categories": ["Dangerous Content", "Harassment", "Hate Speech", "Sexually Explicit"],
+      "scores": [0.1, 0.1, 0.1, 0.1]
     }
   }
 }

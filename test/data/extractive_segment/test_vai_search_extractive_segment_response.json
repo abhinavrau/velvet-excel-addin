@@ -109,18 +109,8 @@
   "summary": {
     "summaryText": "I don't know.",
     "safetyAttributes": {
-      "categories": [
-        "Dangerous Content",
-        "Harassment",
-        "Hate Speech",
-        "Sexually Explicit"
-      ],
-      "scores": [
-        0,
-        0.1,
-        0.1,
-        0.1
-      ]
+      "categories": ["Dangerous Content", "Harassment", "Hate Speech", "Sexually Explicit"],
+      "scores": [0, 0.1, 0.1, 0.1]
     },
     "summaryWithMetadata": {
       "citationMetadata": {},

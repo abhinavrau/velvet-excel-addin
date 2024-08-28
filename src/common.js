@@ -102,10 +102,10 @@ export const summarization_TableHeader = [
   ],
 ];
 
-export class VelvetError extends Error {
+export class VertexAIError extends Error {
   constructor(id, message = "Processing Error") {
     super(message);
-    this.name = "VelvetError";
+    this.name = "VertexAIError";
     this.id = id;
   }
 }

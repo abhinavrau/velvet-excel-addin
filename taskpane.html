@@ -1,5 +1,5 @@
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. -->
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <!-- Office JavaScript API -->
@@ -11,10 +11,7 @@
       type="text/javascript"
       src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"
     ></script>
-    <script
-      type="text/javascript"
-      src="https://code.jquery.com/ui/1.14.0/jquery-ui.js"
-    ></script>
+    <script type="text/javascript" src="https://code.jquery.com/ui/1.14.0/jquery-ui.js"></script>
     <script
       type="text/javascript"
       src="https://cdn.jsdelivr.net/npm/luxon@3.5.0/build/global/luxon.min.js"
@@ -48,12 +45,7 @@
 
         <p>
           <label for="access-token">Access Token:</label>
-          <input
-            type="text"
-            id="access-token"
-            placeholder="Paste Access Token"
-            size="100"
-          />
+          <input type="text" id="access-token" placeholder="Paste Access Token" size="100" />
         </p>
       </section>
       <ul class="tabs">
@@ -67,14 +59,11 @@
           <h2 class="step-title">Agent Builder Search Testing</h2>
           <p><button id="createSearchTables">Create Search Tables</button></p>
           <p>
-            1. Modify Config Parameters in first table. 2. Populate ID, Query,
-            Actual Summary, Expected Summary etc. and Click button below.
+            1. Modify Config Parameters in first table. 2. Populate ID, Query, Actual Summary,
+            Expected Summary etc. and Click button below.
           </p>
           <button id="executeSearchTests">Run Tests</button>
-          <button
-            id="cancelSearchTests"
-            style="visibility: hidden; background: red"
-          >
+          <button id="cancelSearchTests" style="visibility: hidden; background: red">
             Cancel Tests
           </button>
         </section>
@@ -85,14 +74,11 @@
           <h2 class="step-title">Synthetic Q&A Generation</h2>
           <p><button id="createGenQATables">Create Q&A Tables</button></p>
           <p>
-            1. Modify Config Parameters in first table. 2. Populate ID, FileUri
-            and mimeType in second table and Click button below.
+            1. Modify Config Parameters in first table. 2. Populate ID, FileUri and mimeType in
+            second table and Click button below.
           </p>
           <button id="generateQAData">Generate Q&A</button>
-          <button
-            id="cancelGenerateQAData"
-            style="visibility: hidden; background: red"
-          >
+          <button id="cancelGenerateQAData" style="visibility: hidden; background: red">
             Cancel Generate Q&A
           </button>
         </section>
@@ -102,19 +88,14 @@
         <section class="step">
           <h2 class="step-title">Summarization Eval</h2>
           <p>
-            <button id="createSummarizationTables">
-              Create Summarization Tables
-            </button>
+            <button id="createSummarizationTables">Create Summarization Tables</button>
           </p>
           <p>
-            1. Modify Config Parameters in first table. 2. Populate ID and
-            Context in second table and Click button below.
+            1. Modify Config Parameters in first table. 2. Populate ID and Context in second table
+            and Click button below.
           </p>
           <button id="genSummarizationData">Run Eval</button>
-          <button
-            id="cancelSummarizationData"
-            style="visibility: hidden; background: red"
-          >
+          <button id="cancelSummarizationData" style="visibility: hidden; background: red">
             Cancel Summary Eval
           </button>
         </section>

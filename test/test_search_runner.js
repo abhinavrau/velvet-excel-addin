@@ -259,13 +259,13 @@ describe("When Search Run Tests is clicked ", () => {
       200,
       "./test/data/extractive_answer/test_vai_search_extractive_answer_request.json",
       "./test/data/extractive_answer/test_vai_search_extractive_answer_response.json",
-      config
+      config,
     );
 
     // Mock the call for summary similarity
     const { url: summaryMatchUrl, response: summaryResponse } = mockSimilarityUsingVertexAI(
       config,
-      "same"
+      "same",
     );
 
     // Execute the tests
@@ -313,36 +313,36 @@ describe("When Search Run Tests is clicked ", () => {
       const { col_index: expected_link1_col_index } = getCellAndColumnIndexByName(
         "Expected Link 1",
         mockTestData,
-        i
+        i,
       );
       const { cell: actual_link1_cell } = getCellAndColumnIndexByName(
         "Actual Link 1",
         mockTestData,
-        i
+        i,
       );
       expect(actual_link1_cell[0][0]).toEqual(testCaseRows[i][expected_link1_col_index]);
 
       const { col_index: expected_link2_col_index } = getCellAndColumnIndexByName(
         "Expected Link 2",
         mockTestData,
-        i
+        i,
       );
       const { cell: actual_link2_cell } = getCellAndColumnIndexByName(
         "Actual Link 2",
         mockTestData,
-        i
+        i,
       );
       expect(actual_link2_cell[0][0]).toEqual(testCaseRows[i][expected_link2_col_index]);
 
       const { col_index: expected_link3_col_index } = getCellAndColumnIndexByName(
         "Expected Link 3",
         mockTestData,
-        i
+        i,
       );
       const { cell: actual_link3_cell } = getCellAndColumnIndexByName(
         "Actual Link 3",
         mockTestData,
-        i
+        i,
       );
       expect(actual_link3_cell[0][0]).toEqual(testCaseRows[i][expected_link3_col_index]);
     }
@@ -351,7 +351,7 @@ describe("When Search Run Tests is clicked ", () => {
     expect(
       $stub.calledWith("<div/>", {
         class: `status-card ms-depth-4 success-msg`,
-      })
+      }),
     ).toBe(true);
   });
 
@@ -381,14 +381,14 @@ describe("When Search Run Tests is clicked ", () => {
       1,
       405,
       "./test/data/extractive_answer/test_vai_search_extractive_answer_request.json",
-      "./test/data/extractive_answer/test_vai_search_extractive_answer_response.json",
-      config
+      "./test/data/not_authenticated.json",
+      config,
     );
 
     // Mock the call for summary similarity
     const { url: summaryMatchUrl, response: summaryResponse } = mockSimilarityUsingVertexAI(
       config,
-      "same"
+      "same",
     );
 
     // Execute the tests
@@ -412,7 +412,7 @@ describe("When Search Run Tests is clicked ", () => {
     expect(
       $stub.calledWith("<div/>", {
         class: `status-card ms-depth-4 error-msg`,
-      })
+      }),
     ).toBe(true);
 
     // Make sure status is correct
@@ -421,8 +421,8 @@ describe("When Search Run Tests is clicked ", () => {
         class: "ms-fontSize-24 ms-fontWeight-bold",
         text: "An error occurred",
         class: "ms-fontSize-16 ms-fontWeight-regular",
-        text: "Finished! Successful: 0. Failed: 1. See logs for details.",
-      })
+        text: "Finished! Successful: 0. Failed: 2. See logs for details. ",
+      }),
     ).toBe(true);
   });
 });

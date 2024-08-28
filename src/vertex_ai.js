@@ -5,15 +5,14 @@ import {
   ResourceNotFoundError,
   summaryMatching_examples,
   summaryMatching_prompt,
-  VelvetError,
+  VertexAIError,
 } from "./common.js";
 import { appendLog } from "./ui.js";
 
 export async function callVertexAISearch(id, query, config) {
   const token = config.accessToken;
   const preamble = config.preamble;
-  const model =
-    config.model === "" ? "gemini-1.0-pro-002/answer_gen/v1" : config.model;
+  const model = config.model === "" ? "gemini-1.0-pro-002/answer_gen/v1" : config.model;
   const summaryResultCount = config.summaryResultCount;
   const extractiveContentSpec =
     config.extractiveContentSpec === null ? {} : config.extractiveContentSpec;
@@ -35,8 +34,7 @@ export async function callVertexAISearch(id, query, config) {
         useSemanticChunks: `${useSemanticChunks}`.toLowerCase(),
         summaryResultCount: `${summaryResultCount}`,
         ignoreAdversarialQuery: `${ignoreAdversarialQuery}`.toLowerCase(),
-        ignoreNonSummarySeekingQuery:
-          `${ignoreNonSummarySeekingQuery}`.toLowerCase(),
+        ignoreNonSummarySeekingQuery: `${ignoreNonSummarySeekingQuery}`.toLowerCase(),
         modelPromptSpec: {
           preamble: `${preamble}`,
         },
@@ -56,24 +54,14 @@ export async function callVertexAISearch(id, query, config) {
   return { id: id, status_code: status, output: json_output };
 }
 
-export async function calculateSimilarityUsingPalm2(
-  id,
-  sentence1,
-  sentence2,
-  config
-) {
+export async function calculateSimilarityUsingPalm2(id, sentence1, sentence2, config) {
   const token = config.accessToken;
   const projectId = config.vertexAIProjectID;
   const location = config.vertexAILocation;
   const summaryMatchingAdditionalPrompt =
-    config.summaryMatchingAdditionalPrompt === null
-      ? ""
-      : config.summaryMatchingAdditionalPrompt;
+    config.summaryMatchingAdditionalPrompt === null ? "" : config.summaryMatchingAdditionalPrompt;
 
-  var prompt =
-    summaryMatching_prompt +
-    summaryMatchingAdditionalPrompt +
-    summaryMatching_examples;
+  var prompt = summaryMatching_prompt + summaryMatchingAdditionalPrompt + summaryMatching_examples;
 
   var full_prompt = `${prompt} answer_1: ${sentence1} answer_2: ${sentence2} output:`;
 
@@ -122,12 +110,7 @@ export async function callVertexAI(url, token, data, id) {
       const json = await response.json();
       throw new ResourceNotFoundError(id, json.error.message);
     } else {
-      throw new VelvetError(
-        id,
-        `Error calling VertexAI for Summary, HTTP Code: ${
-          response.status
-        } Reason: ${JSON.stringify(response.body)}`
-      );
+      throw new VertexAIError(id, `Error calling VertexAI. HTTP Code: ${response.status}`);
     }
   } else {
     const json = await response.json();
@@ -136,19 +119,12 @@ export async function callVertexAI(url, token, data, id) {
   }
 }
 
-export async function callGeminiMultitModal(
-  id,
-  prompt,
-  fileUri,
-  mimeType,
-  config
-) {
+export async function callGeminiMultitModal(id, prompt, fileUri, mimeType, config) {
   const token = config.accessToken;
   const projectId = config.vertexAIProjectID;
   const location = config.vertexAILocation;
   const model_id = config.model;
-  const system_instruction =
-    config.systemInstruction === null ? "" : config.systemInstruction;
+  const system_instruction = config.systemInstruction === null ? "" : config.systemInstruction;
 
   var data = {
     contents: [

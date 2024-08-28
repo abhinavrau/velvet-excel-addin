@@ -1,51 +1,51 @@
 {
-    "candidates": [
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "Becoming a great magician requires dedication and hard work.  Practicing magic regularly is essential to develop skills and perform well in many shows."
+          }
+        ]
+      },
+      "finishReason": "STOP",
+      "safetyRatings": [
         {
-            "content": {
-                "role": "model",
-                "parts": [
-                    {
-                        "text": "Becoming a great magician requires dedication and hard work.  Practicing magic regularly is essential to develop skills and perform well in many shows."
-                    }
-                ]
-            },
-            "finishReason": "STOP",
-            "safetyRatings": [
-                {
-                    "category": "HARM_CATEGORY_HATE_SPEECH",
-                    "probability": "NEGLIGIBLE",
-                    "probabilityScore": 0.08886719,
-                    "severity": "HARM_SEVERITY_NEGLIGIBLE",
-                    "severityScore": 0.052734375
-                },
-                {
-                    "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-                    "probability": "NEGLIGIBLE",
-                    "probabilityScore": 0.14941406,
-                    "severity": "HARM_SEVERITY_NEGLIGIBLE",
-                    "severityScore": 0.04736328
-                },
-                {
-                    "category": "HARM_CATEGORY_HARASSMENT",
-                    "probability": "NEGLIGIBLE",
-                    "probabilityScore": 0.15234375,
-                    "severity": "HARM_SEVERITY_NEGLIGIBLE",
-                    "severityScore": 0.033691406
-                },
-                {
-                    "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                    "probability": "NEGLIGIBLE",
-                    "probabilityScore": 0.14355469,
-                    "severity": "HARM_SEVERITY_NEGLIGIBLE",
-                    "severityScore": 0.037841797
-                }
-            ],
-            "avgLogprobs": -0.51816963327342069
+          "category": "HARM_CATEGORY_HATE_SPEECH",
+          "probability": "NEGLIGIBLE",
+          "probabilityScore": 0.08886719,
+          "severity": "HARM_SEVERITY_NEGLIGIBLE",
+          "severityScore": 0.052734375
+        },
+        {
+          "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+          "probability": "NEGLIGIBLE",
+          "probabilityScore": 0.14941406,
+          "severity": "HARM_SEVERITY_NEGLIGIBLE",
+          "severityScore": 0.04736328
+        },
+        {
+          "category": "HARM_CATEGORY_HARASSMENT",
+          "probability": "NEGLIGIBLE",
+          "probabilityScore": 0.15234375,
+          "severity": "HARM_SEVERITY_NEGLIGIBLE",
+          "severityScore": 0.033691406
+        },
+        {
+          "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+          "probability": "NEGLIGIBLE",
+          "probabilityScore": 0.14355469,
+          "severity": "HARM_SEVERITY_NEGLIGIBLE",
+          "severityScore": 0.037841797
         }
-    ],
-    "usageMetadata": {
-        "promptTokenCount": 36,
-        "candidatesTokenCount": 29,
-        "totalTokenCount": 65
+      ],
+      "avgLogprobs": -0.51816963327342069
     }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 36,
+    "candidatesTokenCount": 29,
+    "totalTokenCount": 65
+  }
 }

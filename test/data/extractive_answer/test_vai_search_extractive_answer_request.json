@@ -1,23 +1,23 @@
 {
-    "query": "What is Google's revenue for the year ending December 31, 2021",
-    "page_size": "5",
-    "offset": 0,
-    "contentSearchSpec": {
-        "extractiveContentSpec": {
-            "maxExtractiveAnswerCount": "2",
-            "maxExtractiveSegmentCount": "0"
-        },
-        "summarySpec": {
-            "useSemanticChunks": "false",
-            "summaryResultCount": "2",
-            "ignoreAdversarialQuery": "true",
-            "ignoreNonSummarySeekingQuery": "true",
-            "modelPromptSpec": {
-                "preamble": ""
-            },
-            "modelSpec": {
-                "version": "gemini-1.0-pro-001/answer_gen/v1"
-            }
-        }
+  "query": "What is Google's revenue for the year ending December 31, 2021",
+  "page_size": "5",
+  "offset": 0,
+  "contentSearchSpec": {
+    "extractiveContentSpec": {
+      "maxExtractiveAnswerCount": "2",
+      "maxExtractiveSegmentCount": "0"
+    },
+    "summarySpec": {
+      "useSemanticChunks": "false",
+      "summaryResultCount": "2",
+      "ignoreAdversarialQuery": "true",
+      "ignoreNonSummarySeekingQuery": "true",
+      "modelPromptSpec": {
+        "preamble": ""
+      },
+      "modelSpec": {
+        "version": "gemini-1.0-pro-001/answer_gen/v1"
+      }
     }
+  }
 }

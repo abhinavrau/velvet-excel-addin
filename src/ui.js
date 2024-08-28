@@ -9,7 +9,7 @@ export function showStatus(message, isError) {
       text: isError ? "An error occurred" : "Success",
       class: "ms-fontSize-16 ms-fontWeight-regular",
       text: message,
-    })
+    }),
   );
 
   $(".status").append(element);
@@ -33,5 +33,3 @@ export function appendError(message, error) {
     console.log(message);
   }
 }
-
-

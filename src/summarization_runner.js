@@ -1,6 +1,11 @@
 import { appendError, appendLog, showStatus } from "./ui.js";
 
-import { NotAuthenticatedError, PermissionDeniedError, QuotaError, VelvetError } from "./common.js";
+import {
+  NotAuthenticatedError,
+  PermissionDeniedError,
+  QuotaError,
+  VertexAIError,
+} from "./common.js";
 import { callGeminiMultitModal, callVertexAI } from "./vertex_ai.js";
 function getColumn(table, columnName) {
   try {
@@ -81,7 +86,7 @@ export async function createSummarizationData(config) {
       if (toSummarizeColumn.isNullObject || idColumn.isNullObject) {
         showStatus(
           `Error in createSummarizationData: No fileUriColumn or ID column found in Test Cases Table. Make sure there is an ID and Query column in the Test Cases Table.`,
-          true
+          true,
         );
         return;
       }
@@ -140,7 +145,7 @@ export async function createSummarizationData(config) {
                   summarization_helpfulnesColumn,
                   summarization_verbosityColumn,
                   config,
-                  context
+                  context,
                 );
               } else {
                 appendError(`sumCaseID:: ${rowNum} Got error in summary: ${output}`, null);
@@ -152,14 +157,14 @@ export async function createSummarizationData(config) {
               if (
                 error instanceof NotAuthenticatedError ||
                 error instanceof QuotaError ||
-                error instanceof VelvetError ||
+                error instanceof VertexAIError ||
                 error instanceof PermissionDeniedError
               ) {
                 appendError(`Error for testCaseID: ${error.id} calling callVertexAISearch`, error);
               } else {
                 appendError(`Error calling callVertexAISearch`, error);
               }
-            })
+            }),
         );
 
         processedCount++;
@@ -210,7 +215,7 @@ async function processResponse(
   summarization_helpfulnesColumn,
   summarization_verbosityColumn,
   config,
-  context
+  context,
 ) {
   const token = config.accessToken;
   const prompt = config.prompt;
@@ -244,7 +249,7 @@ async function processResponse(
     summarization_qualityColumn,
     "summarizationQualityResult",
     rowNum,
-    context
+    context,
   );
 
   appendLog(`sumCaseID::${rowNum} summarizationQuality Finished`);
@@ -269,7 +274,7 @@ async function processResponse(
     summarization_helpfulnesColumn,
     "summarizationHelpfulnessResult",
     rowNum,
-    context
+    context,
   );
 
   appendLog(`sumCaseID::${rowNum} summarizationHelpfulness Finished`);
@@ -295,7 +300,7 @@ async function processResponse(
     summarization_verbosityColumn,
     "summarizationVerbosityResult",
     rowNum,
-    context
+    context,
   );
 
   appendLog(`sumCaseID::${rowNum} summarizationVerbosity Finished`);
@@ -319,7 +324,7 @@ async function processResponse(
     groundednessColumn,
     "groundednessResult",
     rowNum,
-    context
+    context,
   );
 
   appendLog(`sumCaseID::${rowNum} groundedness Finished`);
@@ -344,7 +349,7 @@ async function processResponse(
     fulfillmentColumn,
     "fulfillmentResult",
     rowNum,
-    context
+    context,
   );
   appendLog(`sumCaseID::${rowNum} fulfillment Finished`);
 }
@@ -356,7 +361,7 @@ async function callSummaryEval(
   summarization_evalColumn,
   resultpropertyName,
   rowNum,
-  context
+  context,
 ) {
   try {
     const response = await callVertexAI(eval_url, token, summarization_eval_input);

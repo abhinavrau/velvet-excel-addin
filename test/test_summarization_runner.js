@@ -240,7 +240,7 @@ describe("When Summarization Eval is clicked ", () => {
     const { request_json: summary_request_json, response_json: summary_response_json } =
       getRequestResponseJsonFromFile(
         "./test/data/summarization/test_summarization_request.json",
-        "./test/data/summarization/test_summarization_response.json"
+        "./test/data/summarization/test_summarization_response.json",
       );
 
     const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/${config.model}:generateContent`;
@@ -254,35 +254,35 @@ describe("When Summarization Eval is clicked ", () => {
     const { request_json: quality_request_json, response_json: quality_response_json } =
       getRequestResponseJsonFromFile(
         "./test/data/summarization/test_summarization_quality_request.json",
-        "./test/data/summarization/test_summarization_quality_response.json"
+        "./test/data/summarization/test_summarization_quality_response.json",
       );
 
     // read the  summarization_helpfulness request from json file
     const { request_json: helpfulness_request_json, response_json: helpfulness_response_json } =
       getRequestResponseJsonFromFile(
         "./test/data/summarization/test_summarization_helpfulness_request.json",
-        "./test/data/summarization/test_summarization_helpfulness_response.json"
+        "./test/data/summarization/test_summarization_helpfulness_response.json",
       );
 
     // read the  summarization_verbosity request from json file
     const { request_json: verbosity_request_json, response_json: verbosity_response_json } =
       getRequestResponseJsonFromFile(
         "./test/data/summarization/test_summarization_verbosity_request.json",
-        "./test/data/summarization/test_summarization_verbosity_response.json"
+        "./test/data/summarization/test_summarization_verbosity_response.json",
       );
 
     // read the  summarization_quality request from json file
     const { request_json: grounding_request_json, response_json: grounding_response_json } =
       getRequestResponseJsonFromFile(
         "./test/data/summarization/test_summarization_groundedness_request.json",
-        "./test/data/summarization/test_summarization_groundedness_response.json"
+        "./test/data/summarization/test_summarization_groundedness_response.json",
       );
 
     // read the  summarization_quality request from json file
     const { request_json: fulfillment_request_json, response_json: fulfillment_response_json } =
       getRequestResponseJsonFromFile(
         "./test/data/summarization/test_summarization_fulfillment_request.json",
-        "./test/data/summarization/test_summarization_fulfillment_response.json"
+        "./test/data/summarization/test_summarization_fulfillment_response.json",
       );
 
     const eval_url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1beta1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}:evaluateInstances`;
@@ -355,7 +355,7 @@ describe("When Summarization Eval is clicked ", () => {
     // Check Summary got populated
     const { cell: summary_cell, col_index: summary_col_index } = getCellAndColumnIndexByName(
       "Summary",
-      mockTestData
+      mockTestData,
     );
     expect(summary_cell[0][0]).toEqual(testCaseRows[1][summary_col_index]);
 
@@ -363,7 +363,7 @@ describe("When Summarization Eval is clicked ", () => {
     const { cell: summarization_quality_cell, col_index: summarization_quality_col_index } =
       getCellAndColumnIndexByName("summarization_quality", mockTestData);
     expect(summarization_quality_cell[0][0]).toEqual(
-      testCaseRows[1][summarization_quality_col_index]
+      testCaseRows[1][summarization_quality_col_index],
     );
 
     // Check if helpfulness score got populated
@@ -380,7 +380,7 @@ describe("When Summarization Eval is clicked ", () => {
     const { cell: groundedness_quality_cell, col_index: groundedness_quality_col_index } =
       getCellAndColumnIndexByName("groundedness", mockTestData);
     expect(groundedness_quality_cell[0][0]).toEqual(
-      testCaseRows[1][groundedness_quality_col_index]
+      testCaseRows[1][groundedness_quality_col_index],
     );
 
     // Check if fulfillment score got populated
@@ -393,7 +393,10 @@ describe("When Summarization Eval is clicked ", () => {
 function getRequestResponseJsonFromFile(requestJsonFilePath, responseJsonFilePath) {
   const request = fs.readFileSync(requestJsonFilePath);
   const response = fs.readFileSync(responseJsonFilePath);
-  return { response_json: JSON.parse(response), request_json: JSON.parse(request) };
+  return {
+    response_json: JSON.parse(response),
+    request_json: JSON.parse(request),
+  };
 }
 
 function getCellAndColumnIndexByName(column_name, mockTestData) {
