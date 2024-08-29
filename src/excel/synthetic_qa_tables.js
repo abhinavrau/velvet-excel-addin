@@ -1,5 +1,5 @@
-import { synth_q_and_a_configValues, synth_q_and_a_TableHeader } from "./common.js";
-import { appendError, showStatus } from "./ui.js";
+import { synth_q_and_a_configValues, synth_q_and_a_TableHeader } from "../common.js";
+import { appendError, showStatus } from "../ui.js";
 
 export async function createSyntheticQAConfigTable() {
   await Excel.run(async (context) => {

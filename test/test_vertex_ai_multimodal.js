@@ -72,12 +72,10 @@ describe("When callGeminiMultiModal is called", () => {
     // make sure we got the right status
     expect(result.status_code).toEqual(200);
     // make sure we got the right response
-    expect(result.output).toEqual(responseJson.candidates[0].content.parts[0].text);
-
-    // validate it is json
-    expect(JSON.parse(result.output)).toEqual(
-      JSON.parse(responseJson.candidates[0].content.parts[0].text),
+    expect(result.output.candidates[0].content.parts[0].text).toEqual(
+      responseJson.candidates[0].content.parts[0].text,
     );
+    
   });
   it("should fail when you get an authentication error from Vertex AI", async () => {
     const prompt = "What is the sentiment of this text?";

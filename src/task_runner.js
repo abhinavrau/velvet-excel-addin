@@ -18,7 +18,7 @@ export class TaskRunner {
     throw new Error("You have to implement the method processRow");
   }
 
-  async getResultFromExternalAPI(context, rowNum, config) {
+  async getResultFromExternalAPI(rowNum, config) {
     throw new Error("You have to implement the method getResultFromExternalAPI");
   }
 
@@ -41,7 +41,7 @@ export class TaskRunner {
       showStatus(`Processing testCaseID: ${idArray[currentRow][0]}`, false);
       // Call Vertex AI Search asynchronously and add the promise to promiseMap
 
-      const searchPromise = this.getResultFromExternalAPI(context, currentRow, config)
+      const searchPromise = this.getResultFromExternalAPI(currentRow, config)
         .then(async (result) => {
           let response_json = result.output;
           let testCaseRowNum = result.id;

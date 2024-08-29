@@ -1,5 +1,5 @@
-import { vertex_ai_search_configValues, vertex_ai_search_testTableHeader } from "./common.js";
-import { appendError, showStatus } from "./ui.js";
+import { vertex_ai_search_configValues, vertex_ai_search_testTableHeader } from "../common.js";
+import { appendError, showStatus } from "../ui.js";
 
 export async function createVAIConfigTable() {
   await Excel.run(async (context) => {

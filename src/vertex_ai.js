@@ -224,9 +224,9 @@ export async function callGeminiMultitModal(id, prompt, fileUri, mimeType, confi
   const url = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${model_id}:generateContent`;
 
   const { status, json_output } = await callVertexAI(url, token, data, id);
-  const output = json_output.candidates[0].content.parts[0].text;
+  //const output = json_output.candidates[0].content.parts[0].text;
 
   appendLog(`callGeminiMultitModal: Finished Successfully.`);
 
-  return { id: id, status_code: status, output: `${output}` };
+  return { id: id, status_code: status, output: json_output};
 }

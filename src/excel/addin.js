@@ -1,25 +1,18 @@
-import { ExcelSearchRunner } from "./excel/excel_search_runner.js";
+import { ExcelSearchRunner } from "./excel_search_runner.js";
+import { SummarizationRunner } from "./excel_summarization_runner.js";
+import { SyntheticQARunner } from "./excel_synthetic_qa_runner.js";
 import { createVAIConfigTable, createVAIDataTable } from "./search_tables.js";
 
-import {
-  createSyntheticQAData,
-  getSyntheticQAConfig,
-  stopSyntheticData,
-} from "./synthetic_qa_runner.js";
 import { createSyntheticQAConfigTable, createSyntheticQADataTable } from "./synthetic_qa_tables.js";
 
-import {
-  createSummarizationData,
-  getSummarizationConfig,
-  stopSummarizationData,
-} from "./summarization_runner.js";
 import {
   createSummarizationEvalConfigTable,
   createSummarizationEvalDataTable,
 } from "./summarization_tables.js";
 
 let excelSearchRunner;
-
+let summarizationRunner;
+let syntheticQuestionAnswerRunner;
 // Initialize Office API
 Office.onReady((info) => {
   // Check that we loaded into Excel
@@ -39,30 +32,35 @@ Office.onReady((info) => {
         await excelSearchRunner.stopSearchTests();
       },
     );
-
+    syntheticQuestionAnswerRunner = new SyntheticQARunner();
     setupButtonEvents(
       "createGenQATables",
       createSyntheticQATables,
       "generateQAData",
       async function () {
-        await createSyntheticData();
+        const config = await syntheticQuestionAnswerRunner.getSyntheticQAConfig();
+        if (config == null) return;
+        await syntheticQuestionAnswerRunner.createSyntheticQAData(config);
       },
       "cancelGenerateQAData",
       async function () {
-        await stopSyntheticData();
+        await syntheticQuestionAnswerRunner.stopSyntheticData();
       },
     );
 
+    summarizationRunner = new SummarizationRunner();
     setupButtonEvents(
       "createSummarizationTables",
       createSummarizationTables,
       "genSummarizationData",
       async function () {
-        await genSummarizationData();
+        const config = await summarizationRunner.getSummarizationConfig();
+        if (config == null) return;
+        await summarizationRunner.createSummarizationData(config);
       },
       "cancelSummarizationData",
       async function () {
-        await stopSummarizationData();
+        await summarizationRunner.stopSummarizationData();
       },
     );
   }
@@ -113,19 +111,7 @@ async function createSyntheticQATables() {
   await createSyntheticQADataTable();
 }
 
-async function createSyntheticData() {
-  const config = await getSyntheticQAConfig();
-  if (config == null) return;
-  await createSyntheticQAData(config);
-}
-
 async function createSummarizationTables() {
   await createSummarizationEvalConfigTable();
   await createSummarizationEvalDataTable();
-}
-
-async function genSummarizationData() {
-  const config = await getSummarizationConfig();
-  if (config == null) return;
-  await createSummarizationData(config);
 }

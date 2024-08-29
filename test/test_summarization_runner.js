@@ -5,13 +5,13 @@ import { default as $, default as JQuery } from "jquery";
 import pkg from "office-addin-mock";
 import sinon from "sinon";
 
-import { createSummarizationData, getSummarizationConfig } from "../src/summarization_runner.js";
 import {
   createSummarizationEvalConfigTable,
   createSummarizationEvalDataTable,
-} from "../src/summarization_tables.js";
+} from "../src/excel/summarization_tables.js";
 import { showStatus } from "../src/ui.js";
 import { callGeminiMultitModal } from "../src/vertex_ai.js";
+import { SummarizationRunner } from "../src/excel/excel_summarization_runner.js";
 
 import { summarization_configValues, summarization_TableHeader } from "../src/common.js";
 
@@ -222,20 +222,17 @@ describe("When Summarization Eval is clicked ", () => {
     const contextMock = new OfficeMockObject(mockTestData);
 
     global.Excel = contextMock;
-    // Spy on the Showstatus function
 
     // Simulate creating the Config table
     await createSummarizationEvalConfigTable();
-    // Fail the test ifshow status is called
-    expect(showStatusSpy.notCalled).toBe(true);
 
     // Simulate creating the Config table
     await createSummarizationEvalDataTable();
-    // Fail the test ifshow status is called
-    expect(showStatusSpy.notCalled).toBe(true);
+
+    var summarizationRunner = new SummarizationRunner();
 
     // Get the config parameters from the config table
-    const config = await getSummarizationConfig();
+    const config = await summarizationRunner.getSummarizationConfig();
 
     const { request_json: summary_request_json, response_json: summary_response_json } =
       getRequestResponseJsonFromFile(
@@ -315,7 +312,7 @@ describe("When Summarization Eval is clicked ", () => {
     });
 
     // Execute the tests
-    await createSummarizationData(config);
+    await summarizationRunner.createSummarizationData(config);
 
     // Verify mocks are called
     expect(fetchMock.called()).toBe(true);

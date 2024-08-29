@@ -1,5 +1,5 @@
-import { summarization_configValues, summarization_TableHeader } from "./common.js";
-import { appendError, showStatus } from "./ui.js";
+import { summarization_configValues, summarization_TableHeader } from "../common.js";
+import { appendError, showStatus } from "../ui.js";
 
 export async function createSummarizationEvalConfigTable() {
   await Excel.run(async (context) => {

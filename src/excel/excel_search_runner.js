@@ -11,11 +11,6 @@ export class ExcelSearchRunner extends TaskRunner {
     super();
   }
 
-  async getResultFromExternalAPI(context, rowNum, config, testCasesTable) {
-    var query = this.queryColumn.values;
-    return callVertexAISearch(rowNum, query[rowNum][0], config);
-  }
-
   async getSearchConfig() {
     var config;
     await Excel.run(async (context) => {
@@ -94,7 +89,7 @@ export class ExcelSearchRunner extends TaskRunner {
 
         if (config.accessToken === null || config.accessToken === "") {
           showStatus(`Access token is empty`, true);
-          appendError(`Error in runTests: Access token is empty`, null);
+          appendError(`Error in executeSearchTests: Access token is empty`, null);
           return;
         }
 
@@ -107,7 +102,7 @@ export class ExcelSearchRunner extends TaskRunner {
         if (!isValid) {
           // None, multiple, or all variables are non-null
           showStatus(
-            `Error in runTests: Only one of the maxExtractiveAnswerCount, maxExtractiveSegmentCount, or maxSnippetCount should be set to a non-zero value`,
+            `Error in executeSearchTests: Only one of the maxExtractiveAnswerCount, maxExtractiveSegmentCount, or maxSnippetCount should be set to a non-zero value`,
             true,
           );
           return;
@@ -115,7 +110,7 @@ export class ExcelSearchRunner extends TaskRunner {
 
         if (this.queryColumn.isNullObject || this.idColumn.isNullObject) {
           showStatus(
-            `Error in runTests: No Query or ID column found in Test Cases Table. Make sure there is an ID and Query column in the Test Cases Table.`,
+            `Error in executeSearchTests: No Query or ID column found in Test Cases Table. Make sure there is an ID and Query column in the Test Cases Table.`,
             true,
           );
           return;
@@ -141,6 +136,12 @@ export class ExcelSearchRunner extends TaskRunner {
     this.cancelPressed = true;
     appendLog("Cancel Requested. Stopping SearchTests execution...");
   }
+
+  async getResultFromExternalAPI(rowNum, config) {
+    var query = this.queryColumn.values;
+    return callVertexAISearch(rowNum, query[rowNum][0], config);
+  }
+
   async processRow(response_json, context, config, rowNum) {
     if (response_json.hasOwnProperty("summary")) {
       await this.processSummary(

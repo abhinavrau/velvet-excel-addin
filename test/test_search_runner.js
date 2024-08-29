@@ -5,7 +5,7 @@ import pkg from "office-addin-mock";
 import sinon from "sinon";
 
 import { ExcelSearchRunner } from "../src/excel/excel_search_runner.js";
-import { createVAIConfigTable, createVAIDataTable } from "../src/search_tables.js";
+import { createVAIConfigTable, createVAIDataTable } from "../src/excel/search_tables.js";
 import { calculateSimilarityUsingPalm2, callVertexAISearch } from "../src/vertex_ai.js";
 import { mockVertexAISearchRequestResponse } from "./test_common.js";
 

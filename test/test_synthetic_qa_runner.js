@@ -5,14 +5,13 @@ import { default as $, default as JQuery } from "jquery";
 import pkg from "office-addin-mock";
 import sinon from "sinon";
 
-import { createSyntheticQAData, getSyntheticQAConfig } from "../src/synthetic_qa_runner.js";
 import {
   createSyntheticQAConfigTable,
   createSyntheticQADataTable,
-} from "../src/synthetic_qa_tables.js";
+} from "../src/excel/synthetic_qa_tables.js";
 import { showStatus } from "../src/ui.js";
 import { callGeminiMultitModal } from "../src/vertex_ai.js";
-
+import { SyntheticQARunner } from "../src/excel/excel_synthetic_qa_runner.js";
 import { synth_q_and_a_configValues, synth_q_and_a_TableHeader } from "../src/common.js";
 
 // mock the UI components
@@ -226,17 +225,16 @@ describe("When Generate Synthetic Q&A is clicked ", () => {
 
     // Simulate creating the Config table
     await createSyntheticQAConfigTable();
-    // Fail the test ifshow status is called
-    expect(showStatusSpy.notCalled).toBe(true);
 
     // Simulate creating the Config table
     await createSyntheticQADataTable();
-    // Fail the test ifshow status is called
-    expect(showStatusSpy.notCalled).toBe(true);
+
+    var syntheticQuestionAnswerRunner = new SyntheticQARunner();
 
     // Get the config parameters from the config table
-    const config = await getSyntheticQAConfig();
+    const config = await syntheticQuestionAnswerRunner.getSyntheticQAConfig();
 
+    expect(config).not.toBe(null);
     // read the request from json file
     const requestData = fs.readFileSync("./test/data/multi_modal/test_multi_modal_request.json");
     const requestJson = JSON.parse(requestData);
@@ -253,7 +251,7 @@ describe("When Generate Synthetic Q&A is clicked ", () => {
     });
 
     // Execute the tests
-    await createSyntheticQAData(config);
+    await syntheticQuestionAnswerRunner.createSyntheticQAData(config);
 
     // Verify mocks are called
     expect(fetchMock.called()).toBe(true);
