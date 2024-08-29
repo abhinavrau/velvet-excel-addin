@@ -66,11 +66,7 @@ export class TaskRunner {
         });
 
       promiseMap.set(currentRow, searchPromise);
-      // Stop processing if there errors
-      if (this.stopProcessing || this.cancelPressed) {
-        appendLog("Stopping execution.", null);
-        break;
-      }
+
       // Batch the calls to Vertex AI since there are throuput checks in place.\
       if (currentRow % config.batchSize === 0) {
         // wait for calls so far to finish to finish
@@ -83,6 +79,12 @@ export class TaskRunner {
         await new Promise((r) => setTimeout(r, config.timeBetweenCallsInSec * 1000));
       }
       currentRow++;
+
+      // Stop processing if there errors
+      if (this.stopProcessing || this.cancelPressed) {
+        appendLog("Stopping execution.", null);
+        break;
+      }
     } // end while
 
     // wait for all the calls to finish if there are any remaining
