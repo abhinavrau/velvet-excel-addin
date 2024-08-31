@@ -85,6 +85,11 @@ export const summarization_configValues = [
   ["Vertex AI Location", "us-central1"],
   ["Gemini Model ID", "gemini-1.5-flash-001"],
   ["Instructions", "Summarize the text."],
+  ["summarization_quality", "TRUE"],
+  ["summarization_helpfulness", "TRUE"],
+  ["summarization_verbosity", "FALSE"],
+  ["groundedness", "FALSE"],
+  ["fulfillment", "FALSE"],
   ["Batch Size (1-10)", "4"], // BatchSize
   ["Time between Batches in Seconds (1-10)", "2"],
 ];
@@ -101,6 +106,40 @@ export const summarization_TableHeader = [
     "fulfillment",
   ],
 ];
+
+// Eval Maps
+
+export const mapSummaryQualityScore = new Map();
+mapSummaryQualityScore.set(1, "1-Very Bad");
+mapSummaryQualityScore.set(2, "2-Bad");
+mapSummaryQualityScore.set(3, "3-OK");
+mapSummaryQualityScore.set(4, "4-Good");
+mapSummaryQualityScore.set(5, "5-Very Good");
+
+export const mapSummaryHelpfulnessScore = new Map();
+mapSummaryHelpfulnessScore.set(1, "1-Unhelpful");
+mapSummaryHelpfulnessScore.set(2, "2-Somewhat Unhelpful");
+mapSummaryHelpfulnessScore.set(3, "3-Neutral");
+mapSummaryHelpfulnessScore.set(4, "4-Somewhat Helpful");
+mapSummaryHelpfulnessScore.set(5, "5-Helpful");
+
+export const mapSummaryVerbosityScore = new Map();
+mapSummaryVerbosityScore.set(-2, "-2-Terse");
+mapSummaryVerbosityScore.set(-1, "-1-Somewhat Terse");
+mapSummaryVerbosityScore.set(0, "0-Optimal");
+mapSummaryVerbosityScore.set(1, "1-Somewhat Verbose");
+mapSummaryVerbosityScore.set(2, "2-Verbose");
+
+export const mapTextgenGroundednessScore = new Map();
+mapTextgenGroundednessScore.set(0, "0-Ungrounded");
+mapTextgenGroundednessScore.set(1, "1-Grounded");
+
+export const mapTextgenFulfillmentScore = new Map();
+mapTextgenFulfillmentScore.set(1, "1-No fulfillment");
+mapTextgenFulfillmentScore.set(2, "2-Poor fulfillment");
+mapTextgenFulfillmentScore.set(3, "3-Some fulfillment");
+mapTextgenFulfillmentScore.set(4, "4-Good fulfillment");
+mapTextgenFulfillmentScore.set(5, "5-Complete fulfillmentl");
 
 export class VertexAIError extends Error {
   constructor(id, message = "Processing Error") {
@@ -145,3 +184,4 @@ export class ResourceNotFoundError extends Error {
     this.statusCode = 404; // Optional: HTTP status code for API errors
   }
 }
+

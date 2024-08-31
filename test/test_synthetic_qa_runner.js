@@ -5,14 +5,14 @@ import { default as $, default as JQuery } from "jquery";
 import pkg from "office-addin-mock";
 import sinon from "sinon";
 
+import { synth_q_and_a_configValues, synth_q_and_a_TableHeader } from "../src/common.js";
+import { SyntheticQARunner } from "../src/excel/excel_synthetic_qa_runner.js";
 import {
   createSyntheticQAConfigTable,
   createSyntheticQADataTable,
 } from "../src/excel/synthetic_qa_tables.js";
 import { showStatus } from "../src/ui.js";
 import { callGeminiMultitModal } from "../src/vertex_ai.js";
-import { SyntheticQARunner } from "../src/excel/excel_synthetic_qa_runner.js";
-import { synth_q_and_a_configValues, synth_q_and_a_TableHeader } from "../src/common.js";
 
 // mock the UI components
 global.showStatus = showStatus;
@@ -28,7 +28,7 @@ export var testCaseRows = synth_q_and_a_TableHeader.concat([
     "gs://argolis-arau-gemini-bank/Procedure - Savings Account Opening.pdf", //GCS File URI
     "application/pdf", //Mime Type
     "If I close my new savings account within 30 days of opening it, will I be charged a fee?", // Generated Question
-    "Yes, you will be charged a $25 fee unless the closure is due to a Gemini Bank error in account opening or customer dissatisfaction with a product or service disclosed during the opening process.", //Expected Answer
+    "Yes, you will be charged a $25 fee unless the closure is due to a Gemini Bank error in account opening, customer dissatisfaction with a product or service disclosed during the opening process, or insufficient funds.", //Expected Answer
     "“Account Closure: A customer who closes their new savings account within 30 days of opening will be subject to a $25 fee unless the closure is due to:\nΟ Gemini Bank error in account opening.\nΟ Customer dissatisfaction with a product or service disclosed during the opening process.”", //Reasoning
     "Success", // Status
     "10ms", // Response Time
@@ -46,6 +46,7 @@ describe("When Generate Synthetic Q&A is clicked ", () => {
       append: sinon.stub(),
       val: sinon.stub(),
       tabulator: sinon.stub(),
+      prop: sinon.stub().returns(true),
     });
     // Spy on showStatus
     showStatusSpy = sinon.spy(globalThis, "showStatus");
@@ -250,6 +251,7 @@ describe("When Generate Synthetic Q&A is clicked ", () => {
       body: JSON.stringify(responseJson),
     });
 
+    config.timeBetweenCallsInSec = 0; // No need for delay in tests
     // Execute the tests
     await syntheticQuestionAnswerRunner.createSyntheticQAData(config);
 
@@ -264,14 +266,22 @@ describe("When Generate Synthetic Q&A is clicked ", () => {
 
     // Check if  values get populated
 
-    // Match  Actual Summary
+    // Match  Generated Question
     const { cell: actual_generated_question, col_index: actual_generated_question_col_index } =
       getCellAndColumnIndexByName("Generated Question", mockTestData);
     expect(actual_generated_question[0][0]).toEqual(
       testCaseRows[1][actual_generated_question_col_index],
     );
+
+    // Match  Expected Answer
+    const { cell: actual_generated_answer, col_index: actual_generated_answer_col_index } =
+      getCellAndColumnIndexByName("Expected Answer", mockTestData);
+    expect(actual_generated_answer[0][0]).toEqual(
+      testCaseRows[1][actual_generated_answer_col_index],
+    );
   });
 });
+
 function getCellAndColumnIndexByName(column_name, mockTestData) {
   var col_index = testCaseRows[0].indexOf(column_name);
 

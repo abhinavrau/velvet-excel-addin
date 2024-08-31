@@ -1,12 +1,13 @@
 import { TaskRunner } from "../task_runner.js";
 
-import { appendError, appendLog, showStatus } from "../ui.js";
+import { appendError, showStatus } from "../ui.js";
 import { callGeminiMultitModal } from "../vertex_ai.js";
 import { getColumn } from "./excel_common.js";
 
 export class SyntheticQARunner extends TaskRunner {
   constructor() {
     super();
+    this.synthQATaskPromiseSet = new Set();
   }
 
   async getSyntheticQAConfig() {
@@ -95,16 +96,25 @@ export class SyntheticQARunner extends TaskRunner {
     });
   }
 
-  async stopSyntheticData() {
-    this.cancelPressed = true;
-    appendLog("Cancel Requested. Stopping SearchTests execution...");
-  }
-
-  async getResultFromExternalAPI(rowNum, config) {
+  async getResultFromVertexAI(rowNum, config) {
     let fileUri = this.fileUriColumn.values;
     let mimeType = this.mimeTypeColumn.values;
     let prompt = "Generate 1 question and answer";
-    return callGeminiMultitModal(rowNum, prompt, fileUri[rowNum][0], mimeType[rowNum][0], config);
+    return await callGeminiMultitModal(
+      rowNum,
+      prompt,
+      fileUri[rowNum][0],
+      mimeType[rowNum][0],
+      config,
+    );
+  }
+  async waitForTaskstoFinish() {
+    await Promise.allSettled(this.synthQATaskPromiseSet.values());
+  }
+
+  async cancelAllTasks() {
+    // call abort here for any throttled tasks
+    appendLog(`Cancel Requested for SyntheticQAData Tasks`);
   }
 
   async processRow(response_json, context, config, rowNum) {
@@ -140,5 +150,6 @@ export class SyntheticQARunner extends TaskRunner {
     } finally {
       //await context.sync();
     }
+    return 0;
   }
 }

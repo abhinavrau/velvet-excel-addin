@@ -1,6 +1,6 @@
 {
   "fulfillmentResult": {
-    "score": 3,
+    "score": 4,
     "explanation": "**Instruction Following:** The response follows the instructions (summarize the sentence). **Groundedness:** The response is grounded in the text. **Helpfulness:** The response summarizes some of the key information. **Verbosity:** The response is terse. **Reason:The response is a decent summary of the text but is too short and misses some key information, so it receives a score of 3.",
     "confidence": 0.4
   }

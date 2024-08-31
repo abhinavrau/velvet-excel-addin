@@ -147,7 +147,7 @@ describe("When calculateSimilarityUsingVertexAI is called ", () => {
     } catch (err) {
       expect(fetchMock.called()).toBe(true);
       expect(fetchMock.lastUrl().toLowerCase()).toBe(url.toLowerCase());
-      expect(err.message).toBe("Mocked error");
+      expect(err.message).toBe("Network or unexpected error: Mocked error");
     }
   });
 });
@@ -352,7 +352,7 @@ describe("When callVertexAISearch is called", () => {
     } catch (err) {
       expect(fetchMock.called()).toBe(true);
       expect(fetchMock.lastUrl().toLowerCase()).toBe(url.toLowerCase());
-      expect(err.message).toBe("Mocked error");
+      expect(err.message).toBe("Network or unexpected error: Mocked error");
     }
   });
 

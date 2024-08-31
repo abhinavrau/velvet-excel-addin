@@ -5,20 +5,21 @@ import { default as $, default as JQuery } from "jquery";
 import pkg from "office-addin-mock";
 import sinon from "sinon";
 
+import { SummarizationRunner } from "../src/excel/excel_summarization_runner.js";
 import {
   createSummarizationEvalConfigTable,
   createSummarizationEvalDataTable,
 } from "../src/excel/summarization_tables.js";
 import { showStatus } from "../src/ui.js";
 import { callGeminiMultitModal } from "../src/vertex_ai.js";
-import { SummarizationRunner } from "../src/excel/excel_summarization_runner.js";
 
 import { summarization_configValues, summarization_TableHeader } from "../src/common.js";
 
 // mock the UI components
-global.showStatus = showStatus;
+
 global.$ = $;
 global.JQuery = JQuery;
+
 
 global.callGeminiMultitModal = callGeminiMultitModal;
 
@@ -28,16 +29,46 @@ export var testCaseRows = summarization_TableHeader.concat([
     "1", // ID
     "Great magicians are hard working and do a lot of shows. You need to practice to be good at magic. So practice a lot.", //context
     "Becoming a great magician requires dedication and hard work.  Practicing magic regularly is essential to develop skills and perform well in many shows.", //Summary
-    3, // summarization_quality
-    3, //groundedness
-    3, //fulfillment
-    3, // summarization_helpfulness
-    3, // summarization_verbosity
+    "3-OK", // summarization_quality
+    "3-Neutral", //summarization_helpfulness
+    "1-Somewhat Verbose", //summarization_verbosity
+    "1-Grounded", // groundedness
+    "4-Good fulfillment", // fulfillment
+  ],
+  [
+    "2", // ID
+    "Great magicians are hard working and do a lot of shows. You need to practice to be good at magic. So practice a lot.", //context
+    "Becoming a great magician requires dedication and hard work.  Practicing magic regularly is essential to develop skills and perform well in many shows.", //Summary
+    "3-OK", // summarization_quality
+    "3-Neutral", //summarization_helpfulness
+    "1-Somewhat Verbose", //summarization_verbosity
+    "1-Grounded", // groundedness
+    "4-Good fulfillment", // fulfillment
+  ],
+  [
+    "3", // ID
+    "Great magicians are hard working and do a lot of shows. You need to practice to be good at magic. So practice a lot.", //context
+    "Becoming a great magician requires dedication and hard work.  Practicing magic regularly is essential to develop skills and perform well in many shows.", //Summary
+    "3-OK", // summarization_quality
+    "3-Neutral", //summarization_helpfulness
+    "1-Somewhat Verbose", //summarization_verbosity
+    "1-Grounded", // groundedness
+    "4-Good fulfillment", // fulfillment
+  ],
+  [
+    "4", // ID
+    "Great magicians are hard working and do a lot of shows. You need to practice to be good at magic. So practice a lot.", //context
+    "Becoming a great magician requires dedication and hard work.  Practicing magic regularly is essential to develop skills and perform well in many shows.", //Summary
+    "3-OK", // summarization_quality
+    "3-Neutral", //summarization_helpfulness
+    "1-Somewhat Verbose", //summarization_verbosity
+    "1-Grounded", // groundedness
+    "4-Good fulfillment", // fulfillment
   ],
 ]);
 
 describe("When Summarization Eval is clicked ", () => {
-  var showStatusSpy;
+
   var mockTestData;
   var $stub;
   beforeEach(() => {
@@ -47,9 +78,11 @@ describe("When Summarization Eval is clicked ", () => {
       append: sinon.stub(),
       val: sinon.stub(),
       tabulator: sinon.stub(),
+      prop: sinon.stub().returns(true),
     });
-    // Spy on showStatus
-    showStatusSpy = sinon.spy(globalThis, "showStatus");
+  
+
+
 
     fetchMock.reset();
 
@@ -213,7 +246,6 @@ describe("When Summarization Eval is clicked ", () => {
 
   afterEach(() => {
     $stub.restore();
-    showStatusSpy.restore();
     sinon.reset();
   });
 
@@ -311,6 +343,7 @@ describe("When Summarization Eval is clicked ", () => {
       body: JSON.stringify(fulfillment_response_json),
     });
 
+    config.timeBetweenCallsInSec = 0; // No need for delay in tests
     // Execute the tests
     await summarizationRunner.createSummarizationData(config);
 

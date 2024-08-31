@@ -8,7 +8,6 @@ import {
   VertexAIError,
 } from "./common.js";
 import { appendLog } from "./ui.js";
-
 export async function callVertexAISearch(id, query, config) {
   const token = config.accessToken;
   const preamble = config.preamble;
@@ -84,39 +83,6 @@ export async function calculateSimilarityUsingPalm2(id, sentence1, sentence2, co
   appendLog(`testCaseID: ${id}: SummaryMatch Finished Successfully `);
 
   return { id: id, status_code: status, output: `${output}` };
-}
-
-export async function callVertexAI(url, token, data, id) {
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-
-  if (!response.ok) {
-    if (response.status === 401) {
-      const json = await response.json();
-      throw new NotAuthenticatedError(id, json.error.message);
-    } else if (response.status === 429) {
-      const json = await response.json();
-      throw new QuotaError(id, json.error.message);
-    } else if (response.status === 403) {
-      const json = await response.json();
-      throw new PermissionDeniedError(id, json.error.message);
-    } else if (response.status === 404) {
-      const json = await response.json();
-      throw new ResourceNotFoundError(id, json.error.message);
-    } else {
-      throw new VertexAIError(id, `Error calling VertexAI. HTTP Code: ${response.status}`);
-    }
-  } else {
-    const json = await response.json();
-
-    return { status: response.status, json_output: json };
-  }
 }
 
 export async function callGeminiMultitModal(id, prompt, fileUri, mimeType, config) {
@@ -228,5 +194,60 @@ export async function callGeminiMultitModal(id, prompt, fileUri, mimeType, confi
 
   appendLog(`callGeminiMultitModal: Finished Successfully.`);
 
-  return { id: id, status_code: status, output: json_output};
+  return { id: id, status_code: status, output: json_output };
+}
+
+export async function callVertexAI(url, token, data, id) {
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    const json = await response.json();
+
+    if (!response.ok) {
+      let errorMessage = "Unknown Error";
+      if (json.hasOwnProperty("error")) {
+        errorMessage = json.error.message;
+      }
+
+      switch (response.status) {
+        case 401:
+          throw new NotAuthenticatedError(id, errorMessage);
+        case 429:
+          throw new QuotaError(id, errorMessage);
+        case 403:
+          throw new PermissionDeniedError(id, errorMessage);
+        case 404:
+          throw new ResourceNotFoundError(id, errorMessage);
+        default:
+          throw new VertexAIError(
+            id,
+            `Error calling VertexAI. HTTP Code: ${response.status} reason: ${errorMessage}`,
+          );
+      }
+    }
+
+    return { status: response.status, json_output: json };
+  } catch (error) {
+    // Handle network errors or unexpected errors
+    if (
+      error instanceof NotAuthenticatedError ||
+      error instanceof QuotaError ||
+      error instanceof PermissionDeniedError ||
+      error instanceof ResourceNotFoundError ||
+      error instanceof VertexAIError
+    ) {
+      // Known errors, rethrow them
+      throw error;
+    } else {
+      // Unknown errors, wrap them in a VertexAIError
+      throw new VertexAIError(id, `Network or unexpected error: ${error.message}`);
+    }
+  }
 }

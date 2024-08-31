@@ -45,12 +45,12 @@ export async function createSummarizationEvalDataTable() {
       await context.sync();
       const worksheetName = currentWorksheet.name;
 
-      var velvetTable = currentWorksheet.tables.add("C9:J9", true /*hasHeaders*/);
+      var velvetTable = currentWorksheet.tables.add("C14:J14", true /*hasHeaders*/);
       velvetTable.name = `${worksheetName}.TestCasesTable`;
 
       velvetTable.getHeaderRowRange().values = [summarization_TableHeader[0]];
 
-      velvetTable.resize("C9:J119");
+      velvetTable.resize("C14:J115");
       currentWorksheet.getUsedRange().format.autofitColumns();
       currentWorksheet.getUsedRange().format.autofitRows();
       currentWorksheet.getUsedRange().format.wrapText = true;

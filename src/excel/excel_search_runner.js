@@ -9,6 +9,10 @@ import { getColumn } from "./excel_common.js";
 export class ExcelSearchRunner extends TaskRunner {
   constructor() {
     super();
+    this.throttled_process_summary = this.throttle((a, b, c, d, e) =>
+      this.processSummary(a, b, c, d, e),
+    );
+    this.searchTaskPromiseSet = new Set();
   }
 
   async getSearchConfig() {
@@ -131,28 +135,39 @@ export class ExcelSearchRunner extends TaskRunner {
     });
   }
 
-  async stopSearchTests() {
-    // Set the cancel signal flag
-    this.cancelPressed = true;
-    appendLog("Cancel Requested. Stopping SearchTests execution...");
+  async getResultFromVertexAI(rowNum, config) {
+    var query = this.queryColumn.values;
+    return await callVertexAISearch(rowNum, query[rowNum][0], config);
   }
 
-  async getResultFromExternalAPI(rowNum, config) {
-    var query = this.queryColumn.values;
-    return callVertexAISearch(rowNum, query[rowNum][0], config);
+  async waitForTaskstoFinish() {
+    await Promise.allSettled(this.searchTaskPromiseSet.values());
+  }
+
+  async cancelAllTasks() {
+    this.throttled_process_summary.abort();
+     appendLog(`Cancel Requested for Search Tasks`);
   }
 
   async processRow(response_json, context, config, rowNum) {
+    let numCalls = 1;
     if (response_json.hasOwnProperty("summary")) {
-      await this.processSummary(
+      // process the summary using throttling since it makes an external call
+      const processSummaryPromise = this.throttled_process_summary(
         context,
         config,
         rowNum,
         response_json,
         this.expectedSummaryColumn.values,
-      );
-      appendLog(`testCaseID: ${rowNum} Processed Summary.`);
+      ).then(async (callsSoFar) => {
+        appendLog(`testCaseID: ${rowNum} Processed Search Summary.`);
+      });
+
+      this.searchTaskPromiseSet.add(processSummaryPromise);
+      // wait for processRow to finish
+      await Promise.resolve(processSummaryPromise);
     }
+
     // Check the documents references
     if (response_json.hasOwnProperty("results")) {
       this.checkDocumentLinks(
@@ -162,9 +177,10 @@ export class ExcelSearchRunner extends TaskRunner {
         this.expected_link_1_Column.values,
         this.expected_link_2_Column.values,
       );
-
       appendLog(`testCaseID: ${rowNum} Processed Doc Links.`);
     }
+
+    return numCalls;
   }
 
   async processSummary(context, config, rowNum, result, expectedSummary) {
@@ -173,12 +189,11 @@ export class ExcelSearchRunner extends TaskRunner {
       const actualSummarycell = this.actualSummaryColumn.getRange().getCell(rowNum, 0);
       actualSummarycell.clear(Excel.ClearApplyTo.formats);
       actualSummarycell.values = [[result.summary.summaryText]];
-      // match summaries only if they are not null or empty
+
+      // match summaries only if they are not null or not empty
       if (expectedSummary[rowNum][0] !== null && expectedSummary[rowNum][0] !== "") {
         const score_cell = this.summaryScoreColumn.getRange().getCell(rowNum, 0);
         score_cell.clear(Excel.ClearApplyTo.formats);
-
-        // Catch any errors here and report it in the cell. We don't want failures here to stop processing.
 
         const response = await calculateSimilarityUsingPalm2(
           rowNum,
@@ -186,6 +201,7 @@ export class ExcelSearchRunner extends TaskRunner {
           expectedSummary[rowNum][0],
           config,
         );
+
         const score = response.output;
 
         if (score.trim() === "same") {
@@ -196,12 +212,13 @@ export class ExcelSearchRunner extends TaskRunner {
           actualSummarycell.format.fill.color = "#FFCCCB";
         }
       }
+      // Catch any errors here and report it in the cell. We don't want failures here to stop processing.
     } catch (err) {
       appendError(`testCaseID: ${rowNum} Error getting Similarity. Error: ${err.message} `, err);
-      /*  // put the error in the cell.
-        score_cell.values = [["Failed. Error: " + err.message]];
-        score_cell.format.fill.color = "#FFCCCB";
-        actualSummarycell.format.fill.color = "#FFCCCB"; */
+      // put the error in the cell.
+      score_cell.values = [["Failed. Error: " + err.message]];
+      score_cell.format.fill.color = "#FFCCCB";
+      actualSummarycell.format.fill.color = "#FFCCCB";
     } finally {
       //await context.sync();
     }

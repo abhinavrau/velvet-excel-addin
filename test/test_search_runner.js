@@ -50,6 +50,66 @@ export var testCaseRows = vertex_ai_search_testTableHeader.concat([
     "link2", // Actual Link 2
     "link3", // Actual Link 3
   ],
+  [
+    "2", // ID
+    "What is Google's revenue for the year ending December 31, 2021", //Query
+    "Revenue is $2.2 billion", //Expected Summary
+    "Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.", // Actual Summary
+    "link1", //Expected Link 1
+    "link2", //Expected Link 2
+    "link3", // Expected Link 3
+    "TRUE", // Summary Match
+    "TRUE", // First Link Match
+    "TRUE", // Link in Top 2
+    "link1", // Actual Link 1
+    "link2", // Actual Link 2
+    "link3", // Actual Link 3
+  ],
+  [
+    "3", // ID
+    "What is Google's revenue for the year ending December 31, 2021", //Query
+    "Revenue is $2.2 billion", //Expected Summary
+    "Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.", // Actual Summary
+    "link1", //Expected Link 1
+    "link2", //Expected Link 2
+    "link3", // Expected Link 3
+    "TRUE", // Summary Match
+    "TRUE", // First Link Match
+    "TRUE", // Link in Top 2
+    "link1", // Actual Link 1
+    "link2", // Actual Link 2
+    "link3", // Actual Link 3
+  ],
+  [
+    "4", // ID
+    "What is Google's revenue for the year ending December 31, 2021", //Query
+    "Revenue is $2.2 billion", //Expected Summary
+    "Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.", // Actual Summary
+    "link1", //Expected Link 1
+    "link2", //Expected Link 2
+    "link3", // Expected Link 3
+    "TRUE", // Summary Match
+    "TRUE", // First Link Match
+    "TRUE", // Link in Top 2
+    "link1", // Actual Link 1
+    "link2", // Actual Link 2
+    "link3", // Actual Link 3
+  ],
+  [
+    "5", // ID
+    "What is Google's revenue for the year ending December 31, 2021", //Query
+    "Revenue is $2.2 billion", //Expected Summary
+    "Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.", // Actual Summary
+    "link1", //Expected Link 1
+    "link2", //Expected Link 2
+    "link3", // Expected Link 3
+    "TRUE", // Summary Match
+    "TRUE", // First Link Match
+    "TRUE", // Link in Top 2
+    "link1", // Actual Link 1
+    "link2", // Actual Link 2
+    "link3", // Actual Link 3
+  ],
 ]);
 
 describe("When Search Run Tests is clicked ", () => {
@@ -66,6 +126,7 @@ describe("When Search Run Tests is clicked ", () => {
       append: appendStub,
       val: sinon.stub(),
       tabulator: tabulatorStub,
+      prop: sinon.stub().returns(true),
     });
 
     fetchMock.reset();
@@ -421,7 +482,7 @@ describe("When Search Run Tests is clicked ", () => {
         class: "ms-fontSize-24 ms-fontWeight-bold",
         text: "An error occurred",
         class: "ms-fontSize-16 ms-fontWeight-regular",
-        text: "Finished! Successful: 0. Failed: 2. See logs for details. ",
+        text: "Finished! Successful: 0. Failed: 1. See logs for details.",
       }),
     ).toBe(true);
   });

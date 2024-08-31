@@ -1,12 +1,22 @@
+import { AbortError } from "../../lib/p-throttle.js";
+import {
+  mapSummaryHelpfulnessScore,
+  mapSummaryQualityScore,
+  mapSummaryVerbosityScore,
+  mapTextgenFulfillmentScore,
+  mapTextgenGroundednessScore,
+} from "../common.js";
 import { TaskRunner } from "../task_runner.js";
-
 import { appendError, appendLog, showStatus } from "../ui.js";
 import { callGeminiMultitModal, callVertexAI } from "../vertex_ai.js";
 import { getColumn } from "./excel_common.js";
-
 export class SummarizationRunner extends TaskRunner {
   constructor() {
     super();
+    this.summaryEval_throttle = this.throttle((a, b, c, d, e, f, g, h) =>
+      this.callSummaryEval(a, b, c, d, e, f, g, h),
+    );
+    this.summaryEvalTaskPromiseSet = new Set();
   }
 
   async getSummarizationConfig() {
@@ -26,9 +36,15 @@ export class SummarizationRunner extends TaskRunner {
           vertexAILocation: valueColumn.values[2][0],
           model: valueColumn.values[3][0],
           prompt: valueColumn.values[4][0],
-          batchSize: valueColumn.values[5][0],
-          timeBetweenCallsInSec: valueColumn.values[6][0],
+          generateSummarizationQuality: valueColumn.values[5][0],
+          generateSummarizationHelpfulness: valueColumn.values[6][0],
+          generateSummarizationVerbosity: valueColumn.values[7][0],
+          generateGroundedness: valueColumn.values[8][0],
+          generateFulfillment: valueColumn.values[9][0],
+          batchSize: valueColumn.values[10][0],
+          timeBetweenCallsInSec: valueColumn.values[11][0],
           accessToken: $("#access-token").val(),
+
           systemInstruction: "",
           responseMimeType: "text/plain",
         };
@@ -99,15 +115,19 @@ export class SummarizationRunner extends TaskRunner {
     });
   }
 
-  async stopSummarizationData() {
-    this.cancelPressed = true;
-    appendLog("Cancel Requested. Stopping SearchTests execution...");
+  async getResultFromVertexAI(rowNum, config) {
+    const toSummarize = this.toSummarizeColumn.values;
+    const full_prompt = config.prompt + " Text to summarize: " + toSummarize[rowNum][0];
+    return await callGeminiMultitModal(rowNum, full_prompt, null, null, config);
   }
 
-  async getResultFromExternalAPI(rowNum, config) {
-    let toSummarize = this.toSummarizeColumn.values;
-    let full_prompt = config.prompt + " Text to summarize: " + toSummarize[rowNum][0];
-    return callGeminiMultitModal(rowNum, full_prompt, null, null, config);
+  async waitForTaskstoFinish() {
+    await Promise.allSettled(this.summaryEvalTaskPromiseSet.values());
+  }
+  async cancelAllTasks() {
+    await this.summaryEval_throttle.abort();
+    await this.summaryEvalTaskPromiseSet.clear();
+    appendLog(`Cancel Requested for Summarization Tasks`);
   }
 
   async processRow(response_json, context, config, rowNum) {
@@ -117,137 +137,171 @@ export class SummarizationRunner extends TaskRunner {
     const location = config.vertexAILocation;
     const eval_url = `https://${location}-aiplatform.googleapis.com/v1beta1/projects/${projectId}/locations/${location}:evaluateInstances`;
     const output = response_json.candidates[0].content.parts[0].text;
-    let toSummarize = this.toSummarizeColumn.values;
+
+    const toSummarize = this.toSummarizeColumn.values;
     const textToSummarize = toSummarize[rowNum][0];
     // Set the summary
     const cell_summary = this.summaryColumn.getRange().getCell(rowNum, 0);
     cell_summary.clear(Excel.ClearApplyTo.formats);
     cell_summary.values = [[output]];
-    context.sync();
+    let numCallsSoFar = 0;
+    //context.sync();
 
-    appendLog(`testCaseID::${rowNum} summarizationQualityResult Started..`);
     // summary quality
-    var summarization_quality_input = {
-      summarization_quality_input: {
-        metric_spec: {},
-        instance: {
-          prediction: `${output}`,
-          instruction: `${prompt}`,
-          context: `${textToSummarize}`,
+    if (config.generateSummarizationQuality) {
+      appendLog(`testCaseID::${rowNum} summarizationQualityResult Started..`);
+      var summarization_quality_input = {
+        summarization_quality_input: {
+          metric_spec: {},
+          instance: {
+            prediction: `${output}`,
+            instruction: `${prompt}`,
+            context: `${textToSummarize}`,
+          },
         },
-      },
-    };
+      };
 
-    await this.callSummaryEval(
-      eval_url,
-      token,
-      summarization_quality_input,
-      this.summarization_qualityColumn,
-      "summarizationQualityResult",
-      rowNum,
-      context,
-    );
+      this.summaryEvalTaskPromiseSet.add(
+        this.summaryEval_throttle(
+          eval_url,
+          token,
+          summarization_quality_input,
+          this.summarization_qualityColumn,
+          "summarizationQualityResult",
+          rowNum,
+          context,
+          mapSummaryQualityScore,
+        ),
+      );
+      numCallsSoFar++;
+    }
 
-    appendLog(`testCaseID::${rowNum} summarizationQuality Finished`);
-
-    appendLog(`testCaseID::${rowNum} summarizationHelpfulness Started..`);
     // summary helpfulness
-    var summarization_helpfulness_input = {
-      summarization_helpfulness_input: {
-        metric_spec: {},
-        instance: {
-          prediction: `${output}`,
-          instruction: `${prompt}`,
-          context: `${textToSummarize}`,
+    if (config.generateSummarizationHelpfulness) {
+      appendLog(`testCaseID::${rowNum} summarizationHelpfulness Started..`);
+
+      var summarization_helpfulness_input = {
+        summarization_helpfulness_input: {
+          metric_spec: {},
+          instance: {
+            prediction: `${output}`,
+            instruction: `${prompt}`,
+            context: `${textToSummarize}`,
+          },
         },
-      },
-    };
+      };
 
-    await this.callSummaryEval(
-      eval_url,
-      token,
-      summarization_helpfulness_input,
-      this.summarization_helpfulnesColumn,
-      "summarizationHelpfulnessResult",
-      rowNum,
-      context,
-    );
-
-    appendLog(`sumCaseID::${rowNum} summarizationHelpfulness Finished`);
-
-    appendLog(`sumCaseID::${rowNum} summarizationVerbosity Started..`);
+      this.summaryEvalTaskPromiseSet.add(
+        this.summaryEval_throttle(
+          eval_url,
+          token,
+          summarization_helpfulness_input,
+          this.summarization_helpfulnesColumn,
+          "summarizationHelpfulnessResult",
+          rowNum,
+          context,
+          mapSummaryHelpfulnessScore,
+        ),
+      );
+      numCallsSoFar++;
+    }
 
     // summary verbosity
-    var summarization_verbosity_input = {
-      summarization_verbosity_input: {
-        metric_spec: {},
-        instance: {
-          prediction: `${output}`,
-          instruction: `${prompt}`,
-          context: `${textToSummarize}`,
+    if (config.generateSummarizationVerbosity) {
+      // Check the flag
+      appendLog(`testCaseID::${rowNum} summarizationVerbosity Started..`);
+
+      var summarization_verbosity_input = {
+        summarization_verbosity_input: {
+          metric_spec: {},
+          instance: {
+            prediction: `${output}`,
+            instruction: `${prompt}`,
+            context: `${textToSummarize}`,
+          },
         },
-      },
-    };
+      };
 
-    await this.callSummaryEval(
-      eval_url,
-      token,
-      summarization_verbosity_input,
-      this.summarization_verbosityColumn,
-      "summarizationVerbosityResult",
-      rowNum,
-      context,
-    );
+      this.summaryEvalTaskPromiseSet.add(
+        this.summaryEval_throttle(
+          eval_url,
+          token,
+          summarization_verbosity_input,
+          this.summarization_verbosityColumn,
+          "summarizationVerbosityResult",
+          rowNum,
+          context,
+          mapSummaryVerbosityScore,
+        ),
+      );
+      numCallsSoFar++;
+    }
 
-    appendLog(`sumCaseID::${rowNum} summarizationVerbosity Finished`);
-
-    appendLog(`sumCaseID::${rowNum} groundedness Started..`);
     // summary groundedness
-    var groundedness_input = {
-      groundedness_input: {
-        metric_spec: {},
-        instance: {
-          prediction: `${output}`,
-          context: `${textToSummarize}`,
+    if (config.generateGroundedness) {
+      // Check the flag
+      appendLog(`testCaseID::${rowNum} groundedness Started..`);
+
+      var groundedness_input = {
+        groundedness_input: {
+          metric_spec: {},
+          instance: {
+            prediction: `${output}`,
+            context: `${textToSummarize}`,
+          },
         },
-      },
-    };
+      };
 
-    await this.callSummaryEval(
-      eval_url,
-      token,
-      groundedness_input,
-      this.groundednessColumn,
-      "groundednessResult",
-      rowNum,
-      context,
-    );
-
-    appendLog(`sumCaseID::${rowNum} groundedness Finished`);
-
-    appendLog(`sumCaseID::${rowNum} fulfillment Started..`);
+      this.summaryEvalTaskPromiseSet.add(
+        this.summaryEval_throttle(
+          eval_url,
+          token,
+          groundedness_input,
+          this.groundednessColumn,
+          "groundednessResult",
+          rowNum,
+          context,
+          mapTextgenGroundednessScore,
+        ),
+      );
+      numCallsSoFar++;
+    }
 
     // summary fulfillment
-    var fulfillment_input = {
-      fulfillment_input: {
-        metric_spec: {},
-        instance: {
-          prediction: `${output}`,
-          instruction: `${prompt}`,
-        },
-      },
-    };
+    if (config.generateFulfillment) {
+      appendLog(`testCaseID::${rowNum} fulfillment Started..`);
 
-    await this.callSummaryEval(
-      eval_url,
-      token,
-      fulfillment_input,
-      this.fulfillmentColumn,
-      "fulfillmentResult",
-      rowNum,
-      context,
-    );
-    appendLog(`sumCaseID::${rowNum} fulfillment Finished`);
+      // summary fulfillment
+      var fulfillment_input = {
+        fulfillment_input: {
+          metric_spec: {},
+          instance: {
+            prediction: `${output}`,
+            instruction: `${prompt}`,
+          },
+        },
+      };
+
+      this.summaryEvalTaskPromiseSet.add(
+        this.summaryEval_throttle(
+          eval_url,
+          token,
+          fulfillment_input,
+          this.fulfillmentColumn,
+          "fulfillmentResult",
+          rowNum,
+          context,
+          mapTextgenFulfillmentScore,
+        ),
+      );
+      numCallsSoFar++;
+    }
+
+    // execute the tasks
+    await Promise.allSettled(this.summaryEvalTaskPromiseSet.values());
+
+    // return number of calls made
+    return numCallsSoFar;
   }
 
   async callSummaryEval(
@@ -258,25 +312,33 @@ export class SummarizationRunner extends TaskRunner {
     resultpropertyName,
     rowNum,
     context,
+    mapScoreString,
   ) {
     try {
       const response = await callVertexAI(eval_url, token, summarization_eval_input);
-      if (response.status === 200) {
-        // Set the summarization_quality
-        const cell_summarization_quality = summarization_evalColumn.getRange().getCell(rowNum, 0);
-        cell_summarization_quality.clear(Excel.ClearApplyTo.formats);
-        cell_summarization_quality.values = [[response.json_output[resultpropertyName].score]];
+      // Set the summarization_quality
+      const cell_summarization_quality = summarization_evalColumn.getRange().getCell(rowNum, 0);
+      cell_summarization_quality.clear(Excel.ClearApplyTo.formats);
+      let score = response.json_output[resultpropertyName].score;
+      if (mapScoreString !== null) {
+        cell_summarization_quality.values = [[mapScoreString.get(score)]];
       } else {
-        throw Error(`Error geting summarization_quality. Error code: ${response.status_code}`);
+        cell_summarization_quality.values = [[score]];
       }
     } catch (err) {
-      appendError(`sumCaseID: ${rowNum} Error getting Summary Eval. Error: ${err.message} `, err);
-      const cell_status = summarization_evalColumn.getRange().getCell(rowNum, 0);
-      cell_status.clear(Excel.ClearApplyTo.formats);
-      cell_status.format.fill.color = "#FFCCCB";
-      cell_status.values = [["Failed. Error: " + err.message]];
-    } finally {
-      //context.sync();
+      if (err instanceof AbortError) {
+        appendLog("Aborting SummarizationTask");
+      } else {
+        appendError(
+          `testCaseID: ${rowNum} Error getting Summary Eval. Error: ${err.message} `,
+          err,
+        );
+        const cell_status = summarization_evalColumn.getRange().getCell(rowNum, 0);
+        cell_status.clear(Excel.ClearApplyTo.formats);
+        cell_status.format.fill.color = "#FFCCCB";
+        cell_status.values = [["Failed. Error: " + err.message]];
+      }
     }
+    appendLog(`testCaseID::${rowNum} ${resultpropertyName} Finished.`);
   }
 }

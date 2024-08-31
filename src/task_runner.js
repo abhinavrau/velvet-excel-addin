@@ -1,5 +1,8 @@
 import { appendError, appendLog, showStatus } from "./ui.js";
 
+//import { default as Bottleneck } from "../lib/bottleneck-2.19.5/lib/index.js";
+
+import { AbortError, default as pThrottle } from "../lib/p-throttle.js";
 import {
   NotAuthenticatedError,
   PermissionDeniedError,
@@ -10,48 +13,78 @@ import {
 
 export class TaskRunner {
   constructor() {
-    this.stopProcessing = false;
     this.cancelPressed = false;
+    this.throttle = pThrottle({
+      limit: 6,
+      interval: 1000,
+    });
+    this.throttled_api_call = this.throttle((a, b) => this.getResultFromVertexAI(a, b));
   }
 
-  async processRow(response_json, context, config, rowNum) {
+  // Main call to vertex ai to get the data for earch row
+  async getResultFromVertexAI(rowNum, config) {
+    throw new Error("You have to implement the method getResultFromVertexAI");
+  }
+
+  // Passes the result from getResultFromVertexAI to this function to popoluate the sheet
+  // And also to call other external functions for eval purposes
+  async processRow(response_json, context, config, rowNum, numCallsSoFar) {
     throw new Error("You have to implement the method processRow");
   }
 
-  async getResultFromExternalAPI(rowNum, config) {
-    throw new Error("You have to implement the method getResultFromExternalAPI");
+  // Called to wait or any throttled external calls to finish
+  async waitForTaskstoFinish() {
+    throw new Error("You have to implement the method waitForTaskstoFinish");
   }
 
+  // request to cancel all throttled external calls since user signalled or error occured
+  async cancelAllTasks() {
+    throw new Error("You have to implement the method cancelAllTasks");
+  }
   async processsAllRows(context, config, countRows, idArray) {
     let currentRow = 1;
-    let numfails = 0;
-
-    // map of promises
-    const promiseMap = new Map();
-
-    this.stopProcessing = false;
+    let numFails = 0;
+    let numSuccessful = 0;
+    let numCallsMade = 0;
     this.cancelPressed = false;
-    // Loop through the test cases table ans run the tests
+
+    // Start timer
+    const startTime = new Date();
+    let promiseSet = new Set();
+    // Loop through the test cases table and run the tests
     while (
       currentRow <= countRows &&
       idArray[currentRow][0] !== null &&
       idArray[currentRow][0] !== ""
     ) {
-      appendLog(`testCaseID: ${idArray[currentRow][0]} Started Processing...`);
-      showStatus(`Processing testCaseID: ${idArray[currentRow][0]}`, false);
-      // Call Vertex AI Search asynchronously and add the promise to promiseMap
+      // Do the first call without throttling since crednetials could be wrong and we don't want to
+      // overwhelm the server with bad crednetials.
 
-      const searchPromise = this.getResultFromExternalAPI(currentRow, config)
+      // if all good then keep going.
+
+      const apiPromise = this.throttled_api_call(currentRow, config)
         .then(async (result) => {
           let response_json = result.output;
           let testCaseRowNum = result.id;
+          numSuccessful++;
+          numCallsMade++;
 
-          // Process Each Result
-          await this.processRow(response_json, context, config, testCaseRowNum);
+          appendLog(`testCaseID: ${testCaseRowNum} Processing results`);
+          showStatus(`${testCaseRowNum} Processing results`, false);
+
+          // Throttle each row since they also make api calls
+          let numCallsProcessRow = await this.processRow(
+            response_json,
+            context,
+            config,
+            testCaseRowNum,
+          );
+
+          // Add to number of calls
+          numCallsMade += numCallsProcessRow;
         })
         .catch((error) => {
-          numfails++;
-          this.stopProcessing = true;
+          appendLog("Stopping task execution since errors encountered.");
           if (
             error instanceof NotAuthenticatedError ||
             error instanceof QuotaError ||
@@ -59,40 +92,61 @@ export class TaskRunner {
             error instanceof PermissionDeniedError ||
             error instanceof ResourceNotFoundError
           ) {
+            numCallsMade++;
+            numFails++;
+            this.throttled_api_call.abort();
             appendError(` ${error.name} processing testCaseID: ${error.id}`, error);
+          } else if (error instanceof AbortError) {
+            appendLog("Tasks Stopped processing.");
           } else {
+            numFails++;
+            this.throttled_api_call.abort();
             appendError(`Unexpected Error stacktrace: ${error.stack}`, error);
           }
         });
 
-      promiseMap.set(currentRow, searchPromise);
-
-      // Batch the calls to Vertex AI since there are throuput checks in place.\
-      if (currentRow % config.batchSize === 0) {
-        // wait for calls so far to finish to finish
-        await Promise.allSettled(promiseMap.values());
-
-        // sync the contents to the cells
-        await context.sync();
-
-        // delay calls with apropriate time
-        await new Promise((r) => setTimeout(r, config.timeBetweenCallsInSec * 1000));
+      // We resolve the first row since we don't want to overwhelm the server with
+      // bad requests if some fo the config or auth tken is bad
+      if (currentRow === 1) {
+        await Promise.resolve(apiPromise);
+        if (numFails > 0) {
+          break;
+        }
       }
-      currentRow++;
-
-      // Stop processing if there errors
-      if (this.stopProcessing || this.cancelPressed) {
-        appendLog("Stopping execution.", null);
+      if (this.cancelPressed) {
+        this.cancelAllTasks();
         break;
       }
+      // first row is good to keep going.
+      // Add the task promise to set
+      promiseSet.add(apiPromise);
+
+      // delay the loop so we can have the ability to cancel.\
+      if (currentRow % config.batchSize === 0) {
+        // delay calls with apropriate time
+        await new Promise((r) => setTimeout(r, 500));
+      }
+
+      currentRow++;
     } // end while
 
-    // wait for all the calls to finish if there are any remaining
-    await Promise.allSettled(promiseMap.values());
+    // wait for all tasks to resolve
+    await Promise.allSettled(promiseSet);
+
+    // wait for other tasks of inherited classes to finish
+    await this.waitForTaskstoFinish();
+
+    await context.sync();
+
+    // Calculate time taken
+    const endTime = new Date();
+    const timeTaken = endTime - startTime; // This gives the time difference in milliseconds
+    const timeTakenSeconds = `${(timeTaken / 1000).toFixed(2)} seconds`;
+
     var stoppedReason = "";
 
-    if (numfails > 0) {
-      stoppedReason = `Failed: ${numfails}. See logs for details. `;
+    if (numFails > 0) {
+      stoppedReason = `Failed: ${numFails}. See logs for details.`;
     }
     if (
       currentRow <= countRows &&
@@ -100,11 +154,25 @@ export class TaskRunner {
     ) {
       stoppedReason += ` No content in ID Column after ${currentRow - 1} test cases.`;
     }
-    var summary = `Finished! Successful: ${currentRow - numfails - 1}. ${stoppedReason}`;
+    var summary = `Finished! Successful: ${numSuccessful}. ${stoppedReason}`;
     if (this.cancelPressed) {
-      summary += "\n Cancelled Execution.";
+      summary += " Cancelled Execution.";
     }
+
     appendLog(summary);
-    showStatus(summary, numfails > 0);
+    appendLog(`Num Calls to Vertex AI:${numCallsMade} Time taken: ${timeTakenSeconds}`);
+    showStatus(summary, numFails > 0);
+  }
+
+  async cancelProcessing() {
+    try {
+      this.cancelPressed = true;
+      await this.throttled_api_call.abort();
+      await this.cancelAllTasks();
+      appendLog("Cancel requested...");
+      await this.waitForTaskstoFinish();
+    } catch (error) {
+      appendError("Error Cancelling", error);
+    }
   }
 }

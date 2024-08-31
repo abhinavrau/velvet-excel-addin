@@ -29,7 +29,7 @@ Office.onReady((info) => {
       },
       "cancelSearchTests",
       async function () {
-        await excelSearchRunner.stopSearchTests();
+        await excelSearchRunner.cancelProcessing();
       },
     );
     syntheticQuestionAnswerRunner = new SyntheticQARunner();
@@ -44,7 +44,7 @@ Office.onReady((info) => {
       },
       "cancelGenerateQAData",
       async function () {
-        await syntheticQuestionAnswerRunner.stopSyntheticData();
+        await syntheticQuestionAnswerRunner.cancelProcessing();
       },
     );
 
@@ -60,7 +60,7 @@ Office.onReady((info) => {
       },
       "cancelSummarizationData",
       async function () {
-        await summarizationRunner.stopSummarizationData();
+        await summarizationRunner.cancelProcessing();
       },
     );
   }
