@@ -1,6 +1,5 @@
 import expect from "expect";
 import fetchMock from "fetch-mock";
-import fs from "fs";
 import { default as $, default as JQuery } from "jquery";
 import pkg from "office-addin-mock";
 import sinon from "sinon";
@@ -10,16 +9,14 @@ import {
   createSummarizationEvalConfigTable,
   createSummarizationEvalDataTable,
 } from "../src/excel/summarization_tables.js";
-import { showStatus } from "../src/ui.js";
 import { callGeminiMultitModal } from "../src/vertex_ai.js";
 
 import { summarization_configValues, summarization_TableHeader } from "../src/common.js";
-
+import { getRequestResponseJsonFromFile } from "./test_common.js";
 // mock the UI components
 
 global.$ = $;
 global.JQuery = JQuery;
-
 
 global.callGeminiMultitModal = callGeminiMultitModal;
 
@@ -68,7 +65,6 @@ export var testCaseRows = summarization_TableHeader.concat([
 ]);
 
 describe("When Summarization Eval is clicked ", () => {
-
   var mockTestData;
   var $stub;
   beforeEach(() => {
@@ -80,9 +76,6 @@ describe("When Summarization Eval is clicked ", () => {
       tabulator: sinon.stub(),
       prop: sinon.stub().returns(true),
     });
-  
-
-
 
     fetchMock.reset();
 
@@ -343,7 +336,7 @@ describe("When Summarization Eval is clicked ", () => {
       body: JSON.stringify(fulfillment_response_json),
     });
 
-    config.timeBetweenCallsInSec = 0; // No need for delay in tests
+    config.batchSize = 10; // set batchSize high so test doesn't timeout
     // Execute the tests
     await summarizationRunner.createSummarizationData(config);
 
@@ -419,16 +412,6 @@ describe("When Summarization Eval is clicked ", () => {
     expect(fulfillment_quality_cell[0][0]).toEqual(testCaseRows[1][fulfillment_quality_col_index]);
   });
 });
-
-function getRequestResponseJsonFromFile(requestJsonFilePath, responseJsonFilePath) {
-  const request = fs.readFileSync(requestJsonFilePath);
-  const response = fs.readFileSync(responseJsonFilePath);
-  return {
-    response_json: JSON.parse(response),
-    request_json: JSON.parse(request),
-  };
-}
-
 function getCellAndColumnIndexByName(column_name, mockTestData) {
   var col_index = testCaseRows[0].indexOf(column_name);
 

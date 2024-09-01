@@ -4,7 +4,7 @@
       "role": "user",
       "parts": [
         {
-          "text": "Generate 1 question and answer"
+          "text": "You are an expert in reading call center policy and procedure documents. Generate question and answer a customer would ask from a Bank using the attached document."
         },
         {
           "fileData": {
@@ -18,7 +18,7 @@
   "systemInstruction": {
     "parts": [
       {
-        "text": "You are an expert in reading call center policy and procedure documents.Given the attached document, generate a question and answer that customers are likely to ask a call center agent.The question should only be sourced from the provided the document.Do not use any other information other than the attached document. Explain your reasoning for the answer by quoting verbatim where in the document the answer is found. Return the results in JSON format.Example: {'question': 'Here is a question?', 'answer': 'Here is the answer', 'reasoning': 'Quote from document'}"
+        "text": "Given the attached document, generate a question and an answer.The question should only be sourced from the provided the document. Do not use any other information other than the attached document. Explain your reasoning for the answer by quoting verbatim where in the document the answer is found. Return the results in JSON format.Example: {'question': 'Here is a question?', 'answer': 'Here is the answer', 'reasoning': 'Quote from document'}"
       }
     ]
   },

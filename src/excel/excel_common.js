@@ -10,3 +10,4 @@ export function getColumn(table, columnName) {
     showStatus(`Exception when getting column: ${JSON.stringify(error)}`, true);
   }
 }
+

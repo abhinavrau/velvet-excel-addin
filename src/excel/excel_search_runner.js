@@ -46,8 +46,8 @@ export class ExcelSearchRunner extends TaskRunner {
           ignoreAdversarialQuery: valueColumn.values[12][0],
           ignoreNonSummarySeekingQuery: valueColumn.values[13][0],
           summaryMatchingAdditionalPrompt: valueColumn.values[14][0],
-          batchSize: valueColumn.values[15][0],
-          timeBetweenCallsInSec: valueColumn.values[16][0],
+          batchSize: parseInt(valueColumn.values[15][0]),
+          timeBetweenCallsInSec: parseInt(valueColumn.values[16][0]),
           accessToken: $("#access-token").val(),
           systemInstruction: "",
           responseMimeType: "text/plain",
@@ -146,7 +146,7 @@ export class ExcelSearchRunner extends TaskRunner {
 
   async cancelAllTasks() {
     this.throttled_process_summary.abort();
-     appendLog(`Cancel Requested for Search Tasks`);
+    appendLog(`Cancel Requested for Search Tasks`);
   }
 
   async processRow(response_json, context, config, rowNum) {

@@ -1,6 +1,7 @@
 import { TaskRunner } from "../task_runner.js";
 
-import { appendError, showStatus } from "../ui.js";
+import { findIndexByColumnsNameIn2DArray, mapQuestionAnsweringScore } from "../common.js";
+import { appendError, appendLog, showStatus } from "../ui.js";
 import { callGeminiMultitModal } from "../vertex_ai.js";
 import { getColumn } from "./excel_common.js";
 
@@ -8,6 +9,9 @@ export class SyntheticQARunner extends TaskRunner {
   constructor() {
     super();
     this.synthQATaskPromiseSet = new Set();
+    this.generateQualityEval_throttled = this.throttle((a, b, c) =>
+      this.generateQualityEval(a, b, c),
+    );
   }
 
   async getSyntheticQAConfig() {
@@ -20,15 +24,53 @@ export class SyntheticQARunner extends TaskRunner {
         const worksheetName = currentWorksheet.name;
         const configTable = currentWorksheet.tables.getItem(`${worksheetName}.ConfigTable`);
         const valueColumn = getColumn(configTable, "Value");
+        const configColumn = getColumn(configTable, "Config");
         await context.sync();
 
         config = {
-          vertexAIProjectID: valueColumn.values[1][0],
-          vertexAILocation: valueColumn.values[2][0],
-          model: valueColumn.values[3][0],
-          systemInstruction: valueColumn.values[4][0],
-          batchSize: valueColumn.values[5][0],
-          timeBetweenCallsInSec: valueColumn.values[6][0],
+          vertexAIProjectID:
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(configColumn.values, "Vertex AI Project ID")
+            ][0],
+          vertexAILocation:
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(configColumn.values, "Vertex AI Location")
+            ][0],
+          model:
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(configColumn.values, "Gemini Model ID")
+            ][0],
+          systemInstruction:
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(configColumn.values, "System Instructions")
+            ][0],
+          prompt:
+            valueColumn.values[findIndexByColumnsNameIn2DArray(configColumn.values, "Prompt")][0],
+          qaQualityFlag:
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(configColumn.values, "Generate Q & A Quality")
+            ][0],
+          qAQualityPrompt:
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(configColumn.values, "Q & A Quality Prompt")
+            ][0],
+          qAQualityModel:
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(configColumn.values, "Q & A Quality Model ID")
+            ][0],
+          batchSize: parseInt(
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(configColumn.values, "Max Concurrent Requests (1-10)")
+            ][0],
+          ),
+          timeBetweenCallsInSec: parseInt(
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(
+                configColumn.values,
+                "Request Interval in Seconds(1-10)",
+              )
+            ][0],
+          ),
           accessToken: $("#access-token").val(),
           responseMimeType: "application/json",
         };
@@ -59,9 +101,7 @@ export class SyntheticQARunner extends TaskRunner {
         this.mimeTypeColumn = getColumn(testCasesTable, "Mime Type");
         this.generatedQuestionColumn = getColumn(testCasesTable, "Generated Question");
         this.expectedAnswerColumn = getColumn(testCasesTable, "Expected Answer");
-        this.reasoningAColumn = getColumn(testCasesTable, "Reasoning");
-        this.statusColumn = getColumn(testCasesTable, "Status");
-        this.responseTimeColumn = getColumn(testCasesTable, "Response Time");
+        this.qualityColumn = getColumn(testCasesTable, "Q & A Quality");
 
         testCasesTable.rows.load("count");
         await context.sync();
@@ -99,12 +139,14 @@ export class SyntheticQARunner extends TaskRunner {
   async getResultFromVertexAI(rowNum, config) {
     let fileUri = this.fileUriColumn.values;
     let mimeType = this.mimeTypeColumn.values;
-    let prompt = "Generate 1 question and answer";
+
     return await callGeminiMultitModal(
       rowNum,
-      prompt,
+      config.prompt,
+      config.systemInstruction,
       fileUri[rowNum][0],
       mimeType[rowNum][0],
+      config.model,
       config,
     );
   }
@@ -118,6 +160,7 @@ export class SyntheticQARunner extends TaskRunner {
   }
 
   async processRow(response_json, context, config, rowNum) {
+    let numCallsMade = 0;
     try {
       const output = response_json.candidates[0].content.parts[0].text;
       // Set the generated question
@@ -132,24 +175,67 @@ export class SyntheticQARunner extends TaskRunner {
       cell_expectedAnswer.clear(Excel.ClearApplyTo.formats);
       cell_expectedAnswer.values = [[response.answer]];
 
-      // Set the reasoning
-      /*   const cell_reasoning = this.reasoningColumn.getRange().getCell(rowNum, 0);
-            cell_reasoning.clear(Excel.ClearApplyTo.formats);
-            cell_reasoning.values = [[response.reasoning]]; */
-
-      // Set the reasoning
-      const cell_status = this.statusColumn.getRange().getCell(rowNum, 0);
-      cell_status.clear(Excel.ClearApplyTo.formats);
-      cell_status.values = [["Success"]];
+      // call to get quality if flag is set
+      if (config.qaQualityFlag) {
+        this.synthQATaskPromiseSet.add(
+          this.generateQualityEval_throttled(config, response, rowNum),
+        );
+      }
     } catch (err) {
       appendError(`testCaseID: ${rowNum} Error setting QA. Error: ${err.message} `, err);
-      const cell_status = this.statusColumn.getRange().getCell(rowNum, 0);
+      const cell_status = this.generatedQuestionColumn.getRange().getCell(rowNum, 0);
       cell_status.clear(Excel.ClearApplyTo.formats);
       cell_status.format.fill.color = "#FFCCCB";
       cell_status.values = [["Failed. Error: " + err.message]];
     } finally {
       //await context.sync();
     }
-    return 0;
+    // execute the tasks
+    await Promise.allSettled(this.synthQATaskPromiseSet.values());
+
+    return numCallsMade++;
+  }
+
+  async generateQualityEval(config, response, rowNum) {
+    try {
+      appendLog(`testCaseID::${rowNum} generateQualityEval Started..`);
+      let fileUri = this.fileUriColumn.values;
+      let mimeType = this.mimeTypeColumn.values;
+
+      const evalPrompt = `${config.qAQualityPrompt} # User Inputs and AI-generated Response
+                        ## User Inputs
+                        ### Prompt
+                        ${config.systemInstruction}
+                        ${config.prompt}
+
+                        ## AI-generated Response
+                        ${JSON.stringify(response)}`;
+
+      const eval_response = await callGeminiMultitModal(
+        rowNum,
+        evalPrompt,
+        "",
+        fileUri[rowNum][0],
+        mimeType[rowNum][0],
+        config.qAQualityModel,
+        config,
+      );
+
+      const eval_output = eval_response.output.candidates[0].content.parts[0].text;
+      // since its json we get the rating tag
+      const eval_json = JSON.parse(eval_output);
+
+      // Set the eval quality
+      const cell_evalQuality = this.qualityColumn.getRange().getCell(rowNum, 0);
+      cell_evalQuality.clear(Excel.ClearApplyTo.formats);
+      cell_evalQuality.values = [[mapQuestionAnsweringScore.get(eval_json.rating)]];
+      appendLog(`testCaseID::${rowNum} generateQualityEval Finished: Raing: ${eval_json.rating}`);
+    } catch (err) {
+      appendError(`testCaseID: ${rowNum} Error setting Eval QA  Error: ${err.message} `, err);
+      const cell_status = this.qualityColumn.getRange().getCell(rowNum, 0);
+      cell_status.clear(Excel.ClearApplyTo.formats);
+      cell_status.format.fill.color = "#FFCCCB";
+      cell_status.values = [["Failed. Error: " + err.message]];
+    }
   }
 }

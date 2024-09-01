@@ -60,7 +60,15 @@ describe("When callGeminiMultiModal is called", () => {
       body: JSON.stringify(responseJson),
     });
 
-    const result = await callGeminiMultitModal(1, prompt, fileUri, mimeType, config);
+    const result = await callGeminiMultitModal(
+      1,
+      prompt,
+      config.systemInstruction,
+      fileUri,
+      mimeType,
+      config.model,
+      config,
+    );
 
     // make sure our mock is called
     expect(fetchMock.called()).toBe(true);
@@ -75,7 +83,6 @@ describe("When callGeminiMultiModal is called", () => {
     expect(result.output.candidates[0].content.parts[0].text).toEqual(
       responseJson.candidates[0].content.parts[0].text,
     );
-    
   });
   it("should fail when you get an authentication error from Vertex AI", async () => {
     const prompt = "What is the sentiment of this text?";
@@ -104,7 +111,7 @@ describe("When callGeminiMultiModal is called", () => {
     });
 
     try {
-      const result = await callGeminiMultitModal(1, prompt, fileUri, mimeType, config);
+      const result = await callGeminiMultitModal(1, prompt, "", fileUri, mimeType, config.model, config);
       assert.fail();
     } catch (err) {
       expect(fetchMock.called()).toBe(true);
@@ -115,6 +122,8 @@ describe("When callGeminiMultiModal is called", () => {
 
   it("should fail when fetch throws exception", async () => {
     const prompt = "What is the sentiment of this text?";
+    const systemInstruction =
+      "You are an expert in reading call center policy and procedure documents.Given the attached document, generate a question and answer that customers are likely to ask a call center agent.The question should only be sourced from the provided the document.Do not use any other information other than the attached document. Explain your reasoning for the answer by quoting verbatim where in the document the answer is found. Return the results in JSON format.Example: {'question': 'Here is a question?', 'answer': 'Here is the answer', 'reasoning': 'Quote from document'}";
     const fileUri = "https://example.com/file.txt";
     const mimeType = "text/plain";
     const model_id = "gemini-1.5-flash-001";
@@ -123,7 +132,6 @@ describe("When callGeminiMultiModal is called", () => {
       vertexAIProjectID: "YOUR_PROJECT_ID",
       vertexAILocation: "YOUR_LOCATION",
       model: "gemini-1.5-flash-001",
-      systemInstruction: null,
       responseMimeType: "application/json",
     };
 
@@ -133,7 +141,15 @@ describe("When callGeminiMultiModal is called", () => {
     });
 
     try {
-      const result = await callGeminiMultitModal(1, prompt, fileUri, mimeType, config);
+      const result = await callGeminiMultitModal(
+        1,
+        prompt,
+        systemInstruction,
+        fileUri,
+        mimeType,
+        config.model,
+        config,
+      );
       assert.fail();
     } catch (err) {
       expect(fetchMock.called()).toBe(true);

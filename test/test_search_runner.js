@@ -330,7 +330,7 @@ describe("When Search Run Tests is clicked ", () => {
     );
 
     // Execute the tests
-    config.timeBetweenCallsInSec = 0; // set timeout to zero so test doesn't timeout
+    config.batchSize = 10; // set batchSize high so test doesn't timeout
     await excelSearchRunner.executeSearchTests(config);
 
     // Verify mocks are called

@@ -15,7 +15,7 @@ export class TaskRunner {
   constructor() {
     this.cancelPressed = false;
     this.throttle = pThrottle({
-      limit: 6,
+      limit: 10,
       interval: 1000,
     });
     this.throttled_api_call = this.throttle((a, b) => this.getResultFromVertexAI(a, b));
@@ -48,6 +48,13 @@ export class TaskRunner {
     let numCallsMade = 0;
     this.cancelPressed = false;
 
+    if (config.batchSize !== null && config.timeBetweenCallsInSec != null) {
+      this.throttle = pThrottle({
+        limit: config.batchSize > 10 ? 10 : config.batchSize,
+        interval: config.timeBetweenCallsInSec > 5 ? 5 * 1000 : config.timeBetweenCallsInSec * 1000,
+      });
+      this.throttled_api_call = this.throttle((a, b) => this.getResultFromVertexAI(a, b));
+    }
     // Start timer
     const startTime = new Date();
     let promiseSet = new Set();
@@ -109,6 +116,8 @@ export class TaskRunner {
       // bad requests if some fo the config or auth tken is bad
       if (currentRow === 1) {
         await Promise.resolve(apiPromise);
+        await this.waitForTaskstoFinish();
+        await context.sync();
         if (numFails > 0) {
           break;
         }

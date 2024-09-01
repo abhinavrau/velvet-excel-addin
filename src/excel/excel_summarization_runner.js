@@ -41,8 +41,8 @@ export class SummarizationRunner extends TaskRunner {
           generateSummarizationVerbosity: valueColumn.values[7][0],
           generateGroundedness: valueColumn.values[8][0],
           generateFulfillment: valueColumn.values[9][0],
-          batchSize: valueColumn.values[10][0],
-          timeBetweenCallsInSec: valueColumn.values[11][0],
+          batchSize: parseInt(valueColumn.values[10][0]),
+          timeBetweenCallsInSec: parseInt(valueColumn.values[11][0]),
           accessToken: $("#access-token").val(),
 
           systemInstruction: "",
@@ -118,7 +118,7 @@ export class SummarizationRunner extends TaskRunner {
   async getResultFromVertexAI(rowNum, config) {
     const toSummarize = this.toSummarizeColumn.values;
     const full_prompt = config.prompt + " Text to summarize: " + toSummarize[rowNum][0];
-    return await callGeminiMultitModal(rowNum, full_prompt, null, null, config);
+    return await callGeminiMultitModal(rowNum, full_prompt, null, null, null, config.model, config);
   }
 
   async waitForTaskstoFinish() {

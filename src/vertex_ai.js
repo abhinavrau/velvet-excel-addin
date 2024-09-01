@@ -85,12 +85,19 @@ export async function calculateSimilarityUsingPalm2(id, sentence1, sentence2, co
   return { id: id, status_code: status, output: `${output}` };
 }
 
-export async function callGeminiMultitModal(id, prompt, fileUri, mimeType, config) {
+export async function callGeminiMultitModal(
+  id,
+  prompt,
+  systemInstruction,
+  fileUri,
+  mimeType,
+  model_id,
+  config,
+) {
   const token = config.accessToken;
   const projectId = config.vertexAIProjectID;
   const location = config.vertexAILocation;
-  const model_id = config.model;
-  const system_instruction = config.systemInstruction === null ? "" : config.systemInstruction;
+  const system_instruction = systemInstruction === null ? "" : systemInstruction;
 
   var data = {
     contents: [

@@ -1,6 +1,5 @@
 import expect from "expect";
 import fetchMock from "fetch-mock";
-import fs from "fs";
 import { default as $, default as JQuery } from "jquery";
 import pkg from "office-addin-mock";
 import sinon from "sinon";
@@ -13,6 +12,7 @@ import {
 } from "../src/excel/synthetic_qa_tables.js";
 import { showStatus } from "../src/ui.js";
 import { callGeminiMultitModal } from "../src/vertex_ai.js";
+import { mockGeminiRequestResponse } from "./test_common.js";
 
 // mock the UI components
 global.showStatus = showStatus;
@@ -29,9 +29,7 @@ export var testCaseRows = synth_q_and_a_TableHeader.concat([
     "application/pdf", //Mime Type
     "If I close my new savings account within 30 days of opening it, will I be charged a fee?", // Generated Question
     "Yes, you will be charged a $25 fee unless the closure is due to a Gemini Bank error in account opening, customer dissatisfaction with a product or service disclosed during the opening process, or insufficient funds.", //Expected Answer
-    "“Account Closure: A customer who closes their new savings account within 30 days of opening will be subject to a $25 fee unless the closure is due to:\nΟ Gemini Bank error in account opening.\nΟ Customer dissatisfaction with a product or service disclosed during the opening process.”", //Reasoning
-    "Success", // Status
-    "10ms", // Response Time
+    "5-Very Good",
   ],
 ]);
 
@@ -236,22 +234,40 @@ describe("When Generate Synthetic Q&A is clicked ", () => {
     const config = await syntheticQuestionAnswerRunner.getSyntheticQAConfig();
 
     expect(config).not.toBe(null);
+    // set up mock for file for first query
     // read the request from json file
-    const requestData = fs.readFileSync("./test/data/multi_modal/test_multi_modal_request.json");
-    const requestJson = JSON.parse(requestData);
 
-    // Read response  json from file into variable
-    const responseData = fs.readFileSync("./test/data/multi_modal/test_multi_modal_response.json");
-    const responseJson = JSON.parse(responseData);
+    fetchMock.config.overwriteRoutes = false;
 
-    const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/${config.model}:generateContent`;
-    fetchMock.postOnce(url, {
-      status: 200,
-      headers: { "Content-Type": `application/json` },
-      body: JSON.stringify(responseJson),
-    });
+    const {
+      requestJson: requestJson,
+      url: url,
+      expectedResponse: responseJson,
+    } = mockGeminiRequestResponse(
+      1,
+      200,
+      "./test/data/multi_modal/test_multi_modal_request.json",
+      "./test/data/multi_modal/test_multi_modal_response.json",
+      config.model,
+      config,
+    );
 
-    config.timeBetweenCallsInSec = 0; // No need for delay in tests
+    // set up mock for file for first query
+    // read the request from json file
+    const {
+      requestJson: quality_request_json,
+      url: quality_url,
+      expectedResponse: quality_expectedResponse,
+    } = mockGeminiRequestResponse(
+      1,
+      200,
+      "./test/data/question_answering/test_qa_quality_request.json",
+      "./test/data/question_answering/test_qa_quality_response.json",
+      config.qAQualityModel,
+      config,
+    );
+
+    config.batchSize = 10; // set batchSize high so test doesn't timeout
     // Execute the tests
     await syntheticQuestionAnswerRunner.createSyntheticQAData(config);
 
@@ -278,6 +294,13 @@ describe("When Generate Synthetic Q&A is clicked ", () => {
       getCellAndColumnIndexByName("Expected Answer", mockTestData);
     expect(actual_generated_answer[0][0]).toEqual(
       testCaseRows[1][actual_generated_answer_col_index],
+    );
+
+    // Match  the Question Answer Quality
+    const { cell: question_answer_quality, col_index: question_answer_quality_col_index } =
+      getCellAndColumnIndexByName("Q & A Quality", mockTestData);
+    expect(question_answer_quality[0][0]).toEqual(
+      testCaseRows[1][question_answer_quality_col_index],
     );
   });
 });
