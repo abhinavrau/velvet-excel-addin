@@ -1,0 +1,112 @@
+{
+  "results": [
+    {
+      "id": "ec8701f61ab27730530803d966a04893",
+      "document": {
+        "name": "projects/384473000457/locations/global/collections/default_collection/dataStores/alphabet-pdfs_1695783402380/branches/0/documents/ec8701f61ab27730530803d966a04893",
+        "id": "ec8701f61ab27730530803d966a04893",
+        "derivedStructData": {
+          "link": "link1",
+          "extractive_answers": [
+            {
+              "content": "Deferred revenues primarily relate to Google Cloud and Google other. Total deferred revenue as of December 31, 2020 was $3.0 billion, of which \u003cb\u003e$2.3 billion\u003c/b\u003e was recognized as revenues for the year ending December 31, 2021.",
+              "pageNumber": "94"
+            },
+            {
+              "content": "Year Ended December 31, 2020 2021 Google Services $ $ 91855 Google Cloud ) (3099) Other Bets ) (5281) Corporate costs, unallocated(1) (3299) ) Total income from operations $ 41224 $ (1) Unallocated corporate costs primarily include corporate initiatives, corporate shared costs, such as finance and legal, including certain fines and settlements, as well as costs associated with certain shared R&amp;D activities.",
+              "pageNumber": "71"
+            }
+          ],
+          "title": "GOOG019_Alphabet_2021-Annual-Report_Web.pdf"
+        }
+      }
+    },
+    {
+      "id": "276cee4c4086600303bc561483691f9a",
+      "document": {
+        "name": "projects/384473000457/locations/global/collections/default_collection/dataStores/alphabet-pdfs_1695783402380/branches/0/documents/276cee4c4086600303bc561483691f9a",
+        "id": "276cee4c4086600303bc561483691f9a",
+        "derivedStructData": {
+          "title": "2022_alphabet_annual_report",
+          "extractive_answers": [
+            {
+              "content": "Deferred revenues primarily relate to Google Cloud and Google other. Total deferred revenue as of December 31, 2021 was \u003cb\u003e$3.8 billion\u003c/b\u003e, of which $2.5 billion was recognized as revenues for the year ending December 31, 2022.",
+              "pageNumber": "94"
+            },
+            {
+              "pageNumber": "66",
+              "content": "Financial Results Revenues The following table presents revenues by type (in millions): Year Ended December 31, 2021 2022 Google Search &amp; other $ 148951 $ 162450 YouTube ads 28845 29243 Google Network 31701 32780 Google advertising 209497 224473 Google other 28032 29055 Google Services total 237529 253528 Google Cloud 19206 26280 Other Bets 753 1068 Hedging gains (losses) 149 1960 Total revenues $ 257637 $ 282836."
+            }
+          ],
+          "link": "link2"
+        }
+      }
+    },
+    {
+      "id": "e528afa38b3a739bc98bfff0e840fe98",
+      "document": {
+        "name": "projects/384473000457/locations/global/collections/default_collection/dataStores/alphabet-pdfs_1695783402380/branches/0/documents/e528afa38b3a739bc98bfff0e840fe98",
+        "id": "e528afa38b3a739bc98bfff0e840fe98",
+        "derivedStructData": {
+          "link": "link3",
+          "title": "GOOG 10-K Q4 2022",
+          "extractive_answers": [
+            {
+              "content": "Deferred revenues primarily relate to Google Cloud and Google other. Total deferred revenue as of December 31, 2021 was \u003cb\u003e$3.8 billion\u003c/b\u003e, of which $2.5 billion was recognized as revenues for the year ending December 31, 2022. Table of Contents Alphabet Inc. 59.",
+              "pageNumber": "60"
+            },
+            {
+              "content": "• Revenues were $282.8 billion, an increase of 10% year over year, primarily driven by an increase in Google Services revenues of $16.0 billion, or 7%, and an increase in Google Cloud revenues of $7.1 billion, or 37%. • Total constant currency revenues, which exclude the effect of hedging, increased 14% year over year.",
+              "pageNumber": "31"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "6b54401a15ed256af6c224a022afabde",
+      "document": {
+        "name": "projects/384473000457/locations/global/collections/default_collection/dataStores/alphabet-pdfs_1695783402380/branches/0/documents/6b54401a15ed256af6c224a022afabde",
+        "id": "6b54401a15ed256af6c224a022afabde",
+        "derivedStructData": {
+          "link": "gs://cloud-samples-data/gen-app-builder/search/alphabet-investor-pdfs/20220202_alphabet_10K.pdf",
+          "extractive_answers": [
+            {
+              "pageNumber": "62",
+              "content": "Deferred revenues primarily relate to Google Cloud and Google other. Total deferred revenue as of December 31, 2020 was $3.0 billion, of which \u003cb\u003e$2.3 billion\u003c/b\u003e was recognized as revenues for the year ending December 31, 2021. Note 3."
+            },
+            {
+              "content": "Based on the carrying value of servers and certain network equipment as of December 31, 2020 and those acquired during the year ended December 31, 2021, the effect of this change in estimate was a reduction in depreciation expense of $2.6 billion and an increase in net income of $2.0 billion, or $3.02 per basic share and $2.98 per diluted share, for the year ended December 31, 2021.",
+              "pageNumber": "55"
+            }
+          ],
+          "title": "GOOG 10-K Q4 2021"
+        }
+      }
+    },
+    {
+      "id": "7794eac9a51145978c2cc3225f107a07",
+      "document": {
+        "name": "projects/384473000457/locations/global/collections/default_collection/dataStores/alphabet-pdfs_1695783402380/branches/0/documents/7794eac9a51145978c2cc3225f107a07",
+        "id": "7794eac9a51145978c2cc3225f107a07",
+        "derivedStructData": {
+          "extractive_answers": [
+            {
+              "content": "• Google segment revenues of $89.5 billion with revenue growth of 20% year over year and Other Bets revenues of $0.8 billion with revenue growth of 82% year over year. • Revenues from the United States, the United Kingdom, and Rest of the world were $42.8 billion, $7.8 billion, and $39.7 billion, respectively.",
+              "pageNumber": "26"
+            }
+          ],
+          "link": "gs://cloud-samples-data/gen-app-builder/search/alphabet-investor-pdfs/20161231_alphabet_10K.pdf",
+          "title": "GOOG Q4 2016 10-K"
+        }
+      }
+    }
+  ],
+  "totalSize": 7780,
+  "attributionToken": "xAHwwwoMCJPj1bYGEOWxpIMCEiQ2NmZjZDhiZS0wMDAwLTJlNjMtYjMxNS0xNGMxNGVlNjk2YzgiB0dFTkVSSUMqhAGOvp0Vmd6oL6r4sy3ej5oi5-2ILZbeqC_ogrEtnNa3LaOAlyLC8J4V0ea1L5CktDCf1rct_PazLYCymiKNpLQwzua1L9SynRWrxIotj_eyMMXL8xfbj5oirsSKLba3jC2gibMt-fazLbeSrjCDspoirfizLbSSrjDk7Ygt64KxLaOJsy0",
+  "nextPageToken": "AOjZTO2UWZ0EzY0ETL1EzMi1yM2UmMtADMwATLkJGOkNmZ2YDJaMwhaSvrQYgtlzclIwgE1EgC",
+  "guidedSearchResult": {},
+  "summary": {
+    "summaryText": "Google's total revenue for the year ending December 31, 2021 was $257,637 million. This represents a 41% increase from the previous year. The majority of Google's revenue comes from its advertising business, which includes Google Search, YouTube ads, and Google Network. In 2021, Google's advertising revenue was $209,497 million. Google's other revenue streams include Google Cloud, which generated $19,206 million in revenue in 2021, and Other Bets, which generated $753 million."
+  }
+}
