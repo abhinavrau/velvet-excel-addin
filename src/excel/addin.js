@@ -1,14 +1,14 @@
 import { ExcelSearchRunner } from "./excel_search_runner.js";
 import { SummarizationRunner } from "./excel_summarization_runner.js";
 import { SyntheticQARunner } from "./excel_synthetic_qa_runner.js";
-import { createVAIConfigTable, createVAIDataTable } from "./search_tables.js";
+import { createVAIConfigTable, createVAIDataTable } from "./excel_search_tables.js";
 
-import { createSyntheticQAConfigTable, createSyntheticQADataTable } from "./synthetic_qa_tables.js";
+import { createSyntheticQAConfigTable, createSyntheticQADataTable } from "./excel_synthetic_qa_tables.js";
 
 import {
   createSummarizationEvalConfigTable,
   createSummarizationEvalDataTable,
-} from "./summarization_tables.js";
+} from "./excel_summarization_tables.js";
 
 let excelSearchRunner;
 let summarizationRunner;

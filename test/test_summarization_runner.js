@@ -8,7 +8,7 @@ import { SummarizationRunner } from "../src/excel/excel_summarization_runner.js"
 import {
   createSummarizationEvalConfigTable,
   createSummarizationEvalDataTable,
-} from "../src/excel/summarization_tables.js";
+} from "../src/excel/excel_summarization_tables.js";
 import { callGeminiMultitModal } from "../src/vertex_ai.js";
 
 import { summarization_configValues, summarization_TableHeader } from "../src/common.js";

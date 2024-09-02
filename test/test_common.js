@@ -1,8 +1,9 @@
 import fetchMock from "fetch-mock";
 import fs from "fs";
 
-export function mockVertexAISearchRequestResponse(
+export function mockDiscoveryEngineRequestResponse(
   testCaseNum,
+  url,
   expected_status_code,
   expectedRequestFile,
   expectedResponseFile,
@@ -22,8 +23,6 @@ export function mockVertexAISearchRequestResponse(
     output: responseJson,
   };
 
-  const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
-
   // mock the call with our response we want to return
   var response = fetchMock.post(url, {
     status: expected_status_code,
@@ -32,7 +31,7 @@ export function mockVertexAISearchRequestResponse(
     },
     body: JSON.stringify(responseJson),
   });
-  return { requestJson, url, expectedResponse };
+  return { requestJson, expectedResponse };
 }
 
 export function mockGeminiRequestResponse(

@@ -1,0 +1,50 @@
+{
+  "supportScore": 0.59236944,
+  "citedChunks": [
+    {
+      "chunkText": "Financial Results Revenues The following table presents revenues by type (in millions): Year Ended December 31, 2021 2022 Google Search &amp; other $ 148951 $ 162450 YouTube ads 28845 29243 Google Network 31701 32780 Google advertising 209497 224473 Google other 28032 29055 Google Services total 237529 253528 Google Cloud 19206 26280 Other Bets 753 1068 Hedging gains (losses) 149 1960 Total revenues $ 257637 $ 282836.",
+      "source": "3"
+    }
+  ],
+  "claims": [
+    {
+      "startPos": 0,
+      "endPos": 82,
+      "claimText": "Google's total revenue for the year ending December 31, 2021 was $257,637 million.",
+      "citationIndices": [
+        0
+      ],
+      "groundingCheckRequired": true
+    },
+    {
+      "startPos": 83,
+      "endPos": 137,
+      "claimText": "This represents a 41% increase from the previous year.",
+      "groundingCheckRequired": true
+    },
+    {
+      "startPos": 138,
+      "endPos": 270,
+      "claimText": "The majority of Google's revenue comes from its advertising business, which includes Google Search, YouTube ads, and Google Network.",
+      "groundingCheckRequired": true
+    },
+    {
+      "startPos": 271,
+      "endPos": 330,
+      "claimText": "In 2021, Google's advertising revenue was $209,497 million.",
+      "citationIndices": [
+        0
+      ],
+      "groundingCheckRequired": true
+    },
+    {
+      "startPos": 331,
+      "endPos": 481,
+      "claimText": "Google's other revenue streams include Google Cloud, which generated $19,206 million in revenue in 2021, and Other Bets, which generated $753 million.",
+      "citationIndices": [
+        0
+      ],
+      "groundingCheckRequired": true
+    }
+  ]
+}

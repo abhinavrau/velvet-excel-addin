@@ -1,16 +1,23 @@
-import { calculateSimilarityUsingPalm2, callVertexAISearch } from "../vertex_ai.js";
+import {
+  calculateSimilarityUsingPalm2,
+  callCheckGrounding,
+  callVertexAISearch,
+} from "../vertex_ai.js";
 
 import { appendError, appendLog, showStatus } from "../ui.js";
 
 import { TaskRunner } from "../task_runner.js";
 
+import { findIndexByColumnsNameIn2DArray } from "../common.js";
 import { getColumn } from "./excel_common.js";
-
 export class ExcelSearchRunner extends TaskRunner {
   constructor() {
     super();
     this.throttled_process_summary = this.throttle((a, b, c, d, e) =>
       this.processSummary(a, b, c, d, e),
+    );
+    this.throttled_check_grounding = this.throttle((a, b, c, d) =>
+      this.getCheckGroundingData(a, b, c, d),
     );
     this.searchTaskPromiseSet = new Set();
   }
@@ -25,29 +32,131 @@ export class ExcelSearchRunner extends TaskRunner {
         const worksheetName = currentWorksheet.name;
         const configTable = currentWorksheet.tables.getItem(`${worksheetName}.ConfigTable`);
         const valueColumn = getColumn(configTable, "Value");
+        const configColumn = getColumn(configTable, "Config");
         await context.sync();
 
         config = {
-          vertexAISearchProjectNumber: valueColumn.values[1][0],
-          vertexAISearchDataStoreName: valueColumn.values[2][0],
-          vertexAIProjectID: valueColumn.values[3][0],
-          vertexAILocation: valueColumn.values[4][0],
+          vertexAISearchProjectNumber:
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(
+                configColumn.values,
+                "Vertex AI Search Project Number",
+              )
+            ][0],
+          vertexAISearchDataStoreName:
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(
+                configColumn.values,
+                "Vertex AI Search DataStore Name",
+              )
+            ][0],
+          vertexAIProjectID:
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(configColumn.values, "Vertex AI Project ID")
+            ][0],
+          vertexAILocation:
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(configColumn.values, "Vertex AI Location")
+            ][0],
           extractiveContentSpec: {
             maxExtractiveAnswerCount:
-              valueColumn.values[5][0] === 0 ? null : valueColumn.values[5][0],
+              valueColumn.values[
+                findIndexByColumnsNameIn2DArray(
+                  configColumn.values,
+                  "maxExtractiveAnswerCount (1-5)",
+                )
+              ][0] === 0
+                ? null
+                : valueColumn.values[
+                    findIndexByColumnsNameIn2DArray(
+                      configColumn.values,
+                      "maxExtractiveAnswerCount (1-5)",
+                    )
+                  ][0],
             maxExtractiveSegmentCount:
-              valueColumn.values[6][0] === 0 ? null : valueColumn.values[6][0],
+              valueColumn.values[
+                findIndexByColumnsNameIn2DArray(
+                  configColumn.values,
+                  "maxExtractiveSegmentCount (1-5)",
+                )
+              ][0] === 0
+                ? null
+                : valueColumn.values[
+                    findIndexByColumnsNameIn2DArray(
+                      configColumn.values,
+                      "maxExtractiveSegmentCount (1-5)",
+                    )
+                  ][0],
           },
-          maxSnippetCount: valueColumn.values[7][0] === 0 ? null : valueColumn.values[7][0],
-          preamble: valueColumn.values[8][0],
-          model: valueColumn.values[9][0],
-          summaryResultCount: valueColumn.values[10][0],
-          useSemanticChunks: valueColumn.values[11][0],
-          ignoreAdversarialQuery: valueColumn.values[12][0],
-          ignoreNonSummarySeekingQuery: valueColumn.values[13][0],
-          summaryMatchingAdditionalPrompt: valueColumn.values[14][0],
-          batchSize: parseInt(valueColumn.values[15][0]),
-          timeBetweenCallsInSec: parseInt(valueColumn.values[16][0]),
+          maxSnippetCount:
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(configColumn.values, "maxSnippetCount (1-5)")
+            ][0] === 0
+              ? null
+              : valueColumn.values[
+                  findIndexByColumnsNameIn2DArray(configColumn.values, "maxSnippetCount (1-5)")
+                ][0],
+          preamble:
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(
+                configColumn.values,
+                "Preamble (Customized Summaries)",
+              )
+            ][0],
+          model:
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(configColumn.values, "Summarization Model")
+            ][0],
+          summaryResultCount:
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(configColumn.values, "summaryResultCount (1-5)")
+            ][0],
+          genereateGrounding:
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(configColumn.values, "Genrate Grounding Score")
+            ][0],
+          useSemanticChunks:
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(
+                configColumn.values,
+                "useSemanticChunks (True or False)",
+              )
+            ][0],
+          ignoreAdversarialQuery:
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(
+                configColumn.values,
+                "ignoreAdversarialQuery (True or False)",
+              )
+            ][0],
+          ignoreNonSummarySeekingQuery:
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(
+                configColumn.values,
+                "ignoreNonSummarySeekingQuery (True or False)",
+              )
+            ][0],
+          summaryMatchingAdditionalPrompt:
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(
+                configColumn.values,
+                "SummaryMatchingAdditionalPrompt",
+              )
+            ][0],
+
+          batchSize: parseInt(
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(configColumn.values, "Batch Size (1-10)")
+            ][0],
+          ),
+          timeBetweenCallsInSec: parseInt(
+            valueColumn.values[
+              findIndexByColumnsNameIn2DArray(
+                configColumn.values,
+                "Time between Batches in Seconds (1-10)",
+              )
+            ][0],
+          ),
           accessToken: $("#access-token").val(),
           systemInstruction: "",
           responseMimeType: "text/plain",
@@ -87,6 +196,7 @@ export class ExcelSearchRunner extends TaskRunner {
         this.actualSummaryColumn = getColumn(testCasesTable, "Actual Summary");
         this.expectedSummaryColumn = getColumn(testCasesTable, "Expected Summary");
         this.summaryScoreColumn = getColumn(testCasesTable, "Summary Match");
+        this.checkGroundingScoreColumn = getColumn(testCasesTable, "Grounding Score");
         await context.sync();
         testCasesTable.rows.load("count");
         await context.sync();
@@ -150,7 +260,7 @@ export class ExcelSearchRunner extends TaskRunner {
   }
 
   async processRow(response_json, context, config, rowNum) {
-    let numCalls = 1;
+    let numCalls = 0;
     if (response_json.hasOwnProperty("summary")) {
       // process the summary using throttling since it makes an external call
       const processSummaryPromise = this.throttled_process_summary(
@@ -166,6 +276,23 @@ export class ExcelSearchRunner extends TaskRunner {
       this.searchTaskPromiseSet.add(processSummaryPromise);
       // wait for processRow to finish
       await Promise.resolve(processSummaryPromise);
+      numCalls++;
+      // Also call check grounding API
+      if (config.genereateGrounding) {
+        const checkGroundingPromise = this.throttled_check_grounding(
+          context,
+          config,
+          rowNum,
+          response_json,
+        ).then(async (callsSoFar) => {
+          appendLog(`testCaseID: ${rowNum} Processed Search Summary.`);
+        });
+
+        this.searchTaskPromiseSet.add(checkGroundingPromise);
+        // wait for processRow to finish
+        await Promise.resolve(checkGroundingPromise);
+        numCalls++;
+      }
     }
 
     // Check the documents references
@@ -181,6 +308,45 @@ export class ExcelSearchRunner extends TaskRunner {
     }
 
     return numCalls;
+  }
+
+  async getCheckGroundingData(context, config, rowNum, response_json) {
+    try {
+      const factsArray = [];
+      let count = 0;
+      const resultsUsedForSummary = parseInt(config.summaryResultCount); // get how many items were used to genereate summary
+      response_json.results.forEach((result) => {
+        // Only add extractive content as much was used by the summary
+        if (count >= resultsUsedForSummary) {
+          return;
+        }
+        // Check if 'extractive_answers' exists within 'derivedStructData' and put in factsArray
+        if (result.document.derivedStructData.extractive_answers) {
+          result.document.derivedStructData.extractive_answers.forEach((answer) => {
+            factsArray.push({ factText: `${answer.content}` });
+          });
+          // Check if 'extractive_segments' exists within 'derivedStructData' and put in factsArray
+        } else if (result.document.derivedStructData.extractive_segments) {
+          result.document.derivedStructData.extractive_segments.forEach((segment) => {
+            factsArray.push({ factText: `${answer.content}` });
+          });
+        }
+        count++;
+      });
+      // Call the checkGrounding API with the summary texts and factsArray
+      const { id, status_code, output } = await callCheckGrounding(
+        config,
+        response_json.summary.summaryText,
+        factsArray,
+        rowNum,
+      );
+
+      const groudingScorecell = this.checkGroundingScoreColumn.getRange().getCell(rowNum, 0);
+      groudingScorecell.clear(Excel.ClearApplyTo.formats);
+      groudingScorecell.values = [[output.supportScore.toString()]];
+    } catch (error) {
+      appendError(`testCaseID: ${rowNum} Error getting Grounding. Error: ${error.message} `, error);
+    }
   }
 
   async processSummary(context, config, rowNum, result, expectedSummary) {

@@ -7,7 +7,7 @@ import sinon from "sinon";
 import {
   createSyntheticQAConfigTable,
   createSyntheticQADataTable,
-} from "../src/excel/synthetic_qa_tables.js";
+} from "../src/excel/excel_synthetic_qa_tables.js";
 import { showStatus } from "../src/ui.js";
 
 import { synth_q_and_a_configValues, synth_q_and_a_TableHeader } from "../src/common.js";

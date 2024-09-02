@@ -7,7 +7,7 @@ import sinon from "sinon";
 import {
   createSummarizationEvalConfigTable,
   createSummarizationEvalDataTable,
-} from "../src/excel/summarization_tables.js";
+} from "../src/excel/excel_summarization_tables.js";
 import { showStatus } from "../src/ui.js";
 
 import { summarization_configValues, summarization_TableHeader } from "../src/common.js";

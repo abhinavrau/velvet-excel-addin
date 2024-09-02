@@ -23,6 +23,7 @@ export const vertex_ai_search_configValues = [
   ["Preamble (Customized Summaries)", ""],
   ["Summarization Model", "gemini-1.0-pro-001/answer_gen/v1"],
   ["summaryResultCount (1-5)", "2"], //summaryResultCount
+  ["Genrate Grounding Score", "True"], //generate grounding score
   ["useSemanticChunks (True or False)", "False"], //useSemanticChunks
   ["ignoreAdversarialQuery (True or False)", "True"], // ignoreAdversarialQuery
   ["ignoreNonSummarySeekingQuery (True or False)", "True"], // ignoreNonSummarySeekingQuery
@@ -30,8 +31,8 @@ export const vertex_ai_search_configValues = [
     "SummaryMatchingAdditionalPrompt",
     "If there are monetary numbers in the answers, they should be matched exactly.",
   ],
-  ["Batch Size (1-10)", "2"], // BatchSize
-  ["Time between Batches in Seconds (1-10)", "2"],
+  ["Batch Size (1-10)", "5"], // BatchSize
+  ["Time between Batches in Seconds (1-10)", "1"],
 ];
 
 export const vertex_ai_search_testTableHeader = [
@@ -40,12 +41,13 @@ export const vertex_ai_search_testTableHeader = [
     "Query",
     "Expected Summary",
     "Actual Summary",
-    "Expected Link 1",
-    "Expected Link 2",
-    "Expected Link 3",
     "Summary Match",
     "First Link Match",
     "Link in Top 2",
+    "Grounding Score",
+    "Expected Link 1",
+    "Expected Link 2",
+    "Expected Link 3",
     "Actual Link 1",
     "Actual Link 2",
     "Actual Link 3",

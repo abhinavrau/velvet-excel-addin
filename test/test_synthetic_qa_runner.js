@@ -9,7 +9,7 @@ import { SyntheticQARunner } from "../src/excel/excel_synthetic_qa_runner.js";
 import {
   createSyntheticQAConfigTable,
   createSyntheticQADataTable,
-} from "../src/excel/synthetic_qa_tables.js";
+} from "../src/excel/excel_synthetic_qa_tables.js";
 import { showStatus } from "../src/ui.js";
 import { callGeminiMultitModal } from "../src/vertex_ai.js";
 import { mockGeminiRequestResponse } from "./test_common.js";

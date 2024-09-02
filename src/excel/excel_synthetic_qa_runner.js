@@ -162,15 +162,18 @@ export class SyntheticQARunner extends TaskRunner {
   async processRow(response_json, context, config, rowNum) {
     let numCallsMade = 0;
     try {
+      // Get the output from the response
       const output = response_json.candidates[0].content.parts[0].text;
-      // Set the generated question
+
+      // Parse it as json since that's the format we requested
       const response = JSON.parse(output);
 
+      // set the generated question
       const cell_generatedQuestion = this.generatedQuestionColumn.getRange().getCell(rowNum, 0);
       cell_generatedQuestion.clear(Excel.ClearApplyTo.formats);
       cell_generatedQuestion.values = [[response.question]];
 
-      // Set the answer
+      // Set the generated answer
       const cell_expectedAnswer = this.expectedAnswerColumn.getRange().getCell(rowNum, 0);
       cell_expectedAnswer.clear(Excel.ClearApplyTo.formats);
       cell_expectedAnswer.values = [[response.answer]];
@@ -193,7 +196,7 @@ export class SyntheticQARunner extends TaskRunner {
     // execute the tasks
     await Promise.allSettled(this.synthQATaskPromiseSet.values());
 
-    return numCallsMade++;
+    return ++numCallsMade;
   }
 
   async generateQualityEval(config, response, rowNum) {

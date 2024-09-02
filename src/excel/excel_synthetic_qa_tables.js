@@ -1,5 +1,5 @@
 import { synth_q_and_a_configValues, synth_q_and_a_TableHeader } from "../common.js";
-import { createConfigTable, createDataTable } from "./create_tables.js";
+import { createConfigTable, createDataTable } from "./excel_create_tables.js";
 
 export async function createSyntheticQAConfigTable() {
   createConfigTable(
@@ -16,5 +16,5 @@ export async function createSyntheticQADataTable() {
     synth_q_and_a_TableHeader,
     "C13:H13",
     "C13:H113",
-  );
+  );        
 }

@@ -5,9 +5,8 @@ import pkg from "office-addin-mock";
 import sinon from "sinon";
 
 import { ExcelSearchRunner } from "../src/excel/excel_search_runner.js";
-import { createVAIConfigTable, createVAIDataTable } from "../src/excel/search_tables.js";
-import { calculateSimilarityUsingPalm2, callVertexAISearch } from "../src/vertex_ai.js";
-import { mockVertexAISearchRequestResponse } from "./test_common.js";
+import { createVAIConfigTable, createVAIDataTable } from "../src/excel/excel_search_tables.js";
+import { mockDiscoveryEngineRequestResponse } from "./test_common.js";
 
 import { vertex_ai_search_configValues, vertex_ai_search_testTableHeader } from "../src/common.js";
 
@@ -15,8 +14,8 @@ import { vertex_ai_search_configValues, vertex_ai_search_testTableHeader } from 
 global.$ = $;
 global.JQuery = JQuery;
 
-global.callVertexAISearch = callVertexAISearch;
-global.calculateSimilarityUsingVertexAI = calculateSimilarityUsingPalm2;
+//global.callVertexAISearch = callVertexAISearch;
+//global.calculateSimilarityUsingVertexAI = calculateSimilarityUsingPalm2;
 
 const { OfficeMockObject } = pkg;
 export var testCaseRows = vertex_ai_search_testTableHeader.concat([
@@ -24,13 +23,30 @@ export var testCaseRows = vertex_ai_search_testTableHeader.concat([
     "1", // ID
     "What is Google's revenue for the year ending December 31, 2021", //Query
     "Revenue is $2.2 billion", //Expected Summary
-    "Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.", // Actual Summary
-    "link1", //Expected Link 1
-    "link2", //Expected Link 2
-    "link3", // Expected Link 3
+    "Google's total revenue for the year ending December 31, 2021 was $257,637 million. This represents a 41% increase from the previous year. The majority of Google's revenue comes from its advertising business, which includes Google Search, YouTube ads, and Google Network. In 2021, Google's advertising revenue was $209,497 million. Google's other revenue streams include Google Cloud, which generated $19,206 million in revenue in 2021, and Other Bets, which generated $753 million.", // Actual Summary
     "TRUE", // Summary Match
     "TRUE", // First Link Match
     "TRUE", // Link in Top 2
+    "0.59236944", // Grounding Score
+    "link1", //Expected Link 1
+    "link2", //Expected Link 2
+    "link3", // Expected Link 3
+    "link1", // Actual Link 1
+    "link2", // Actual Link 2
+    "link3", // Actual Link 3
+  ],
+   [
+    "2", // ID
+    "What is Google's revenue for the year ending December 31, 2021", //Query
+    "Revenue is $2.2 billion", //Expected Summary
+    "Google's total revenue for the year ending December 31, 2021 was $257,637 million. This represents a 41% increase from the previous year. The majority of Google's revenue comes from its advertising business, which includes Google Search, YouTube ads, and Google Network. In 2021, Google's advertising revenue was $209,497 million. Google's other revenue streams include Google Cloud, which generated $19,206 million in revenue in 2021, and Other Bets, which generated $753 million.", // Actual Summary
+    "TRUE", // Summary Match
+    "TRUE", // First Link Match
+    "TRUE", // Link in Top 2
+    "0.59236944", // Grounding Score
+    "link1", //Expected Link 1
+    "link2", //Expected Link 2
+    "link3", // Expected Link 3
     "link1", // Actual Link 1
     "link2", // Actual Link 2
     "link3", // Actual Link 3
@@ -39,28 +55,14 @@ export var testCaseRows = vertex_ai_search_testTableHeader.concat([
     "2", // ID
     "What is Google's revenue for the year ending December 31, 2021", //Query
     "Revenue is $2.2 billion", //Expected Summary
-    "Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.", // Actual Summary
-    "link1", //Expected Link 1
-    "link2", //Expected Link 2
-    "link3", // Expected Link 3
+    "Google's total revenue for the year ending December 31, 2021 was $257,637 million. This represents a 41% increase from the previous year. The majority of Google's revenue comes from its advertising business, which includes Google Search, YouTube ads, and Google Network. In 2021, Google's advertising revenue was $209,497 million. Google's other revenue streams include Google Cloud, which generated $19,206 million in revenue in 2021, and Other Bets, which generated $753 million.", // Actual Summary
     "TRUE", // Summary Match
     "TRUE", // First Link Match
     "TRUE", // Link in Top 2
-    "link1", // Actual Link 1
-    "link2", // Actual Link 2
-    "link3", // Actual Link 3
-  ],
-  [
-    "2", // ID
-    "What is Google's revenue for the year ending December 31, 2021", //Query
-    "Revenue is $2.2 billion", //Expected Summary
-    "Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.", // Actual Summary
+    "0.59236944", // Grounding Score
     "link1", //Expected Link 1
     "link2", //Expected Link 2
     "link3", // Expected Link 3
-    "TRUE", // Summary Match
-    "TRUE", // First Link Match
-    "TRUE", // Link in Top 2
     "link1", // Actual Link 1
     "link2", // Actual Link 2
     "link3", // Actual Link 3
@@ -69,13 +71,14 @@ export var testCaseRows = vertex_ai_search_testTableHeader.concat([
     "3", // ID
     "What is Google's revenue for the year ending December 31, 2021", //Query
     "Revenue is $2.2 billion", //Expected Summary
-    "Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.", // Actual Summary
-    "link1", //Expected Link 1
-    "link2", //Expected Link 2
-    "link3", // Expected Link 3
+    "Google's total revenue for the year ending December 31, 2021 was $257,637 million. This represents a 41% increase from the previous year. The majority of Google's revenue comes from its advertising business, which includes Google Search, YouTube ads, and Google Network. In 2021, Google's advertising revenue was $209,497 million. Google's other revenue streams include Google Cloud, which generated $19,206 million in revenue in 2021, and Other Bets, which generated $753 million.", // Actual Summary
     "TRUE", // Summary Match
     "TRUE", // First Link Match
     "TRUE", // Link in Top 2
+    "0.59236944", // Grounding Score
+    "link1", //Expected Link 1
+    "link2", //Expected Link 2
+    "link3", // Expected Link 3
     "link1", // Actual Link 1
     "link2", // Actual Link 2
     "link3", // Actual Link 3
@@ -84,13 +87,14 @@ export var testCaseRows = vertex_ai_search_testTableHeader.concat([
     "4", // ID
     "What is Google's revenue for the year ending December 31, 2021", //Query
     "Revenue is $2.2 billion", //Expected Summary
-    "Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.", // Actual Summary
-    "link1", //Expected Link 1
-    "link2", //Expected Link 2
-    "link3", // Expected Link 3
+    "Google's total revenue for the year ending December 31, 2021 was $257,637 million. This represents a 41% increase from the previous year. The majority of Google's revenue comes from its advertising business, which includes Google Search, YouTube ads, and Google Network. In 2021, Google's advertising revenue was $209,497 million. Google's other revenue streams include Google Cloud, which generated $19,206 million in revenue in 2021, and Other Bets, which generated $753 million.", // Actual Summary
     "TRUE", // Summary Match
     "TRUE", // First Link Match
     "TRUE", // Link in Top 2
+    "0.59236944", // Grounding Score
+    "link1", //Expected Link 1
+    "link2", //Expected Link 2
+    "link3", // Expected Link 3
     "link1", // Actual Link 1
     "link2", // Actual Link 2
     "link3", // Actual Link 3
@@ -99,13 +103,14 @@ export var testCaseRows = vertex_ai_search_testTableHeader.concat([
     "5", // ID
     "What is Google's revenue for the year ending December 31, 2021", //Query
     "Revenue is $2.2 billion", //Expected Summary
-    "Google's revenue for the year ending December 31, 2022 was $2.5 billion. This is based on the deferred revenue as of December 31, 2021.", // Actual Summary
-    "link1", //Expected Link 1
-    "link2", //Expected Link 2
-    "link3", // Expected Link 3
+    "Google's total revenue for the year ending December 31, 2021 was $257,637 million. This represents a 41% increase from the previous year. The majority of Google's revenue comes from its advertising business, which includes Google Search, YouTube ads, and Google Network. In 2021, Google's advertising revenue was $209,497 million. Google's other revenue streams include Google Cloud, which generated $19,206 million in revenue in 2021, and Other Bets, which generated $753 million.", // Actual Summary
     "TRUE", // Summary Match
     "TRUE", // First Link Match
     "TRUE", // Link in Top 2
+    "0.59236944", // Grounding Score
+    "link1", //Expected Link 1
+    "link2", //Expected Link 2
+    "link3", // Expected Link 3
     "link1", // Actual Link 1
     "link2", // Actual Link 2
     "link3", // Actual Link 3
@@ -314,12 +319,14 @@ describe("When Search Run Tests is clicked ", () => {
     // Get the config parameters from the config table
     const config = await excelSearchRunner.getSearchConfig();
 
+    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
     // Prepare the request response mock the call to VertexAISearch
-    const { requestJson, url, expectedResponse } = mockVertexAISearchRequestResponse(
+    const { requestJson, expectedResponse } = mockDiscoveryEngineRequestResponse(
       1,
+      url,
       200,
-      "./test/data/extractive_answer/test_vai_search_extractive_answer_request.json",
-      "./test/data/extractive_answer/test_vai_search_extractive_answer_response.json",
+      "./test/data/search/search_extractive_answer/test_vai_search_extractive_answer_request.json",
+      "./test/data/search/search_extractive_answer/test_vai_search_extractive_answer_response.json",
       config,
     );
 
@@ -328,6 +335,18 @@ describe("When Search Run Tests is clicked ", () => {
       config,
       "same",
     );
+
+    const grouding_url = `https://discoveryengine.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/global/groundingConfigs/default_grounding_config:check`;
+    // Prepare the request response mock the call to VertexAISearch
+    const { requestJson: grouding_requestJson, expectedResponse:  grouding_expectedResponse } =
+      mockDiscoveryEngineRequestResponse(
+        1,
+        grouding_url,
+        200,
+        "./test/data/search/eval_check_grounding/2_test_check_grouding_request.json",
+        "./test/data/search/eval_check_grounding/2_test_check_grouding_response.json",
+        config,
+      );
 
     // Execute the tests
     config.batchSize = 10; // set batchSize high so test doesn't timeout
@@ -345,10 +364,16 @@ describe("When Search Run Tests is clicked ", () => {
     //  check if vertex ai is called for summary match
     const callsToSummaryMatch = fetchMock.calls().filter((call) => call[0] === summaryMatchUrl);
     // Check if body is sent correctly to vertex ai search
-    expect(callsToSummaryMatch[0][1].body !== null).toBe(true);
+    expect(callsToSummaryMatch[0][1].body!==null).toBe(true);
+
+    //  check if vertex ai is called for check grounding  match
+    const callsToCheckGrounding = fetchMock.calls().filter((call) => call[0] === grouding_url);
+    // Check if body is sent correctly to check groudning
+    expect(JSON.parse(callsToCheckGrounding[0][1].body)).toEqual(grouding_requestJson);
 
     // Check if values get populated for each test case
     for (let i = 1; i < testCaseRows.length; i++) {
+
       // Match Actual Summary
       const { cell: actual_summary_cell, col_index: actual_summary_col_index } =
         getCellAndColumnIndexByName("Actual Summary", mockTestData, i);
@@ -358,6 +383,11 @@ describe("When Search Run Tests is clicked ", () => {
       const { cell: summary_match_cell, col_index: summary_match_col_index } =
         getCellAndColumnIndexByName("Summary Match", mockTestData, i);
       expect(summary_match_cell[0][0]).toEqual(testCaseRows[i][summary_match_col_index]);
+
+      // Match Grouding Score
+      const { cell: grounding_score_cell, col_index: grounding_score_col_index } =
+        getCellAndColumnIndexByName("Grounding Score", mockTestData, i);
+      expect(grounding_score_cell[0][0]).toEqual(testCaseRows[i][grounding_score_col_index]);
 
       // Match first link match
       const { cell: first_link_match_cell, col_index: first_link_match_col_index } =
@@ -437,11 +467,14 @@ describe("When Search Run Tests is clicked ", () => {
     // Get the config parameters from the config table
     const config = await excelSearchRunner.getSearchConfig();
 
+    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
+
     // Prepare the request response mock the call to VertexAISearch
-    const { requestJson, url, expectedResponse } = mockVertexAISearchRequestResponse(
+    const { requestJson, expectedResponse } = mockDiscoveryEngineRequestResponse(
       1,
+      url,
       405,
-      "./test/data/extractive_answer/test_vai_search_extractive_answer_request.json",
+      "./test/data/search/search_extractive_answer/test_vai_search_extractive_answer_request.json",
       "./test/data/not_authenticated.json",
       config,
     );

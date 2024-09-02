@@ -4,7 +4,7 @@ import pkg from "office-addin-mock";
 import { default as $, default as JQuery } from "jquery";
 
 import sinon from "sinon";
-import { createVAIConfigTable, createVAIDataTable } from "../src/excel/search_tables.js";
+import { createVAIConfigTable, createVAIDataTable } from "../src/excel/excel_search_tables.js";
 import { showStatus } from "../src/ui.js";
 
 import { vertex_ai_search_configValues, vertex_ai_search_testTableHeader } from "../src/common.js";

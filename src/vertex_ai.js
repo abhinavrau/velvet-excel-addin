@@ -203,7 +203,26 @@ export async function callGeminiMultitModal(
 
   return { id: id, status_code: status, output: json_output };
 }
+export async function callCheckGrounding(config, answerCandidate, factsArray, id) {
+  const token = config.accessToken;
+  const projectId = config.vertexAIProjectID;
 
+  var payload = {
+    answerCandidate: `${answerCandidate}`,
+    facts: factsArray,
+    groundingSpec: {
+      citationThreshold: "0.6",
+    },
+  };
+
+  const url = `https://discoveryengine.googleapis.com/v1/projects/${projectId}/locations/global/groundingConfigs/default_grounding_config:check`;
+
+  const { status, json_output } = await callVertexAI(url, token, payload, id);
+
+  appendLog(`checkGrounding: Finished Successfully.`);
+
+  return { id: id, status_code: status, output: json_output };
+}
 export async function callVertexAI(url, token, data, id) {
   try {
     const response = await fetch(url, {

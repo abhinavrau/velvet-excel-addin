@@ -11,8 +11,12 @@ import {
   summaryMatching_prompt,
 } from "../src/common.js";
 
-import { calculateSimilarityUsingPalm2, callVertexAISearch } from "../src/vertex_ai.js";
-import { mockVertexAISearchRequestResponse } from "./test_common.js";
+import {
+  calculateSimilarityUsingPalm2,
+  callCheckGrounding,
+  callVertexAISearch,
+} from "../src/vertex_ai.js";
+import { mockDiscoveryEngineRequestResponse } from "./test_common.js";
 
 global.$ = $;
 global.JQuery = JQuery;
@@ -188,13 +192,15 @@ describe("When callVertexAISearch is called", () => {
       vertexAILocation: "YOUR_LOCATION",
     };
 
+    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
     await testRequestResponse(
       1,
+      url,
       200,
       config,
       query,
-      "./test/data/extractive_answer/test_vai_search_extractive_answer_request.json",
-      "./test/data/extractive_answer/test_vai_search_extractive_answer_response.json",
+      "./test/data/search/search_extractive_answer/test_vai_search_extractive_answer_request.json",
+      "./test/data/search/search_extractive_answer/test_vai_search_extractive_answer_response.json",
     );
   });
   it("should return a list of search results for Extractive Segments", async () => {
@@ -214,14 +220,15 @@ describe("When callVertexAISearch is called", () => {
       vertexAISearchDataStoreName: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
-
+    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
     await testRequestResponse(
       1,
+      url,
       200,
       config,
       query,
-      "./test/data/extractive_segment/test_vai_search_extractive_segment_request.json",
-      "./test/data/extractive_segment/test_vai_search_extractive_segment_response.json",
+      "./test/data/search/search_extractive_segment/test_vai_search_extractive_segment_request.json",
+      "./test/data/search/search_extractive_segment/test_vai_search_extractive_segment_response.json",
     );
   });
   it("should return a list of search results for Snippets", async () => {
@@ -241,16 +248,73 @@ describe("When callVertexAISearch is called", () => {
       vertexAISearchDataStoreName: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
-
+    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
     await testRequestResponse(
       1,
+      url,
       200,
       config,
       query,
-      "./test/data/snippets/test_vai_search_snippet_request.json",
-      "./test/data/snippets/test_vai_search_snippet_response.json",
+      "./test/data/search/search_snippets/test_vai_search_snippet_request.json",
+      "./test/data/search/search_snippets/test_vai_search_snippet_response.json",
     );
   });
+
+  it("should return support score for CheckGrouding API", async () => {
+    const answerCandidate =
+      "Google's total revenue for the year ending December 31, 2021 was $257,637 million. This represents a 41% increase from the previous year. The majority of Google's revenue comes from its advertising business, which includes Google Search, YouTube ads, and Google Network. In 2021, Google's advertising revenue was $209,497 million. Google's other revenue streams include Google Cloud, which generated $19,206 million in revenue in 2021, and Other Bets, which generated $753 million.";
+    const config = {
+      accessToken: "YOUR_ACCESS_TOKEN",
+      vertexAIProjectID: "YOUR_PROJECT_ID",
+    };
+    const url = `https://discoveryengine.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/global/groundingConfigs/default_grounding_config:check`;
+    const { requestJson, expectedResponse } = mockDiscoveryEngineRequestResponse(
+      1,
+      url,
+      200,
+      "./test/data/search/eval_check_grounding/2_test_check_grouding_request.json",
+      "./test/data/search/eval_check_grounding/2_test_check_grouding_response.json",
+      config,
+    );
+
+    const factsJson = [
+      {
+        factText:
+          "Deferred revenues primarily relate to Google Cloud and Google other. Total deferred revenue as of December 31, 2020 was $3.0 billion, of which \u003cb\u003e$2.3 billion\u003c/b\u003e was recognized as revenues for the year ending December 31, 2021.",
+      },
+      {
+        factText:
+          "Year Ended December 31, 2020 2021 Google Services $ $ 91855 Google Cloud ) (3099) Other Bets ) (5281) Corporate costs, unallocated(1) (3299) ) Total income from operations $ 41224 $ (1) Unallocated corporate costs primarily include corporate initiatives, corporate shared costs, such as finance and legal, including certain fines and settlements, as well as costs associated with certain shared R&amp;D activities.",
+      },
+      {
+        factText:
+          "Deferred revenues primarily relate to Google Cloud and Google other. Total deferred revenue as of December 31, 2021 was \u003cb\u003e$3.8 billion\u003c/b\u003e, of which $2.5 billion was recognized as revenues for the year ending December 31, 2022.",
+      },
+      {
+        factText:
+          "Financial Results Revenues The following table presents revenues by type (in millions): Year Ended December 31, 2021 2022 Google Search &amp; other $ 148951 $ 162450 YouTube ads 28845 29243 Google Network 31701 32780 Google advertising 209497 224473 Google other 28032 29055 Google Services total 237529 253528 Google Cloud 19206 26280 Other Bets 753 1068 Hedging gains (losses) 149 1960 Total revenues $ 257637 $ 282836.",
+      },
+    ];
+
+    const { id, status_code, output } = await callCheckGrounding(
+      config,
+      answerCandidate,
+      factsJson,
+      1,
+    );
+
+    expect(fetchMock.called()).toBe(true);
+    // Assert request body is correct
+    expect(JSON.parse(fetchMock.lastCall()[1].body)).toEqual(requestJson);
+    // Assert URL is correct
+    expect(fetchMock.lastUrl().toLowerCase()).toBe(url.toLowerCase());
+    // Assert response is correct
+    expect(output).toEqual(expectedResponse.output);
+
+    expect(id).toEqual(1);
+    expect(status_code).toEqual(200);
+  });
+
   it("should return error when Vertex AI Search is not Authenticated", async () => {
     const query = "What is Google's revenue for the year ending December 31, 2021";
     const config = {
@@ -269,11 +333,12 @@ describe("When callVertexAISearch is called", () => {
       vertexAISearchDataStoreName: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
-
-    const { requestJson, url, expectedResponse } = mockVertexAISearchRequestResponse(
+    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
+    const { requestJson, expectedResponse } = mockDiscoveryEngineRequestResponse(
       1,
+      url,
       401,
-      "./test/data/extractive_answer/test_vai_search_extractive_answer_request.json",
+      "./test/data/search/search_extractive_answer/test_vai_search_extractive_answer_request.json",
       "./test/data/not_authenticated.json",
       config,
     );
@@ -306,11 +371,12 @@ describe("When callVertexAISearch is called", () => {
       vertexAISearchDataStoreName: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
-
-    const { requestJson, url, expectedResponse } = mockVertexAISearchRequestResponse(
+    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
+    const { requestJson, expectedResponse } = mockDiscoveryEngineRequestResponse(
       1,
+      url,
       429,
-      "./test/data/extractive_answer/test_vai_search_extractive_answer_request.json",
+      "./test/data/search/search_extractive_answer/test_vai_search_extractive_answer_request.json",
       "./test/data/not_authenticated.json",
       config,
     );
@@ -374,11 +440,12 @@ describe("When callVertexAISearch is called", () => {
       vertexAISearchDataStoreName: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
-
-    const { requestJson, url, expectedResponse } = mockVertexAISearchRequestResponse(
+    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
+    const { requestJson, expectedResponse } = mockDiscoveryEngineRequestResponse(
       1,
+      url,
       404,
-      "./test/data/extractive_answer/test_vai_search_extractive_answer_request.json",
+      "./test/data/search/search_extractive_answer/test_vai_search_extractive_answer_request.json",
       "./test/data/not_authenticated.json",
       config,
     );
@@ -408,11 +475,12 @@ describe("When callVertexAISearch is called", () => {
       vertexAISearchDataStoreName: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
-
-    const { requestJson, url, expectedResponse } = mockVertexAISearchRequestResponse(
+    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
+    const { requestJson, expectedResponse } = mockDiscoveryEngineRequestResponse(
       1,
+      url,
       405,
-      "./test/data/extractive_answer/test_vai_search_extractive_answer_request.json",
+      "./test/data/search/search_extractive_answer/test_vai_search_extractive_answer_request.json",
       "./test/data/not_authenticated.json",
       config,
     );
@@ -424,33 +492,33 @@ describe("When callVertexAISearch is called", () => {
       expect(err instanceof VertexAIError).toBe(true);
     }
   });
-});
 
-async function testRequestResponse(
-  testCaseNum,
-  expected_status_code,
-  config,
-  query,
-  expectedRequestFile,
-  expectedResponseFile,
-) {
-  const { requestJson, url, expectedResponse } = mockVertexAISearchRequestResponse(
+  async function testRequestResponse(
     testCaseNum,
+    url,
     expected_status_code,
+    config,
+    query,
     expectedRequestFile,
     expectedResponseFile,
-    config,
-  );
+  ) {
+    const { requestJson, expectedResponse } = mockDiscoveryEngineRequestResponse(
+      testCaseNum,
+      url,
+      expected_status_code,
+      expectedRequestFile,
+      expectedResponseFile,
+      config,
+    );
 
-  const result = await callVertexAISearch(1, query, config);
+    const result = await callVertexAISearch(1, query, config);
 
-  expect(fetchMock.called()).toBe(true);
-  // Assert request body is correct
-  expect(JSON.parse(fetchMock.lastCall()[1].body)).toEqual(requestJson);
-  // Assert URL is correct
-  expect(fetchMock.lastUrl().toLowerCase()).toBe(url.toLowerCase());
-  // Assert response is correct
-  if (expected_status_code == 200) {
+    expect(fetchMock.called()).toBe(true);
+    // Assert request body is correct
+    expect(JSON.parse(fetchMock.lastCall()[1].body)).toEqual(requestJson);
+    // Assert URL is correct
+    expect(fetchMock.lastUrl().toLowerCase()).toBe(url.toLowerCase());
+    // Assert response is correct
     expect(result).toEqual(expectedResponse);
   }
-}
+});
