@@ -274,9 +274,7 @@ export class ExcelSearchRunner extends TaskRunner {
       });
 
       this.searchTaskPromiseSet.add(processSummaryPromise);
-      // wait for processRow to finish
-      await Promise.resolve(processSummaryPromise);
-      numCalls++;
+
       // Also call check grounding API
       if (config.genereateGrounding) {
         const checkGroundingPromise = this.throttled_check_grounding(
@@ -289,9 +287,6 @@ export class ExcelSearchRunner extends TaskRunner {
         });
 
         this.searchTaskPromiseSet.add(checkGroundingPromise);
-        // wait for processRow to finish
-        await Promise.resolve(checkGroundingPromise);
-        numCalls++;
       }
     }
 
@@ -306,7 +301,9 @@ export class ExcelSearchRunner extends TaskRunner {
       );
       appendLog(`testCaseID: ${rowNum} Processed Doc Links.`);
     }
-
+    // execute the tasks
+    await Promise.allSettled(this.searchTaskPromiseSet.values());
+    numCalls += 2;
     return numCalls;
   }
 
@@ -343,7 +340,11 @@ export class ExcelSearchRunner extends TaskRunner {
 
       const groudingScorecell = this.checkGroundingScoreColumn.getRange().getCell(rowNum, 0);
       groudingScorecell.clear(Excel.ClearApplyTo.formats);
-      groudingScorecell.values = [[output.supportScore.toString()]];
+      if (output.supportScore) {
+        groudingScorecell.values = [[output.supportScore.toString()]];
+      } else {
+        groudingScorecell.values = [["No support score returned"]];
+      }
     } catch (error) {
       appendError(`testCaseID: ${rowNum} Error getting Grounding. Error: ${error.message} `, error);
     }
@@ -398,22 +399,31 @@ export class ExcelSearchRunner extends TaskRunner {
     const link_3_cell = this.link_3_Column.getRange().getCell(rowNum, 0);
 
     // Check for document info and linksin the metadata if it exists
-    if (result.results[0].document.hasOwnProperty("structData")) {
+    if (result.results[0] && result.results[0].document.hasOwnProperty("structData")) {
       link_1_cell.values = [[result.results[0].document.structData.sharepoint_ref]];
       p0_result = result.results[0].document.structData.title;
-    } else if (result.results[0].document.hasOwnProperty("derivedStructData")) {
+    } else if (
+      result.results[0] &&
+      result.results[0].document.hasOwnProperty("derivedStructData")
+    ) {
       link_1_cell.values = [[result.results[0].document.derivedStructData.link]];
       p0_result = result.results[0].document.derivedStructData.link;
     }
-    if (result.results[1].document.hasOwnProperty("structData")) {
+    if (result.results[1] && result.results[1].document.hasOwnProperty("structData")) {
       link_2_cell.values = [[result.results[1].document.structData.sharepoint_ref]];
-    } else if (result.results[1].document.hasOwnProperty("derivedStructData")) {
+    } else if (
+      result.results[1] &&
+      result.results[1].document.hasOwnProperty("derivedStructData")
+    ) {
       link_2_cell.values = [[result.results[1].document.derivedStructData.link]];
       p2_result = result.results[1].document.derivedStructData.link;
     }
-    if (result.results[2].document.hasOwnProperty("structData")) {
+    if (result.results[2] && result.results[2].document.hasOwnProperty("structData")) {
       link_3_cell.values = [[result.results[2].document.structData.sharepoint_ref]];
-    } else if (result.results[2].document.hasOwnProperty("derivedStructData")) {
+    } else if (
+      result.results[2] &&
+      result.results[2].document.hasOwnProperty("derivedStructData")
+    ) {
       link_3_cell.values = [[result.results[2].document.derivedStructData.link]];
     }
 

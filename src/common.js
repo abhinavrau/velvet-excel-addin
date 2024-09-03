@@ -152,6 +152,11 @@ mapQuestionAnsweringScore.set("2", "2-Bad");
 mapQuestionAnsweringScore.set("3", "3-OK");
 mapQuestionAnsweringScore.set("4", "4-Good");
 mapQuestionAnsweringScore.set("5", "5-Very Good");
+mapQuestionAnsweringScore.set(1, "1-Very Bad");
+mapQuestionAnsweringScore.set(2, "2-Bad");
+mapQuestionAnsweringScore.set(3, "3-OK");
+mapQuestionAnsweringScore.set(4, "4-Good");
+mapQuestionAnsweringScore.set(5, "5-Very Good");
 
 export const mapSummaryQualityScore = new Map();
 mapSummaryQualityScore.set(1, "1-Very Bad");

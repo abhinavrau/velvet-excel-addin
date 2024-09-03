@@ -133,6 +133,7 @@ export class TaskRunner {
       // delay the loop so we can have the ability to cancel.\
       if (currentRow % config.batchSize === 0) {
         // delay calls with apropriate time
+
         await new Promise((r) => setTimeout(r, 500));
       }
 

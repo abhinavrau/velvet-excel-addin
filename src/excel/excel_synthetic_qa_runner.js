@@ -232,7 +232,7 @@ export class SyntheticQARunner extends TaskRunner {
       const cell_evalQuality = this.qualityColumn.getRange().getCell(rowNum, 0);
       cell_evalQuality.clear(Excel.ClearApplyTo.formats);
       cell_evalQuality.values = [[mapQuestionAnsweringScore.get(eval_json.rating)]];
-      appendLog(`testCaseID::${rowNum} generateQualityEval Finished: Raing: ${eval_json.rating}`);
+      appendLog(`testCaseID::${rowNum} generateQualityEval Finished: Rating: ${eval_json.rating}`);
     } catch (err) {
       appendError(`testCaseID: ${rowNum} Error setting Eval QA  Error: ${err.message} `, err);
       const cell_status = this.qualityColumn.getRange().getCell(rowNum, 0);
