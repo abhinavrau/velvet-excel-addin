@@ -1,9 +1,0 @@
-{
-  "fulfillment_input": {
-    "metric_spec": {},
-    "instance": {
-      "prediction": "Becoming a great magician requires dedication and hard work.  Practicing magic regularly is essential to develop skills and perform well in many shows.",
-      "instruction": "Summarize the text."
-    }
-  }
-}

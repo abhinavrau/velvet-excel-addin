@@ -10,7 +10,7 @@ export class SyntheticQARunner extends TaskRunner {
     super();
     this.synthQATaskPromiseSet = new Set();
     this.generateQualityEval_throttled = this.throttle((a, b, c) =>
-      this.generateQualityEval(a, b, c),
+      this.generateQnAQualityEval(a, b, c),
     );
   }
 
@@ -147,6 +147,7 @@ export class SyntheticQARunner extends TaskRunner {
       fileUri[rowNum][0],
       mimeType[rowNum][0],
       config.model,
+      config.responseMimeType,
       config,
     );
   }
@@ -183,6 +184,7 @@ export class SyntheticQARunner extends TaskRunner {
         this.synthQATaskPromiseSet.add(
           this.generateQualityEval_throttled(config, response, rowNum),
         );
+        ++numCallsMade;
       }
     } catch (err) {
       appendError(`testCaseID: ${rowNum} Error setting QA. Error: ${err.message} `, err);
@@ -196,10 +198,10 @@ export class SyntheticQARunner extends TaskRunner {
     // execute the tasks
     await Promise.allSettled(this.synthQATaskPromiseSet.values());
 
-    return ++numCallsMade;
+    return numCallsMade;
   }
 
-  async generateQualityEval(config, response, rowNum) {
+  async generateQnAQualityEval(config, response, rowNum) {
     try {
       appendLog(`testCaseID::${rowNum} generateQualityEval Started..`);
       let fileUri = this.fileUriColumn.values;
@@ -207,6 +209,7 @@ export class SyntheticQARunner extends TaskRunner {
 
       const evalPrompt = `${config.qAQualityPrompt} # User Inputs and AI-generated Response
                         ## User Inputs
+
                         ### Prompt
                         ${config.systemInstruction}
                         ${config.prompt}
@@ -221,6 +224,7 @@ export class SyntheticQARunner extends TaskRunner {
         fileUri[rowNum][0],
         mimeType[rowNum][0],
         config.qAQualityModel,
+        config.responseMimeType,
         config,
       );
 

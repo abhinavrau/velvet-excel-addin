@@ -158,8 +158,7 @@ export class ExcelSearchRunner extends TaskRunner {
             ][0],
           ),
           accessToken: $("#access-token").val(),
-          systemInstruction: "",
-          responseMimeType: "text/plain",
+
         };
       } catch (error) {
         appendError(`Caught Exception in getSearchConfig `, error);

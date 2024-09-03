@@ -237,8 +237,6 @@ describe("When Generate Synthetic Q&A is clicked ", () => {
     // set up mock for file for first query
     // read the request from json file
 
-    fetchMock.config.overwriteRoutes = false;
-
     const {
       requestJson: requestJson,
       url: url,
@@ -252,8 +250,7 @@ describe("When Generate Synthetic Q&A is clicked ", () => {
       config,
     );
 
-    // set up mock for file for first query
-    // read the request from json file
+   
     const {
       requestJson: quality_request_json,
       url: quality_url,

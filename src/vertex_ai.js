@@ -92,13 +92,14 @@ export async function callGeminiMultitModal(
   fileUri,
   mimeType,
   model_id,
+  responseMimeType,
   config,
 ) {
   const token = config.accessToken;
   const projectId = config.vertexAIProjectID;
   const location = config.vertexAILocation;
   const system_instruction = systemInstruction === null ? "" : systemInstruction;
-
+  const local_responseMimeType = responseMimeType ? responseMimeType : "text/plain";
   var data = {
     contents: [
       {
@@ -127,7 +128,7 @@ export async function callGeminiMultitModal(
       maxOutputTokens: 8192,
       temperature: 1,
       topP: 0.95,
-      response_mime_type: `${config.responseMimeType}`,
+      response_mime_type: `${local_responseMimeType}`,
     },
     safetySettings: [
       {
@@ -171,7 +172,7 @@ export async function callGeminiMultitModal(
         maxOutputTokens: 8192,
         temperature: 1,
         topP: 0.95,
-        response_mime_type: `${config.responseMimeType}`,
+        response_mime_type: `${local_responseMimeType}`,
       },
       safetySettings: [
         {

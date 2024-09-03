@@ -67,6 +67,7 @@ describe("When callGeminiMultiModal is called", () => {
       fileUri,
       mimeType,
       config.model,
+      config.responseMimeType,
       config,
     );
 
@@ -111,7 +112,16 @@ describe("When callGeminiMultiModal is called", () => {
     });
 
     try {
-      const result = await callGeminiMultitModal(1, prompt, "", fileUri, mimeType, config.model, config);
+      const result = await callGeminiMultitModal(
+        1,
+        prompt,
+        "",
+        fileUri,
+        mimeType,
+        config.model,
+        config.responseMimeType,
+        config,
+      );
       assert.fail();
     } catch (err) {
       expect(fetchMock.called()).toBe(true);
@@ -148,6 +158,7 @@ describe("When callGeminiMultiModal is called", () => {
         fileUri,
         mimeType,
         config.model,
+        config.responseMimeType,
         config,
       );
       assert.fail();
