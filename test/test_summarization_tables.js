@@ -74,6 +74,9 @@ describe("When Summarization Eval Tables is clicked", () => {
               getHeaderRowRange: function () {
                 return this.header_row_range;
               },
+              getRange: function () {
+                return this.range;
+              },
               resize: function (str) {},
               getItem: function (str) {
                 // check is str ends with string "TestCasesTable"
@@ -81,6 +84,13 @@ describe("When Summarization Eval Tables is clicked", () => {
                   return this.rows;
                 }
                 return this;
+              },
+              range: {
+                format: {
+                  font: {
+                    bold: false,
+                  },
+                },
               },
               rows: {
                 values: [[]],
@@ -119,7 +129,7 @@ describe("When Summarization Eval Tables is clicked", () => {
     ]);
     expect(contextMock.context.workbook.worksheets.range.format.font.bold).toEqual(true);
     expect(contextMock.context.workbook.worksheets.range.format.fill.color).toEqual("yellow");
-    expect(contextMock.context.workbook.worksheets.range.format.font.size).toEqual(16);
+    expect(contextMock.context.workbook.worksheets.range.format.font.size).toEqual(20);
 
     expect(contextMock.context.workbook.worksheets.tables.name).toEqual(
       `${worksheetName}.ConfigTable`,

@@ -11,6 +11,8 @@ import {
   VertexAIError,
 } from "./common.js";
 
+// Base class implements the logic of iterating through all the rows in the main data table
+// and calls inherited methods for all the logic
 export class TaskRunner {
   constructor() {
     this.cancelPressed = false;
@@ -26,7 +28,7 @@ export class TaskRunner {
     throw new Error("You have to implement the method getResultFromVertexAI");
   }
 
-  // Passes the result from getResultFromVertexAI to this function to popoluate the sheet
+  // Passes the result from getResultFromVertexAI to this function to populate the sheet
   // And also to call other external functions for eval purposes
   async processRow(response_json, context, config, rowNum, numCallsSoFar) {
     throw new Error("You have to implement the method processRow");
@@ -58,17 +60,15 @@ export class TaskRunner {
     // Start timer
     const startTime = new Date();
     let promiseSet = new Set();
-    // Loop through the test cases table and run the tests
+    // Loop through the test cases table and run the tests. Stop if ID column is empty
     while (
       currentRow <= countRows &&
       idArray[currentRow][0] !== null &&
       idArray[currentRow][0] !== ""
     ) {
-      // Do the first call without throttling since crednetials could be wrong and we don't want to
-      // overwhelm the server with bad crednetials.
-
-      // if all good then keep going.
-
+      
+      // Wrap the main call to Vertex AI API with throttling so we don't 
+      // run into out of quota responses
       const apiPromise = this.throttled_api_call(currentRow, config)
         .then(async (result) => {
           let response_json = result.output;
@@ -79,7 +79,8 @@ export class TaskRunner {
           appendLog(`testCaseID: ${testCaseRowNum} Processing results`);
           showStatus(`${testCaseRowNum} Processing results`, false);
 
-          // Throttle each row since they also make api calls
+          // Process each row now from inherited class. Returns number of addional 
+          // calls it make to Vertex AI
           let numCallsProcessRow = await this.processRow(
             response_json,
             context,
@@ -87,7 +88,7 @@ export class TaskRunner {
             testCaseRowNum,
           );
 
-          // Add to number of calls
+          // Add to number of calls so we can report back
           numCallsMade += numCallsProcessRow;
         })
         .catch((error) => {
@@ -113,7 +114,7 @@ export class TaskRunner {
         });
 
       // We resolve the first row since we don't want to overwhelm the server with
-      // bad requests if some fo the config or auth tken is bad
+      // bad requests if some fo the config or auth token is bad
       if (currentRow === 1) {
         await Promise.resolve(apiPromise);
         await this.waitForTaskstoFinish();
@@ -127,14 +128,14 @@ export class TaskRunner {
         break;
       }
       // first row is good to keep going.
-      // Add the task promise to set
+      // Add the task promise set
       promiseSet.add(apiPromise);
 
-      // delay the loop so we can have the ability to cancel.\
+      // delay the loop by a little so we can have the ability to cancel.
       if (currentRow % config.batchSize === 0) {
         // delay calls with apropriate time
 
-        await new Promise((r) => setTimeout(r, 500));
+        await new Promise((r) => setTimeout(r, 300));
       }
 
       currentRow++;
@@ -143,7 +144,7 @@ export class TaskRunner {
     // wait for all tasks to resolve
     await Promise.allSettled(promiseSet);
 
-    // wait for other tasks of inherited classes to finish
+    // wait for other tasks of inherited class to resolve
     await this.waitForTaskstoFinish();
 
     await context.sync();
@@ -158,6 +159,7 @@ export class TaskRunner {
     if (numFails > 0) {
       stoppedReason = `Failed: ${numFails}. See logs for details.`;
     }
+    
     if (
       currentRow <= countRows &&
       (idArray[currentRow][0] === null || idArray[currentRow][0] === "")

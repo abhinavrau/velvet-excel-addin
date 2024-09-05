@@ -35,6 +35,17 @@ export const vertex_ai_search_configValues = [
   ["Time between Batches in Seconds (1-10)", "1"],
 ];
 
+export const vertex_ai_search_summary_Table = [
+  [
+    "Last Run Time",
+    "% Summary Match",
+    "% First Link Match",
+    "% Link in Top 2",
+    "Avg. Grounding Score",
+  ],
+  ["No Runs so far", "", "", "", ""],
+];
+
 export const vertex_ai_search_testTableHeader = [
   [
     "ID",

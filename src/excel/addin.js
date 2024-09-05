@@ -1,5 +1,9 @@
 import { ExcelSearchRunner } from "./excel_search_runner.js";
-import { createVAIConfigTable, createVAIDataTable } from "./excel_search_tables.js";
+import {
+  createSummaryTable,
+  createVAIConfigTable,
+  createVAIDataTable,
+} from "./excel_search_tables.js";
 import { SummarizationRunner } from "./excel_summarization_runner.js";
 import { SyntheticQARunner } from "./excel_synthetic_qa_runner.js";
 
@@ -106,6 +110,7 @@ function setupButtonEvents(
 
 async function createSearchTables() {
   await createVAIConfigTable();
+  await createSummaryTable();
   await createVAIDataTable();
 }
 
