@@ -26,7 +26,6 @@ export var testCaseRows = synth_q_and_a_TableHeader.concat([
   [
     "1", // ID
     "gs://argolis-arau-gemini-bank/Procedure - Savings Account Opening.pdf", //GCS File URI
-    "application/pdf", //Mime Type
     "If I close my new savings account within 30 days of opening it, will I be charged a fee?", // Generated Question
     "Yes, you will be charged a $25 fee unless the closure is due to a Gemini Bank error in account opening, customer dissatisfaction with a product or service disclosed during the opening process, or insufficient funds.", //Expected Answer
     "5-Very Good",
@@ -250,7 +249,6 @@ describe("When Generate Synthetic Q&A is clicked ", () => {
       config,
     );
 
-   
     const {
       requestJson: quality_request_json,
       url: quality_url,

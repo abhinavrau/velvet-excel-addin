@@ -1,9 +1,5 @@
 import { ExcelSearchRunner } from "./excel_search_runner.js";
-import {
-  createSummaryTable,
-  createVAIConfigTable,
-  createVAIDataTable,
-} from "./excel_search_tables.js";
+import { createVAIConfigTable, createVAIDataTable } from "./excel_search_tables.js";
 import { SummarizationRunner } from "./excel_summarization_runner.js";
 import { SyntheticQARunner } from "./excel_synthetic_qa_runner.js";
 
@@ -22,6 +18,7 @@ let summarizationRunner;
 let syntheticQuestionAnswerRunner;
 // Initialize Office API
 Office.onReady((info) => {
+  OfficeExtension.config.extendedErrorLogging = true;
   // Check that we loaded into Excel
   if (info.host === Office.HostType.Excel) {
     excelSearchRunner = new ExcelSearchRunner();
@@ -110,7 +107,6 @@ function setupButtonEvents(
 
 async function createSearchTables() {
   await createVAIConfigTable();
-  await createSummaryTable();
   await createVAIDataTable();
 }
 

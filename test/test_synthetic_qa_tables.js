@@ -127,9 +127,6 @@ describe("When Create Q&A Tables is clicked", () => {
     expect(contextMock.context.workbook.worksheets.range.values).toEqual([
       ["Generate Synthetic Questions and Answers"],
     ]);
-    expect(contextMock.context.workbook.worksheets.range.format.font.bold).toEqual(true);
-    expect(contextMock.context.workbook.worksheets.range.format.fill.color).toEqual("yellow");
-    expect(contextMock.context.workbook.worksheets.range.format.font.size).toEqual(20);
 
     expect(contextMock.context.workbook.worksheets.tables.name).toEqual(
       `${worksheetName}.ConfigTable`,

@@ -1,6 +1,11 @@
 import { TaskRunner } from "../task_runner.js";
 
-import { findIndexByColumnsNameIn2DArray, mapQuestionAnsweringScore } from "../common.js";
+import {
+  findIndexByColumnsNameIn2DArray,
+  getFileExtensionFromUri,
+  mapGeminiSupportedMimeTypes,
+  mapQuestionAnsweringScore,
+} from "../common.js";
 import { appendError, appendLog, showStatus } from "../ui.js";
 import { callGeminiMultitModal } from "../vertex_ai.js";
 import { getColumn } from "./excel_common.js";
@@ -98,7 +103,6 @@ export class SyntheticQARunner extends TaskRunner {
         const testCasesTable = currentWorksheet.tables.getItem(`${worksheetName}.TestCasesTable`);
         this.idColumn = getColumn(testCasesTable, "ID");
         this.fileUriColumn = getColumn(testCasesTable, "GCS File URI");
-        this.mimeTypeColumn = getColumn(testCasesTable, "Mime Type");
         this.generatedQuestionColumn = getColumn(testCasesTable, "Generated Question");
         this.expectedAnswerColumn = getColumn(testCasesTable, "Expected Answer");
         this.qualityColumn = getColumn(testCasesTable, "Q & A Quality");
@@ -138,14 +142,14 @@ export class SyntheticQARunner extends TaskRunner {
 
   async getResultFromVertexAI(rowNum, config) {
     let fileUri = this.fileUriColumn.values;
-    let mimeType = this.mimeTypeColumn.values;
+    let mimeType = mapGeminiSupportedMimeTypes[getFileExtensionFromUri(fileUri[rowNum][0])];
 
     return await callGeminiMultitModal(
       rowNum,
       config.prompt,
       config.systemInstruction,
       fileUri[rowNum][0],
-      mimeType[rowNum][0],
+      mimeType,
       config.model,
       config.responseMimeType,
       config,
@@ -205,7 +209,7 @@ export class SyntheticQARunner extends TaskRunner {
     try {
       appendLog(`testCaseID::${rowNum} generateQualityEval Started..`);
       let fileUri = this.fileUriColumn.values;
-      let mimeType = this.mimeTypeColumn.values;
+      let mimeType = mapGeminiSupportedMimeTypes[getFileExtensionFromUri(fileUri[rowNum][0])];
 
       const evalPrompt = `${config.qAQualityPrompt} # User Inputs and AI-generated Response
                         ## User Inputs
@@ -222,7 +226,7 @@ export class SyntheticQARunner extends TaskRunner {
         evalPrompt,
         "",
         fileUri[rowNum][0],
-        mimeType[rowNum][0],
+        mimeType,
         config.qAQualityModel,
         config.responseMimeType,
         config,

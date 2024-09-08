@@ -122,11 +122,8 @@ describe("When Create Search Tables is clicked", () => {
 
     const worksheetName = contextMock.context.workbook.worksheets.name;
     expect(contextMock.context.workbook.worksheets.range.values).toEqual([
-      ["Vertex AI Search Evaluation"],
+      ["Agent Builder Search Evaluation"],
     ]);
-    expect(contextMock.context.workbook.worksheets.range.format.font.bold).toEqual(true);
-    expect(contextMock.context.workbook.worksheets.range.format.fill.color).toEqual("yellow");
-    expect(contextMock.context.workbook.worksheets.range.format.font.size).toEqual(20);
 
     expect(contextMock.context.workbook.worksheets.tables.name).toEqual(
       `${worksheetName}.ConfigTable`,

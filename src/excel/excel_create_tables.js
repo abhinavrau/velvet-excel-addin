@@ -1,4 +1,4 @@
-import { appendError, showStatus } from "../ui.js";
+import { appendError, showStatus, summaryFontSize, tableTitlesFontSize } from "../ui.js";
 export async function createExcelTable(
   title,
   titleCellLocation,
@@ -7,101 +7,121 @@ export async function createExcelTable(
   tableRangeStart,
   tableRangeEnd,
   fontSize,
+  titlesFontSize = tableTitlesFontSize,
 ) {
+  var worksheetName = "";
   await Excel.run(async (context) => {
     try {
       const currentWorksheet = context.workbook.worksheets.getActiveWorksheet();
       currentWorksheet.load("name");
       await context.sync();
-      const worksheetName = currentWorksheet.name;
+      worksheetName = currentWorksheet.name;
 
       currentWorksheet.getRange().format.font.name = "Aptos";
 
-      if (title) {
+      if (title !== null) {
         var range = currentWorksheet.getRange(titleCellLocation);
-        //range.merge(); // Merge the cells
+
         range.values = [[title]];
         range.format.font.bold = true;
-        if (tableType === "ConfigTable") {
-          range.format.fill.color = "yellow";
-        }
-        range.format.font.size = fontSize > 20 ? fontSize : 20;
-        range.format.horizontalAlignment = "Center";
-        range.format.verticalAlignment = "Center";
+        range.format.font.size = titlesFontSize;
       }
 
       var excelTable = currentWorksheet.tables.add(tableRangeStart, true /*hasHeaders*/);
       excelTable.name = `${worksheetName}.${tableType}`;
       excelTable.getRange().format.font.size = fontSize;
+
+      excelTable.getRange().format.wrapText = true;
       excelTable.showFilterButton = false;
 
       excelTable.getHeaderRowRange().values = [valuesArray[0]];
+     
 
-      if (tableType !== "TestCasesTable") {
+      if (tableType === "ConfigTable") {
         excelTable.rows.add(0, valuesArray.slice(1));
-      }
-      if (tableType === "TestCasesTable") {
+      } else {
         excelTable.resize(tableRangeEnd);
-        excelTable.showFilterButton = false;
+        excelTable.showFilterButton = true;
       }
-
-      currentWorksheet.getUsedRange().format.autofitColumns();
-      currentWorksheet.getUsedRange().format.autofitRows();
-
       await context.sync();
     } catch (error) {
       showStatus(`Exception when creating ${title}  Table: ${error.message}`, true);
       appendError(`Error creating ${title}  Table:`, error);
     }
   });
+
+  return worksheetName;
 }
 
-export async function insertPercentFormulaInSummaryCell(row, col, columnNameToCalc) {
+export async function createFormula(
+  worksheetName,
+  labelRange,
+  label,
+  formulaRange,
+  formula,
+  fontSize = summaryFontSize,
+  percent = true,
+) {
   await Excel.run(async (context) => {
     try {
       const currentWorksheet = context.workbook.worksheets.getActiveWorksheet();
-      currentWorksheet.load("name");
-      await context.sync();
-      const worksheetName = currentWorksheet.name;
-      const summaryTable = currentWorksheet.tables.getItem(`${worksheetName}.SummaryTable`);
-      var percentSummaryMatchCell = summaryTable.getRange().getCell(row, col);
-      percentSummaryMatchCell.load();
-      await context.sync();
-      percentSummaryMatchCell.formulas = [
-        [
-          `=IF(COUNTA(${worksheetName}.TestCasesTable[${columnNameToCalc}])>0, COUNTIF(${worksheetName}.TestCasesTable[${columnNameToCalc}], TRUE)/COUNTA(${worksheetName}.TestCasesTable[${columnNameToCalc}]), 0)`,
-        ],
-      ];
-      percentSummaryMatchCell.numberFormat = "0.00%";
+      var labelCell = currentWorksheet.getRange(labelRange);
+      labelCell.clear();
+      labelCell.format.font.name = "Aptos";
+      labelCell.format.font.size = fontSize;
+      labelCell.values = [[label]];
+      var cell = currentWorksheet.getRange(formulaRange);
+      cell.clear();
+
+      cell.formulas = [[formula]];
+      cell.format.font.name = "Aptos";
+      cell.format.font.size = fontSize;
+      if (percent) {
+        cell.numberFormat = "0.00%";
+      }
+
       await context.sync();
     } catch (error) {
-      showStatus(`Exception when creating Search Summary Formulas ${error.message}`, true);
-      appendError(`Error creating Search Summary Formulas :`, error);
+      showStatus(`Exception createFormula ${error.message} with formula: ${formula}`, true);
+      appendError(`Error createFormula with formula: ${formula}`, error);
     }
   });
 }
 
-export async function insertAvgFormulaInSummaryCell(row, col, columnNameToCalc) {
+export async function makeRowBold(range) {
   await Excel.run(async (context) => {
     try {
       const currentWorksheet = context.workbook.worksheets.getActiveWorksheet();
-      currentWorksheet.load("name");
-      await context.sync();
-      const worksheetName = currentWorksheet.name;
-      const summaryTable = currentWorksheet.tables.getItem(`${worksheetName}.SummaryTable`);
-      var percentSummaryMatchCell = summaryTable.getRange().getCell(row, col);
-      percentSummaryMatchCell.load();
-      await context.sync();
-      percentSummaryMatchCell.formulas = [
-        [
-          `=IF(COUNTA(${worksheetName}.TestCasesTable[${columnNameToCalc}])>0,AVERAGE(${worksheetName}.TestCasesTable[${columnNameToCalc}]), 0)`,
-        ],
-      ];
-      percentSummaryMatchCell.numberFormat = "0.00%";
-      await context.sync();
+
+      const rowRange = currentWorksheet.getRange(range);
+      // Apply bold formatting
+      rowRange.format.font.bold = true;
+      rowRange.format.fill.color = "lightgray";
+
+      await context.sync(); // Synchronize changes
     } catch (error) {
-      showStatus(`Exception when creating Search Summary Formulas ${error.message}`, true);
-      appendError(`Error creating Search Summary Formulas :`, error);
+      showStatus(`Exception makeRowBold ${error.message}`, true);
+      appendError(`Error makeRowBold :`, error);
     }
+  });
+}
+
+export async function summaryHeading(range, text, fontSize = summaryFontSize) {
+  Excel.run(async (context) => {
+    // Get the active worksheet
+    let sheet = context.workbook.worksheets.getActiveWorksheet();
+
+    // Get the range you want to format (adjust as needed)
+    let cells = sheet.getRange(range); // Change "A1" to your target cell or range
+
+    // Apply the formatting
+    cells.format.fill.color = "darkblue";
+    cells.format.font.color = "white";
+    cells.format.font.size = fontSize;
+
+    cells.getCell(0, 1).values = [[text]];
+
+    // Sync the changes back to Excel
+    await context.sync();
   });
 }

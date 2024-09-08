@@ -10,40 +10,46 @@ export function findIndexByColumnsNameIn2DArray(array2D, searchValue) {
 }
 
 // Vertex AI Search Table Format
-
 export const vertex_ai_search_configValues = [
   ["Config", "Value"],
+
+  ["GCP PARAMETERS", ""],
   ["Vertex AI Search Project Number", "384473000457"],
   ["Vertex AI Search DataStore Name", "alphabet-pdfs_1695783402380"],
   ["Vertex AI Project ID", "argolis-arau"],
   ["Vertex AI Location", "us-central1"],
+  ["", ""],
+  ["EMBEDDING SEARCH SETTINGS", ""],
   ["maxExtractiveAnswerCount (1-5)", "2"], //maxExtractiveAnswerCount
   ["maxExtractiveSegmentCount (1-5)", "0"], //maxExtractiveSegmentCount
   ["maxSnippetCount (1-5)", "0"], //maxSnippetCount
-  ["Preamble (Customized Summaries)", ""],
-  ["Summarization Model", "gemini-1.0-pro-001/answer_gen/v1"],
-  ["summaryResultCount (1-5)", "2"], //summaryResultCount
-  ["Genrate Grounding Score", "True"], //generate grounding score
   ["useSemanticChunks (True or False)", "False"], //useSemanticChunks
   ["ignoreAdversarialQuery (True or False)", "True"], // ignoreAdversarialQuery
   ["ignoreNonSummarySeekingQuery (True or False)", "True"], // ignoreNonSummarySeekingQuery
+  ["", ""],
+  ["SUMMARY GENERATION SETTINGS", ""],
+  ["summaryResultCount (1-5)", "2"], //summaryResultCount
+  ["Preamble (Customized Summaries)", ""],
+  ["Summarization Model", "gemini-1.0-pro-001/answer_gen/v1"],
   [
     "SummaryMatchingAdditionalPrompt",
     "If there are monetary numbers in the answers, they should be matched exactly.",
   ],
+  ["", ""],
+  ["HALLUCINATION CHECK", ""],
+  ["Generate Grounding Score", "True"], //generate grounding score
+  ["", ""],
+  ["TEST RUNTIME SETTINGS", ""],
   ["Batch Size (1-10)", "5"], // BatchSize
   ["Time between Batches in Seconds (1-10)", "1"],
 ];
 
 export const vertex_ai_search_summary_Table = [
-  [
-    "Last Run Time",
-    "% Summary Match",
-    "% First Link Match",
-    "% Link in Top 2",
-    "Avg. Grounding Score",
-  ],
-  ["No Runs so far", "", "", "", ""],
+  ["Eval Metric", "Value"],
+  ["% Summary Match Accuracy", ""],
+  ["% First Link Match", ""],
+  ["% Link in Top 2", ""],
+  ["Avg. Grounding Score", ""],
 ];
 
 export const vertex_ai_search_testTableHeader = [
@@ -124,7 +130,7 @@ Return result in JSON format. example output: { 'rating': 2 , evaluation: 'reaso
 ];
 
 export const synth_q_and_a_TableHeader = [
-  ["ID", "GCS File URI", "Mime Type", "Generated Question", "Expected Answer", "Q & A Quality"],
+  ["ID", "GCS File URI", "Generated Question", "Expected Answer", "Q & A Quality"],
 ];
 
 // Summarization  Table Format
@@ -174,6 +180,38 @@ Return result in JSON format. example output: { 'rating': 2 , evaluation: 'reaso
 
 export const summarization_TableHeader = [["ID", "Context", "Summary", "summarization_quality"]];
 
+export const mapGeminiSupportedMimeTypes = {
+  ".flv": "video/x-flv",
+  ".mov": "video/mov",
+  ".mpeg": "video/mpeg",
+  ".mpegps": "video/mpegps",
+  ".mpg": "video/mpg",
+  ".mp4": "video/mp4",
+  ".webm": "video/webm",
+  ".wmv": "video/wmv",
+  ".3gpp": "video/3gpp",
+  ".png": "image/png",
+  ".jpeg": "image/jpeg",
+  ".aac": "audio/aac",
+  ".flac": "audio/flac",
+  ".mp3": "audio/mp3",
+  ".m4a": "audio/m4a", // Note: Corrected from 'MPA' to 'M4A'
+  ".mpga": "audio/mpga",
+  ".opus": "audio/opus",
+  ".pcm": "audio/pcm",
+  ".wav": "audio/wav",
+  ".pdf": "application/pdf",
+  "": "upsupportedMimeType",
+};
+
+export function getFileExtensionFromUri(uri) {
+  const lastDotIndex = uri.lastIndexOf(".");
+  if (lastDotIndex === -1) {
+    return ""; // No extension found
+  } else {
+    return uri.substring(lastDotIndex);
+  }
+}
 // Eval Maps
 export const mapQuestionAnsweringScore = new Map();
 mapQuestionAnsweringScore.set("1", "1-Very Bad");

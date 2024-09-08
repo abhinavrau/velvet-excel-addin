@@ -125,11 +125,8 @@ describe("When Summarization Eval Tables is clicked", () => {
 
     const worksheetName = contextMock.context.workbook.worksheets.name;
     expect(contextMock.context.workbook.worksheets.range.values).toEqual([
-      ["Summarization Evaluation"],
+      ["Gemini Summarization Evaluation"],
     ]);
-    expect(contextMock.context.workbook.worksheets.range.format.font.bold).toEqual(true);
-    expect(contextMock.context.workbook.worksheets.range.format.fill.color).toEqual("yellow");
-    expect(contextMock.context.workbook.worksheets.range.format.font.size).toEqual(20);
 
     expect(contextMock.context.workbook.worksheets.tables.name).toEqual(
       `${worksheetName}.ConfigTable`,

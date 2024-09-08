@@ -1,49 +1,74 @@
-import {
-  vertex_ai_search_configValues,
-  vertex_ai_search_summary_Table,
-  vertex_ai_search_testTableHeader,
-} from "../common.js";
+import { vertex_ai_search_configValues, vertex_ai_search_testTableHeader } from "../common.js";
+import { configTableFontSize, dataTableFontSize, sheetTitleFontSize } from "../ui.js";
 import {
   createExcelTable,
-  insertAvgFormulaInSummaryCell,
-  insertPercentFormulaInSummaryCell,
+  createFormula,
+  makeRowBold,
+  summaryHeading,
 } from "./excel_create_tables.js";
-
 export async function createVAIConfigTable() {
-  createExcelTable(
-    "Vertex AI Search Evaluation",
-    "A1",
+  const worksheetName = await createExcelTable(
+    "Agent Builder Search Evaluation",
+    "A2",
     "ConfigTable",
     vertex_ai_search_configValues,
-    "A2:B2",
-    "A2:B8",
-    15,
-  );
-}
-export async function createSummaryTable() {
-  createExcelTable(
-    "Search Eval Results",
-    "D2",
-    "SummaryTable",
-    vertex_ai_search_summary_Table,
-    "D3:H3",
-    "D4:H4",
-    25,
+    "A3:B3",
+    "A3:B29",
+    configTableFontSize,
+    sheetTitleFontSize,
   );
 
-  insertPercentFormulaInSummaryCell(1, 1, "Summary Match");
-  insertPercentFormulaInSummaryCell(1, 2, "First Link Match");
-  insertPercentFormulaInSummaryCell(1, 3, "Link in Top 2");
-  insertAvgFormulaInSummaryCell(1, 4, "Grounding Score");
+  await makeRowBold("A3:B3");
+  await makeRowBold("A9:B9");
+  await makeRowBold("A17:B17");
+  await makeRowBold("A23:B23");
+  await makeRowBold("A26:B26");
 }
+
 export async function createVAIDataTable() {
-  createExcelTable(
+  Excel.run(async (context) => {
+    // Get the active worksheet
+    let sheet = context.workbook.worksheets.getActiveWorksheet();
+
+    sheet.getRange("A:A").format.columnWidth = 275;
+    sheet.getRange("B:B").format.columnWidth = 275;
+
+    sheet.getRange("E:E").format.columnWidth = 455;
+    sheet.getRange("F:F").format.columnWidth = 455;
+    sheet.getRange("G:G").format.columnWidth = 455;
+
+    sheet.getRange("E:E").format.wrapText = true;
+    sheet.getRange("F:F").format.wrapText = true;
+    sheet.getRange("G:G").format.wrapText = true;
+
+    await context.sync();
+  });
+
+  const worksheetName = await createExcelTable(
     "Search Test Cases",
-    "D7",
+    "E10",
     "TestCasesTable",
     vertex_ai_search_testTableHeader,
-    "D8:Q8",
-    "D8:Q108",
-    15,
+    "D11:Q11",
+    "D11:Q111",
+    dataTableFontSize,
   );
+
+  await summaryHeading("D4:E4", "Search Eval Results");
+
+  const summaryMatchCol = "Summary Match";
+  const summaryMatchFormula = `=IF(COUNTIF(${worksheetName}.TestCasesTable[${summaryMatchCol}], TRUE) + COUNTIF(${worksheetName}.TestCasesTable[${summaryMatchCol}], FALSE) > 0, COUNTIF(${worksheetName}.TestCasesTable[${summaryMatchCol}], TRUE) / (COUNTIF(${worksheetName}.TestCasesTable[${summaryMatchCol}], TRUE) + COUNTIF(${worksheetName}.TestCasesTable[${summaryMatchCol}], FALSE)), 0)`;
+  await createFormula(worksheetName, "E5", "Summary Match Accuracy", "D5", summaryMatchFormula);
+
+  const firstLinkMatchCol = "First Link Match";
+  const firstLinkMatchFormula = `=IF(COUNTIF(${worksheetName}.TestCasesTable[${firstLinkMatchCol}], TRUE) + COUNTIF(${worksheetName}.TestCasesTable[${firstLinkMatchCol}], FALSE) > 0, COUNTIF(${worksheetName}.TestCasesTable[${firstLinkMatchCol}], TRUE) / (COUNTIF(${worksheetName}.TestCasesTable[${firstLinkMatchCol}], TRUE) + COUNTIF(${worksheetName}.TestCasesTable[${firstLinkMatchCol}], FALSE)), 0)`;
+  await createFormula(worksheetName, "E6", "First Link Match", "D6", firstLinkMatchFormula);
+
+  const linkInTop2MatchCol = "Link in Top 2";
+  const linkInTop2MatchFormula = `=IF(COUNTIF(${worksheetName}.TestCasesTable[${linkInTop2MatchCol}], TRUE) + COUNTIF(${worksheetName}.TestCasesTable[${linkInTop2MatchCol}], FALSE) > 0, COUNTIF(${worksheetName}.TestCasesTable[${linkInTop2MatchCol}], TRUE) / (COUNTIF(${worksheetName}.TestCasesTable[${linkInTop2MatchCol}], TRUE) + COUNTIF(${worksheetName}.TestCasesTable[${linkInTop2MatchCol}], FALSE)), 0)`;
+  await createFormula(worksheetName, "E7", "Link in Top 2", "D7", linkInTop2MatchFormula);
+
+  const groundingScoreCol = "Grounding Score";
+  const groundingScoreFormula = `=IF(COUNTA(${worksheetName}.TestCasesTable[${groundingScoreCol}])>0,AVERAGE(${worksheetName}.TestCasesTable[${groundingScoreCol}]), 0)`;
+  await createFormula(worksheetName, "E8", "Average Grounding Score", "D8", groundingScoreFormula);
 }

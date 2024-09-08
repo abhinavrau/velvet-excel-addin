@@ -1,3 +1,9 @@
+export const tableTitlesFontSize = 18;
+export const configTableFontSize = 14;
+export const dataTableFontSize = 14;
+export const summaryFontSize = 18;
+export const sheetTitleFontSize = 20;
+
 export function showStatus(message, isError) {
   $(".status").empty();
 

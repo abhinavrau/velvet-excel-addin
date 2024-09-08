@@ -1,24 +1,65 @@
 import { synth_q_and_a_configValues, synth_q_and_a_TableHeader } from "../common.js";
-import { createExcelTable } from "./excel_create_tables.js";
-
+import {
+  configTableFontSize,
+  dataTableFontSize,
+  sheetTitleFontSize,
+  summaryFontSize,
+} from "../ui.js";
+import { createExcelTable, createFormula, summaryHeading } from "./excel_create_tables.js";
 export async function createSyntheticQAConfigTable() {
-  createExcelTable(
+  await createExcelTable(
     "Generate Synthetic Questions and Answers",
     "A2",
     "ConfigTable",
     synth_q_and_a_configValues,
-    "A2:B2",
-    "A12:B12",
+    "A3:B3",
+    "A13:B13",
+    configTableFontSize,
+    sheetTitleFontSize,
   );
 }
 
 export async function createSyntheticQADataTable() {
-  createExcelTable(
-    "Table Synthetic Questions and Answers",
-    "C12",
+  Excel.run(async (context) => {
+    // Get the active worksheet
+    let sheet = context.workbook.worksheets.getActiveWorksheet();
+
+    sheet.getRange("A:A").format.columnWidth = 370;
+    sheet.getRange("B:B").format.columnWidth = 370;
+
+    sheet.getRange("E:E").format.columnWidth = 455;
+    sheet.getRange("F:F").format.columnWidth = 455;
+
+    sheet.getRange("G:G").format.columnWidth = 455;
+    sheet.getRange("G:G").format.columnWidth = 455;
+
+    sheet.getRange("E:E").format.wrapText = true;
+    sheet.getRange("F:F").format.wrapText = true;
+
+    await context.sync();
+  });
+  const worksheetName = await createExcelTable(
+    "Synthetic Questions and Answers",
+    "E10",
     "TestCasesTable",
     synth_q_and_a_TableHeader,
-    "C13:H13",
-    "C13:H113",
+    "D11:H11",
+    "D11:H110",
+    dataTableFontSize,
+  );
+
+  await summaryHeading("D4:E4", "Generate Synthetic Q&A Quality");
+
+  const summaryMatchCol = "Q & A Quality";
+
+  const summaryFormula = `=IFERROR(AVERAGE(IFERROR(--LEFT(${worksheetName}.TestCasesTable[${summaryMatchCol}],1),FALSE)),0)`;
+  await createFormula(
+    worksheetName,
+    "E5",
+    "Avg. Synthetic Q&A Quality (0-5)",
+    "D5",
+    summaryFormula,
+    summaryFontSize,
+    false,
   );
 }

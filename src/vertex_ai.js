@@ -8,6 +8,7 @@ import {
   VertexAIError,
 } from "./common.js";
 import { appendLog } from "./ui.js";
+
 export async function callVertexAISearch(id, query, config) {
   const token = config.accessToken;
   const preamble = config.preamble;

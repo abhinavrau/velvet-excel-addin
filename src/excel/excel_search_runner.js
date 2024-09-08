@@ -113,7 +113,7 @@ export class ExcelSearchRunner extends TaskRunner {
             ][0],
           genereateGrounding:
             valueColumn.values[
-              findIndexByColumnsNameIn2DArray(configColumn.values, "Genrate Grounding Score")
+              findIndexByColumnsNameIn2DArray(configColumn.values, "Generate Grounding Score")
             ][0],
           useSemanticChunks:
             valueColumn.values[
@@ -158,7 +158,6 @@ export class ExcelSearchRunner extends TaskRunner {
             ][0],
           ),
           accessToken: $("#access-token").val(),
-
         };
       } catch (error) {
         appendError(`Caught Exception in getSearchConfig `, error);
