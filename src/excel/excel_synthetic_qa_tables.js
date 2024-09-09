@@ -48,16 +48,16 @@ export async function createSyntheticQADataTable() {
     dataTableFontSize,
   );
 
-  await summaryHeading("D4:E4", "Generate Synthetic Q&A Quality");
+  await summaryHeading("D8:E8", "Generate Synthetic Q&A Quality");
 
   const summaryMatchCol = "Q & A Quality";
 
   const summaryFormula = `=IFERROR(AVERAGE(IFERROR(--LEFT(${worksheetName}.TestCasesTable[${summaryMatchCol}],1),FALSE)),0)`;
   await createFormula(
     worksheetName,
-    "E5",
+    "E9",
     "Avg. Synthetic Q&A Quality (0-5)",
-    "D5",
+    "D9",
     summaryFormula,
     summaryFontSize,
     false,
