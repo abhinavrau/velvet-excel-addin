@@ -41,21 +41,21 @@ export async function createSummarizationEvalDataTable() {
     "E10",
     "TestCasesTable",
     summarization_TableHeader,
-    "E11:G11",
-    "E11:G110",
+    "E11:H11",
+    "E11:H110",
     dataTableFontSize,
   );
 
-  await summaryHeading("D4:E4", "Summarization Quallity");
+  await summaryHeading("D8:E8", "Summarization Quallity");
 
   const summaryMatchCol = "summarization_quality";
 
   const summaryFormula = `=IFERROR(AVERAGE(IFERROR(--LEFT(${worksheetName}.TestCasesTable[${summaryMatchCol}],1),FALSE)),0)`;
   await createFormula(
     worksheetName,
-    "E5",
+    "E9",
     "Avg. Summarization Quality (0-5)",
-    "D5",
+    "D9",
     summaryFormula,
     summaryFontSize,
     false,
