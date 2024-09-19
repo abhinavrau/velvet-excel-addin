@@ -18,11 +18,11 @@ export async function createVAIConfigTable() {
     sheetTitleFontSize,
   );
 
-  await makeRowBold("A3:B3");
-  await makeRowBold("A9:B9");
-  await makeRowBold("A17:B17");
-  await makeRowBold("A23:B23");
-  await makeRowBold("A26:B26");
+  await makeRowBold("A4:B4");
+  await makeRowBold("A10:B10");
+  await makeRowBold("A18:B18");
+  await makeRowBold("A24:B24");
+  await makeRowBold("A27:B27");
 }
 
 export async function createVAIDataTable() {

@@ -66,24 +66,14 @@
           <p><button id="createSearchTables">Create Search Tables</button></p>
        
           <p>
-            2. Use the "Synthetic Q&A" Tab to generate Questions and Answers from documents stored in GCS.
+            2. Use the "Synthetic Q&A" Tab to generate Questions and Answers
            <b>OR</b>
-             If you have your own test cases then put them in a seperate sheet. 
-          </p>
-          <p>
-            3. Reference the Questions and Answers in the "Query" and "Expected Summary" columns. And reference the expected link in the "Expected Link1" column.
-          </p>
-          <p>
-            4. Fill in the ID column for all rows you want the tests to run on.
+             If you have your own test cases copy into the test case table. 
           </p>
            <p>
-            5. Fill in Config Parameters for your GCP environment in the Config Table. 
-            Adjust the different config parameters like  "Preamble" etc. 
-            for your use case. 
-          </p>
-          <p>
-            6. Click button below to run tests starting from first row.
-          </p>
+            3. Fill in Config Parameters for your GCP environment in the Config Table. 
+            Adjust the <b>Premable</b> and other settings for your use case.
+           </p>
            <p><b>
            Note:</b> Tests will stop when it sees an empty ID value.
           </p>
@@ -103,18 +93,13 @@
           </p>
           <p><button id="createGenQATables">Create Q&A Tables</button></p>
           <p>
-            2. Fill in "FileUri" and "mimeType" columns you want questions and answers to be generated from. Valid mimeTypes for Gemini are <a href="https://firebase.google.com/docs/vertex-ai/input-file-requirements"> documented here.</a>
-          </p>
-          <p>
-            3. Fill in the ID column for all rows you want the tests to run on.
+            2. Fill in "FileUri" column with GCS doc link. <a href="https://firebase.google.com/docs/vertex-ai/input-file-requirements"> Valid file types.</a>
           </p>
            <p>
-            4. Fill in Config Parameters for your GCP environment in the Config Table. 
-            Adjust the prompt and "System Instructions", "Prompt" and "Q&A Quality Prompt" 
+            3. Fill in Config Parameters for your GCP environment in the Config Table. 
+             Adjust the <b>Prompt</b> and <b>Q&A Quality Prompt</b>
             for your use case.
-          </p>
-          <p>
-            5. Click button below to generate Q&As starting from first row.
+            
           </p>
           <p><b>
            Note:</b> Generation will stop when it sees an empty ID value.
@@ -137,18 +122,12 @@
             <button id="createSummarizationTables">Create Summarization Tables</button>
           </p>
           <p>
-            2. Fill in "Text to Summarize" column with Text to summarize. 
+            2. Fill in "Context" column with Text to summarize. 
           </p>
            <p>
-            3. Fill in the ID column for all rows you want the rows you want summarized.
-          </p>
-           <p>
-            4. Fill in Config Parameters for your GCP environment in the Config Table. 
-            Adjust the prompt and "System Instructions", "Prompt" and "Summarization Quality Prompt" 
+            3. Fill in Config Parameters for your GCP environment in the Config Table. 
+            Adjust the <b>Prompt</b> and <b>Summarization Quality Prompt</b>
             for your use case.
-          </p>
-           <p>
-            5. Click button below to generate summarizes starting from first row.
           </p>
            <p><b>
            Note:</b> Generation will stop when it sees an empty ID value.

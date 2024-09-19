@@ -31,7 +31,7 @@ export async function createExcelTable(
       excelTable.name = `${worksheetName}.${tableType}`;
       excelTable.getRange().format.font.size = fontSize;
 
-      excelTable.getRange().format.wrapText = true;
+      //excelTable.getRange().format.wrapText = true;
       excelTable.showFilterButton = false;
 
       excelTable.getHeaderRowRange().values = [valuesArray[0]];

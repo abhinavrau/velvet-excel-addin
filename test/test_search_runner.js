@@ -35,7 +35,7 @@ export var testCaseRows = vertex_ai_search_testTableHeader.concat([
     "link2", // Actual Link 2
     "link3", // Actual Link 3
   ],
-   [
+  [
     "2", // ID
     "What is Google's revenue for the year ending December 31, 2021", //Query
     "Revenue is $2.2 billion", //Expected Summary
@@ -319,7 +319,7 @@ describe("When Search Run Tests is clicked ", () => {
     // Get the config parameters from the config table
     const config = await excelSearchRunner.getSearchConfig();
 
-    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
+    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
     // Prepare the request response mock the call to VertexAISearch
     const { requestJson, expectedResponse } = mockDiscoveryEngineRequestResponse(
       1,
@@ -338,7 +338,7 @@ describe("When Search Run Tests is clicked ", () => {
 
     const grouding_url = `https://discoveryengine.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/global/groundingConfigs/default_grounding_config:check`;
     // Prepare the request response mock the call to VertexAISearch
-    const { requestJson: grouding_requestJson, expectedResponse:  grouding_expectedResponse } =
+    const { requestJson: grouding_requestJson, expectedResponse: grouding_expectedResponse } =
       mockDiscoveryEngineRequestResponse(
         1,
         grouding_url,
@@ -364,7 +364,7 @@ describe("When Search Run Tests is clicked ", () => {
     //  check if vertex ai is called for summary match
     const callsToSummaryMatch = fetchMock.calls().filter((call) => call[0] === summaryMatchUrl);
     // Check if body is sent correctly to vertex ai search
-    expect(callsToSummaryMatch[0][1].body!==null).toBe(true);
+    expect(callsToSummaryMatch[0][1].body !== null).toBe(true);
 
     //  check if vertex ai is called for check grounding  match
     const callsToCheckGrounding = fetchMock.calls().filter((call) => call[0] === grouding_url);
@@ -373,7 +373,6 @@ describe("When Search Run Tests is clicked ", () => {
 
     // Check if values get populated for each test case
     for (let i = 1; i < testCaseRows.length; i++) {
-
       // Match Actual Summary
       const { cell: actual_summary_cell, col_index: actual_summary_col_index } =
         getCellAndColumnIndexByName("Actual Summary", mockTestData, i);
@@ -467,7 +466,7 @@ describe("When Search Run Tests is clicked ", () => {
     // Get the config parameters from the config table
     const config = await excelSearchRunner.getSearchConfig();
 
-    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
+    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
 
     // Prepare the request response mock the call to VertexAISearch
     const { requestJson, expectedResponse } = mockDiscoveryEngineRequestResponse(

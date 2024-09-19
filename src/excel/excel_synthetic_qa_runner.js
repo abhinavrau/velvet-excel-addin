@@ -129,8 +129,10 @@ export class SyntheticQARunner extends TaskRunner {
         await this.processsAllRows(context, config, countRows, this.idColumn.values);
 
         // autofit the content
-        currentWorksheet.getUsedRange().format.autofitColumns();
-        currentWorksheet.getUsedRange().format.autofitRows();
+        //currentWorksheet.getUsedRange().format.autofitColumns();
+        //currentWorksheet.getUsedRange().format.autofitRows();
+       
+
         await context.sync();
       } catch (error) {
         appendError(`Caught Exception in createSyntheticQAData `, error);

@@ -43,12 +43,9 @@ export class ExcelSearchRunner extends TaskRunner {
                 "Vertex AI Search Project Number",
               )
             ][0],
-          vertexAISearchDataStoreName:
+          vertexAISearchAppId:
             valueColumn.values[
-              findIndexByColumnsNameIn2DArray(
-                configColumn.values,
-                "Vertex AI Search DataStore Name",
-              )
+              findIndexByColumnsNameIn2DArray(configColumn.values, "Vertex AI Search App ID")
             ][0],
           vertexAIProjectID:
             valueColumn.values[
@@ -232,8 +229,9 @@ export class ExcelSearchRunner extends TaskRunner {
         await this.processsAllRows(context, config, countRows, this.idColumn.values);
 
         // autofit the content
-        currentWorksheet.getUsedRange().format.autofitColumns();
-        currentWorksheet.getUsedRange().format.autofitRows();
+        //currentWorksheet.getUsedRange().format.autofitColumns();
+        //currentWorksheet.getUsedRange().format.autofitRows();
+       
         await context.sync();
       } catch (error) {
         appendLog(`Caught Exception in executeSearchTests: ${error.message} `, error);
@@ -281,7 +279,7 @@ export class ExcelSearchRunner extends TaskRunner {
           rowNum,
           response_json,
         ).then(async (callsSoFar) => {
-          appendLog(`testCaseID: ${rowNum} Processed Search Summary.`);
+          appendLog(`testCaseID: ${rowNum} Finished Check Grounding.`);
         });
 
         this.searchTaskPromiseSet.add(checkGroundingPromise);

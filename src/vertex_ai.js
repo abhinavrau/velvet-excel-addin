@@ -21,7 +21,7 @@ export async function callVertexAISearch(id, query, config) {
   const ignoreAdversarialQuery = config.ignoreAdversarialQuery;
   const ignoreNonSummarySeekingQuery = config.ignoreNonSummarySeekingQuery;
   const projectNumber = config.vertexAISearchProjectNumber;
-  const datastoreName = config.vertexAISearchDataStoreName;
+  const searchAppId = config.vertexAISearchAppId;
 
   var data = {
     query: query,
@@ -45,7 +45,7 @@ export async function callVertexAISearch(id, query, config) {
     },
   };
 
-  const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${projectNumber}/locations/global/collections/default_collection/dataStores/${datastoreName}/servingConfigs/default_search:search`;
+  const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${projectNumber}/locations/global/collections/default_collection/engines/${searchAppId}/servingConfigs/default_search:search`;
 
   const { status, json_output } = await callVertexAI(url, token, data, id);
 
@@ -55,6 +55,8 @@ export async function callVertexAISearch(id, query, config) {
 }
 
 export async function calculateSimilarityUsingPalm2(id, sentence1, sentence2, config) {
+  appendLog(`testCaseID: ${id}: SummaryMatch Started `);
+
   const token = config.accessToken;
   const projectId = config.vertexAIProjectID;
   const location = config.vertexAILocation;
@@ -225,6 +227,99 @@ export async function callCheckGrounding(config, answerCandidate, factsArray, id
 
   return { id: id, status_code: status, output: json_output };
 }
+
+export async function createSearchEvalSampleQuerySetId(config, querySetId, querySetDisplayName) {
+  const token = config.accessToken;
+  const projectId = config.vertexAIProjectID;
+
+  var payload = {
+    displayName: `${querySetDisplayName}`,
+  };
+
+  const url = `https://discoveryengine.googleapis.com/v1beta/projects/${projectId}/locations/global/sampleQuerySets?sampleQuerySetId=${querySetId}`;
+
+  const { status, json_output } = await callVertexAI(url, token, payload, id);
+
+  appendLog(`createSearchEvalQuerySet: Finished Successfully.`);
+
+  return { status_code: status, output: json_output };
+}
+
+export async function createSearchEvalImportSampleQueryDataset(config, querySetId, queryEntry) {
+  const token = config.accessToken;
+  const projectId = config.vertexAIProjectID;
+
+  var payload = {
+    inlineSource: {
+      sampleQueries: [
+        {
+          queryEntry,
+        },
+      ],
+    },
+  };
+
+  const url = `https://discoveryengine.googleapis.com/v1beta/projects/${projectId}/locations/global/sampleQuerySets/${querySetId}/sampleQueries:import`;
+
+  const { status, json_output } = await callVertexAI(url, token, payload);
+
+  appendLog(`createSearchEvalImportSampleQueryDataset: Finished Successfully.`);
+
+  return { status_code: status, output: json_output };
+}
+
+export async function createSearchEvalSubmitEvalJob(config, querySetId, searchAppID) {
+  const token = config.accessToken;
+  const projectId = config.vertexAIProjectID;
+
+  var payload = {
+    evaluationSpec: {
+      querySetSpec: {
+        sampleQuerySet: `projects/${projectId}/locations/global/sampleQuerySets/${querySetId}`,
+      },
+      searchRequest: {
+        servingConfig: `projects/${projectId}/locations/global/collections/default_collection/engines/${searchAppID}/servingConfigs/default_search`,
+      },
+    },
+  };
+
+  const url = `https://discoveryengine.googleapis.com/v1beta/projects/${projectId}/locations/global/evaluations`;
+
+  const { status, json_output } = await callVertexAI(url, token, payload);
+
+  appendLog(`createSearchEvalRunEval: Finished Successfully.`);
+
+  return { status_code: status, output: json_output };
+}
+
+export async function getSearchEvalResults(config, evaluationId, checkStatus) {
+  const token = config.accessToken;
+  const projectId = config.vertexAIProjectID;
+
+  var payload = {
+    evaluationSpec: {
+      querySetSpec: {
+        sampleQuerySet: `projects/${projectId}/locations/global/sampleQuerySets/${querySetId}`,
+      },
+      searchRequest: {
+        servingConfig: `projects/${projectId}/locations/global/collections/default_collection/engines/${searchAppID}/servingConfigs/default_search`,
+      },
+    },
+  };
+
+  var url = `https://discoveryengine.googleapis.com/v1beta/projects/${projectId}/locations/global/evaluations/${evaluationId}:listResults`;
+
+  if (checkStatus) {
+    url = `https://discoveryengine.googleapis.com/v1beta/projects/${projectId}/locations/global/evaluations/${evaluationId}`;
+  }
+
+  const { status, json_output } = await callVertexAI(url, token, payload);
+
+  appendLog(`getSearchEvalResults: Finished Successfully.`);
+
+  return { status_code: status, output: json_output };
+}
+
 export async function callVertexAI(url, token, data, id) {
   try {
     const response = await fetch(url, {

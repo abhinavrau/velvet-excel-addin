@@ -177,7 +177,8 @@ describe("When callVertexAISearch is called", () => {
     const query = "What is Google's revenue for the year ending December 31, 2021";
     const config = {
       accessToken: "YOUR_ACCESS_TOKEN",
-      preamble: "",
+      preamble:
+        "You are an expert financial analyst.  Only use the data returned from documents. All finance numbers must be reported in billions, millions or thousands. Be brief. Answer should be no more than 2 sentences please.",
       extractiveContentSpec: {
         maxExtractiveAnswerCount: "2",
         maxExtractiveSegmentCount: "0",
@@ -188,11 +189,11 @@ describe("When callVertexAISearch is called", () => {
       ignoreAdversarialQuery: true,
       ignoreNonSummarySeekingQuery: true,
       vertexAISearchProjectNumber: "YOUR_PROJECT_NUMBER",
-      vertexAISearchDataStoreName: "YOUR_DATASTORE_NAME",
+      vertexAISearchAppId: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
 
-    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
+    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
     await testRequestResponse(
       1,
       url,
@@ -217,10 +218,10 @@ describe("When callVertexAISearch is called", () => {
       ignoreAdversarialQuery: true,
       ignoreNonSummarySeekingQuery: true,
       vertexAISearchProjectNumber: "YOUR_PROJECT_NUMBER",
-      vertexAISearchDataStoreName: "YOUR_DATASTORE_NAME",
+      vertexAISearchAppId: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
-    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
+    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
     await testRequestResponse(
       1,
       url,
@@ -245,10 +246,10 @@ describe("When callVertexAISearch is called", () => {
       ignoreAdversarialQuery: true,
       ignoreNonSummarySeekingQuery: true,
       vertexAISearchProjectNumber: "YOUR_PROJECT_NUMBER",
-      vertexAISearchDataStoreName: "YOUR_DATASTORE_NAME",
+      vertexAISearchAppId: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
-    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
+    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
     await testRequestResponse(
       1,
       url,
@@ -330,10 +331,10 @@ describe("When callVertexAISearch is called", () => {
       ignoreAdversarialQuery: true,
       ignoreNonSummarySeekingQuery: true,
       vertexAISearchProjectNumber: "YOUR_PROJECT_NUMBER",
-      vertexAISearchDataStoreName: "YOUR_DATASTORE_NAME",
+      vertexAISearchAppId: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
-    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
+    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
     const { requestJson, expectedResponse } = mockDiscoveryEngineRequestResponse(
       1,
       url,
@@ -368,10 +369,10 @@ describe("When callVertexAISearch is called", () => {
       ignoreAdversarialQuery: true,
       ignoreNonSummarySeekingQuery: true,
       vertexAISearchProjectNumber: "YOUR_PROJECT_NUMBER",
-      vertexAISearchDataStoreName: "YOUR_DATASTORE_NAME",
+      vertexAISearchAppId: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
-    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
+    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
     const { requestJson, expectedResponse } = mockDiscoveryEngineRequestResponse(
       1,
       url,
@@ -402,11 +403,11 @@ describe("When callVertexAISearch is called", () => {
       ignoreAdversarialQuery: false,
       ignoreNonSummarySeekingQuery: false,
       vertexAISearchProjectNumber: "YOUR_PROJECT_NUMBER",
-      vertexAISearchDataStoreName: "YOUR_DATASTORE_NAME",
+      vertexAISearchAppId: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
 
-    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
+    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
 
     var response = fetchMock.postOnce(url, {
       throws: new Error("Mocked error"),
@@ -437,10 +438,10 @@ describe("When callVertexAISearch is called", () => {
       ignoreAdversarialQuery: true,
       ignoreNonSummarySeekingQuery: true,
       vertexAISearchProjectNumber: "YOUR_PROJECT_NUMBER",
-      vertexAISearchDataStoreName: "YOUR_DATASTORE_NAME",
+      vertexAISearchAppId: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
-    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
+    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
     const { requestJson, expectedResponse } = mockDiscoveryEngineRequestResponse(
       1,
       url,
@@ -472,10 +473,10 @@ describe("When callVertexAISearch is called", () => {
       ignoreAdversarialQuery: true,
       ignoreNonSummarySeekingQuery: true,
       vertexAISearchProjectNumber: "YOUR_PROJECT_NUMBER",
-      vertexAISearchDataStoreName: "YOUR_DATASTORE_NAME",
+      vertexAISearchAppId: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
-    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/dataStores/${config.vertexAISearchDataStoreName}/servingConfigs/default_search:search`;
+    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
     const { requestJson, expectedResponse } = mockDiscoveryEngineRequestResponse(
       1,
       url,

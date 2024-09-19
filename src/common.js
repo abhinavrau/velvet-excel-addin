@@ -15,7 +15,7 @@ export const vertex_ai_search_configValues = [
 
   ["GCP PARAMETERS", ""],
   ["Vertex AI Search Project Number", "384473000457"],
-  ["Vertex AI Search DataStore Name", "alphabet-pdfs_1695783402380"],
+  ["Vertex AI Search App ID", "l300-arau_1695783344117"],
   ["Vertex AI Project ID", "argolis-arau"],
   ["Vertex AI Location", "us-central1"],
   ["", ""],
@@ -29,7 +29,10 @@ export const vertex_ai_search_configValues = [
   ["", ""],
   ["SUMMARY GENERATION SETTINGS", ""],
   ["summaryResultCount (1-5)", "2"], //summaryResultCount
-  ["Preamble (Customized Summaries)", ""],
+  [
+    "Preamble (Customized Summaries)",
+    `You are an expert financial analyst.  Only use the data returned from documents. All finance numbers must be reported in billions, millions or thousands. Be brief. Answer should be no more than 2 sentences please.`,
+  ],
   ["Summarization Model", "gemini-1.0-pro-001/answer_gen/v1"],
   [
     "SummaryMatchingAdditionalPrompt",

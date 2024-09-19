@@ -30,6 +30,9 @@ export async function createSummarizationEvalDataTable() {
     sheet.getRange("E:E").format.columnWidth = 455;
     sheet.getRange("F:F").format.columnWidth = 455;
 
+    sheet.getRange("G:G").format.columnWidth = 455;
+    sheet.getRange("G:G").format.columnWidth = 455;
+
     sheet.getRange("E:E").format.wrapText = true;
     sheet.getRange("F:F").format.wrapText = true;
 
