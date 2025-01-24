@@ -55,12 +55,18 @@ describe("When Create Search Tables is clicked", () => {
               getUsedRange: function () {
                 return this.format;
               },
+              clear: function () {
+                return true;
+              },
             },
             getRange: function (str) {
               return this.range;
             },
             getUsedRange: function () {
               return this.range;
+            },
+            clear: function () {
+              return true;
             },
             tables: {
               // Test Cases Table

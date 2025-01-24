@@ -58,6 +58,9 @@ describe("When Create Q&A Tables is clicked", () => {
               getUsedRange: function () {
                 return this.format;
               },
+              clear: function () {
+                return true;
+              },
             },
             getRange: function (str) {
               return this.range;

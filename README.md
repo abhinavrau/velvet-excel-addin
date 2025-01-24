@@ -1,26 +1,49 @@
 ![](images/velvet_excel.png)
 
-# Velvet Excel
+# Velvet
 
-Run and measure [Vertex AI Search Agent](https://cloud.google.com/enterprise-search) accuracy using Excel.
+🚀 Run your Summarization and RAG evaluations in a few minutes using Excel.
 
 ## Note
 
 This is not an official Google product
 
-## How it works
+## Features
+
+- **Gemini Summarization Evaluation:** Generate metrics by providing input text and comparing generated summaries against expected outputs. Customize prompts and quality settings.
+- **RAG Search Evaluation:** Evaluate the accuracy of your [Vertex AI Search](https://cloud.google.com/enterprise-search) using your own test cases.
+
+  - **Metrics Calculated:** Summary Match (using LLM as judge), First Link Match (Precision@1), and Link in Top 2 (Precision@2).
+  - **Grounding Score** calculated for each result using [Check Grounding API](https://cloud.google.com/generative-ai-app-builder/docs/check-grounding)
+  - **Synthetic Q&A Generation:** Don't have test cases? No problem! Generate synthetic question-answer pairs based on your documents. Specify a GCS path, customize the prompt, and control the quality of generated Q&A.
+
+- Ability to run hundreds of test cases in seconds.
+- Configurable Vertex AI Search Agent parameters and Gemini settings
+- Detailed status updates and logs for monitoring and troubleshooting.
+- Works with Excel Web (Microsoft 365) and Excel Desktop.
+
+## Quick Start
 
 ### 1. Install the Excel Addin
 
 Follow the [Instructions](#installation)
 
-### 2. Creating the Placeholder tables and Paste in GCP access token
+### 2. Authenticate and Create Placeholder Tables
 
-![](images/CreateTemplate.gif)
+- Generate Access Token
 
-### 3. Put in the Data in Test Table and Run the Tests
+```
+gcloud auth print-access-token
+```
 
-![](images/RunTests.gif)
+- Paste the GCP access token in the designated field within the add-in.
+- Use the add-in's functionality to create the necessary placeholder tables in your Excel sheet. These tables will structure your test data and results.
+
+### 3. Input Data and Run Tests
+
+- Populate the test case tables with your data.
+- Configure the Vertex AI Search Agent settings (search type, summary settings, etc.) within the add-in.
+- Initiate test runs using the provided buttons.
 
 ## Why?
 
@@ -30,36 +53,13 @@ Follow the [Instructions](#installation)
 - 🚀 Accelerates search application validation from weeks/months to hours.
 - 🤖 Coz testing manually is hard, boring and no fun!
 
-## Features
-
-- Excel Office Add-on. Works with Excel Web (Microsoft 365) and Excel Desktop.
-- Creates a test case table that measures accuracy for the following metrics:
-  - **Summary Match (True/False)**: Semantically match the actual summary returned with the expected summary. This uses the PaLM2 model to measure semantic similarity using [the following prompt](https://github.com/abhinavrau/velvet-excel-addin/blob/f532763488eb03c93b24e372ab650997e1acbee0/src/vertex_ai.js#L66).
-  - **First Link Match (True/False)**: The actual first document link returned matches the expected document link.
-  - **Link in Top 2**: Match if the top 2 actual document links returned are in the top 2 expected links
-- Ability to run hundreds of test cases in batch mode.
-
-- Ability to change the following Vertex AI Search Agent settings from within Excel:
-  - Search Types (any one of):
-    - [Extractive Answers](https://cloud.google.com/generative-ai-app-builder/docs/snippets#extractive-answers): maxExtractiveAnswerCount (1-5)
-    - [Extractive Segments](https://cloud.google.com/generative-ai-app-builder/docs/snippets#extractive-segments): maxExtractiveSegmentCount (1-5)
-    - [Snippets](https://cloud.google.com/generative-ai-app-builder/docs/snippets#snippets): maxSnippetCount (1-5)
-  - Search Summary Settings:
-    - [Summary Result Count](https://cloud.google.com/generative-ai-app-builder/docs/get-search-summaries#get-search-summary): (1-5)
-    - [Use Semantic Chunks](https://cloud.google.com/generative-ai-app-builder/docs/get-search-summaries#semantic-chunks): (True/False)
-    - [Summary Model](https://cloud.google.com/generative-ai-app-builder/docs/answer-generation-models) gemini-1.0-pro-002/answer_gen/v1 (default)
-    - [Ignore Adversarial Query](https://cloud.google.com/generative-ai-app-builder/docs/get-search-summaries#ignore-adversarial-queries): (True/False)
-    - [Ignore Non Summary Seeking Query](https://cloud.google.com/generative-ai-app-builder/docs/get-search-summaries#ignore-non-summary-seeking-queries): (True/False)
-  - Other
-    - Summary Match Additional Prompt: Additional prompt to pass to the PaLM2 model for semantic similarity matching. Useful when the need to match exact monetary quantities (millions, billions, etc).
-
 ## Installation <a id="installation"></a>
 
 Only [sideloading](https://learn.microsoft.com/en-us/office/dev/add-ins/testing/test-debug-office-add-ins#sideload-an-office-add-in-for-testing) is supported at this time.
 
 ### Excel Web (Microsoft 365)
 
-- Download the [manfest.xml](manifest.xml) file to your local machine.
+- Download the [manifest.xml](manifest.xml) file to your local machine.
 - Open Excel in your browser.
 - Click on the "Add-ins" button and select "More Add-Ins".
 
@@ -81,7 +81,7 @@ To remove it just clear your browser cache.
 
 ### Excel Desktop
 
-- Download the [manfest.xml](manifest.xml) file to your local machine.
+- Download the [manifest.xml](manifest.xml) file to your local machine.
 - Place the manifest.xml file in the following location:
   - **Windows**: Follow instructions [here](https://learn.microsoft.com/en-us/office/dev/add-ins/testing/create-a-network-shared-folder-catalog-for-task-pane-and-content-add-ins).
   - **Mac**:
@@ -91,3 +91,8 @@ To remove it just clear your browser cache.
     - Save the manifest.xml file in the wef folder.
 - Open Excel.
 - Confirm that the Velvet Add-in is listed in the Home Ribbon.
+
+
+
+
+

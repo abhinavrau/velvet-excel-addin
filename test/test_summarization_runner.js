@@ -91,10 +91,13 @@ describe("When Summarization Eval is clicked ", () => {
                 },
               },
               getUsedRange: function () {
-                return this.format;
+                return this;
               },
               getCell: function (rowNum, colNum) {
-                return this.format;
+                return this.values[rowNum][colNum];
+              },
+              clear: function () {
+                return true;
               },
             },
             getRange: function (str) {
@@ -103,9 +106,42 @@ describe("When Summarization Eval is clicked ", () => {
             getUsedRange: function () {
               return this.range;
             },
+            clear: function () {
+              return true;
+            },
             tables: {
+              range: {
+                values: [[]],
+                format: {
+                  font: {
+                    bold: false,
+                  },
+                  fill: {
+                    color: "blue",
+                  },
+                  size: 16,
+                  autofitColumns: function () {
+                    return true;
+                  },
+                  autofitRows: function () {
+                    return true;
+                  },
+                },
+                getUsedRange: function () {
+                  return this;
+                },
+                getCell: function (rowNum, colNum) {
+                  return this.values[rowNum][colNum];
+                },
+                clear: function () {
+                  return true;
+                },
+              },
               add: function (str, flag) {
                 return this;
+              },
+              getRange: function (str) {
+                return this.range;
               },
               getHeaderRowRange: function () {
                 return this.header_row_range;
