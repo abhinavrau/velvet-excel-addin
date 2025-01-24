@@ -106,16 +106,60 @@ function setupButtonEvents(
 }
 
 async function createSearchTables() {
-  await createVAIConfigTable();
-  await createVAIDataTable();
+  await promptSheetName(async (arg) => {
+    await createNewSheet(arg);
+    await createVAIConfigTable();
+    await createVAIDataTable();
+  });
 }
 
 async function createSyntheticQATables() {
-  await createSyntheticQAConfigTable();
-  await createSyntheticQADataTable();
+  await promptSheetName(async (arg) => {
+    await createNewSheet(arg);
+    await createSyntheticQAConfigTable();
+    await createSyntheticQADataTable();
+  });
 }
 
 async function createSummarizationTables() {
-  await createSummarizationEvalConfigTable();
-  await createSummarizationEvalDataTable();
+  await promptSheetName(async (arg) => {
+    await createNewSheet(arg);
+    await createSummarizationEvalConfigTable();
+    await createSummarizationEvalDataTable();
+  });
+}
+
+let dialog = null;
+
+async function promptSheetName(callback) {
+  Office.context.ui.displayDialogAsync(
+    "https://localhost:5500/popup.html",
+    { height: 45, width: 55 },
+
+    function (result) {
+      dialog = result.value;
+      dialog.addEventHandler(
+        Microsoft.Office.WebExtension.EventType.DialogMessageReceived,
+        callback,
+      );
+    },
+  );
+}
+
+async function createNewSheet(arg) {
+  console.log("SheetName:" + arg.message);
+  dialog.close();
+
+  // Create blank worksheet with sheetName
+  Excel.run(async (context) => {
+    const sheets = context.workbook.worksheets;
+    const sheet = sheets.add(arg.message); // Add a new worksheet
+    sheet.activate(); // Activate the new sheet
+    await context.sync(); // Synchronize changes
+  }).catch(function (error) {
+    console.log("Error: " + error);
+    if (error instanceof OfficeExtension.Error) {
+      console.log("Debug info: " + JSON.stringify(error.debugInfo));
+    }
+  });
 }

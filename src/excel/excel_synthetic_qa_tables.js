@@ -41,7 +41,7 @@ export async function createSyntheticQADataTable() {
   const worksheetName = await createExcelTable(
     "Synthetic Questions and Answers",
     "E10",
-    "TestCasesTable",
+    "SyntheticQATable",
     synth_q_and_a_TableHeader,
     "D11:H11",
     "D11:H110",

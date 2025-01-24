@@ -151,7 +151,7 @@ describe("When Create Q&A Tables is clicked", () => {
     const worksheetName = contextMock.context.workbook.worksheets.name;
 
     expect(contextMock.context.workbook.worksheets.tables.name).toEqual(
-      `${worksheetName}.TestCasesTable`,
+      `${worksheetName}.SyntheticQATable`,
     );
 
     expect(contextMock.context.workbook.worksheets.tables.getHeaderRowRange().values).toEqual([

@@ -42,7 +42,7 @@ export async function createSummarizationEvalDataTable() {
   const worksheetName = await createExcelTable(
     "Summarization Test Cases",
     "E10",
-    "TestCasesTable",
+    "SummarizationTestCasesTable",
     summarization_TableHeader,
     "E11:H11",
     "E11:H110",

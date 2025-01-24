@@ -3,6 +3,13 @@
  * See LICENSE in the project root for license information.
  */
 
+ #sheetName:valid {
+    color: green;
+}
+#sheetName:invalid {
+    color: red;
+}
+
 .container {
   /* Other container styles */
   font-family: sans-serif;
