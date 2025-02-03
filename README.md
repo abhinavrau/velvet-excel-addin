@@ -1,4 +1,4 @@
-![](images/velvet_excel.png)
+![](images/velvet_logo.jpg)
 
 # Velvet
 
@@ -91,8 +91,3 @@ To remove it just clear your browser cache.
     - Save the manifest.xml file in the wef folder.
 - Open Excel.
 - Confirm that the Velvet Add-in is listed in the Home Ribbon.
-
-
-
-
-

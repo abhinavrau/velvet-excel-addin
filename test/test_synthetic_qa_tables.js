@@ -30,11 +30,17 @@ describe("When Create Q&A Tables is clicked", () => {
     });
 
     mockData = {
+      GroupOption: {
+        byRows: 1,
+      },
       context: {
         workbook: {
           worksheets: {
             name: "WorksheetName",
             getActiveWorksheet: function () {
+              return this;
+            },
+            getItem: function () {
               return this;
             },
             range: {
@@ -61,6 +67,9 @@ describe("When Create Q&A Tables is clicked", () => {
               clear: function () {
                 return true;
               },
+              group: function (GroupOption) {
+                return true;
+              },
             },
             getRange: function (str) {
               return this.range;
@@ -68,17 +77,20 @@ describe("When Create Q&A Tables is clicked", () => {
             getUsedRange: function () {
               return this.range;
             },
+            clear: function () {
+              return true;
+            },
             tables: {
               // Test Cases Table
               name: "TestCasesTable",
               add: function (str, flag) {
                 return this;
               },
-              getHeaderRowRange: function () {
-                return this.header_row_range;
-              },
               getRange: function () {
                 return this.range;
+              },
+              getHeaderRowRange: function () {
+                return this.header_row_range;
               },
               resize: function (str) {},
               getItem: function (str) {
@@ -124,11 +136,13 @@ describe("When Create Q&A Tables is clicked", () => {
     const contextMock = new OfficeMockObject(mockData);
 
     global.Excel = contextMock;
-    await createSyntheticQAConfigTable();
+     
+    const worksheetName = "WorksheetName";
+    await createSyntheticQAConfigTable(worksheetName);
 
-    const worksheetName = contextMock.context.workbook.worksheets.name;
+    
     expect(contextMock.context.workbook.worksheets.range.values).toEqual([
-      ["Generate Synthetic Questions and Answers"],
+      [`${worksheetName} - Synthetic Questions & Answers`],
     ]);
 
     expect(contextMock.context.workbook.worksheets.tables.name).toEqual(

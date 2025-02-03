@@ -3,24 +3,23 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
   xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="TaskPaneApp">
-  <Id>775091b3-e24a-4cf4-a65b-26976fda4f3c</Id>
+  <Id>775091b3-e24a-4cf4-a65b-26976fda4f5d</Id>
   <Version>1.0.0.0</Version>
-  <ProviderName>Velvet-Local</ProviderName>
+  <ProviderName>Velvet</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="Velvet-Local"/>
-  <Description DefaultValue="Velvet-Local Excel Add-in."/>
-  <IconUrl DefaultValue="https://localhost:5500/assets/icon-32.png"/>
-  <HighResolutionIconUrl DefaultValue="https://localhost:5500/assets/icon-64.png"/>
-  <SupportUrl DefaultValue="https://learn.microsoft.com/office/dev/add-ins/overview/office-add-in-code-samples"/>
-  <AppDomains>`
-    <AppDomain>https://localhost:5500</AppDomain>
-    <AppDomain>accounts.google.com</AppDomain>
+  <DisplayName DefaultValue="Velvet Summary Eval"/>
+  <Description DefaultValue="Google Cloud Vertex AI Summary Eval Tool"/>
+  <IconUrl DefaultValue="https://abhinavrau.github.io/velvet-excel-addin/assets/summary-icon-32.png"/>
+  <HighResolutionIconUrl DefaultValue="https://abhinavrau.github.io/velvet-excel-addin/assets/summary-icon-64.png"/>
+  <SupportUrl DefaultValue="https://github.com/abhinavrau/velvet-excel-addin"/>
+  <AppDomains>
+    <AppDomain>https://abhinavrau.github.io</AppDomain>
   </AppDomains>
   <Hosts>
     <Host Name="Workbook"/>
   </Hosts>
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://localhost:5500/taskpane.html"/>
+    <SourceLocation DefaultValue="https://abhinavrau.github.io/velvet-excel-addin/taskpane-summarization.html"/>
   </DefaultSettings>
   <Permissions>ReadWriteDocument</Permissions>
   <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
@@ -66,23 +65,23 @@
     </Hosts>
     <Resources>
       <bt:Images>
-        <bt:Image id="Icon.16x16" DefaultValue="https://localhost:5500/assets/icon-16.png"/>
-        <bt:Image id="Icon.32x32" DefaultValue="https://localhost:5500/assets/icon-32.png"/>
-        <bt:Image id="Icon.80x80" DefaultValue="https://localhost:5500/assets/icon-80.png"/>
+        <bt:Image id="Icon.16x16" DefaultValue="https://abhinavrau.github.io/velvet-excel-addin/assets/summary-icon-16.png"/>
+        <bt:Image id="Icon.32x32" DefaultValue="https://abhinavrau.github.io/velvet-excel-addin/assets/summary-icon-32.png"/>
+        <bt:Image id="Icon.80x80" DefaultValue="https://abhinavrau.github.io/velvet-excel-addin/assets/summary-icon-80.png"/>
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="http://go.microsoft.com/fwlink/?LinkId=276812"/>
-        <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:5500/taskpane.html"/>
+        <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://github.com/abhinavrau/velvet-excel-addin"/>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://abhinavrau.github.io/velvet-excel-addin/taskpane-summarization.html"/>
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="GetStarted.Title" DefaultValue="Get started with the Velvet Local add-in!"/>
-        <bt:String id="CommandsGroup.Label" DefaultValue="Velvet-Local Add-in"/>
-        <bt:String id="TaskpaneButton.Label" DefaultValue="Velvet-Local"/>
-        <bt:String id="TaskpaneButton.SupertipTitle" DefaultValue="Velvet-Local"/>
+        <bt:String id="GetStarted.Title" DefaultValue="Get started with the Velvet add-in!"/>
+        <bt:String id="CommandsGroup.Label" DefaultValue="Velvet Summary Eval Add-in"/>
+        <bt:String id="TaskpaneButton.Label" DefaultValue="Velvet  Summary Eval"/>
+        <bt:String id="TaskpaneButton.SupertipTitle" DefaultValue="Velvet Summary Eval"/>
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="GetStarted.Description" DefaultValue="Velvet-Local add-in loaded succesfully. Go to the HOME tab and click the 'Velvet-Local' button to get started."/>
-        <bt:String id="TaskpaneButton.SupertipText" DefaultValue="Open the Velvet-Local world add-in"/>
+        <bt:String id="GetStarted.Description" DefaultValue="Velvet Summary Eval  add-in loaded succesfully. Go to the HOME tab and click the 'Velvet' button to get started."/>
+        <bt:String id="TaskpaneButton.SupertipText" DefaultValue="Open the Hello Velvet Summary Eval add-in"/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>

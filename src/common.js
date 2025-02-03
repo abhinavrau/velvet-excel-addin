@@ -18,15 +18,15 @@ export const vertex_ai_search_configValues = [
   ["Vertex AI Search App ID", "l300-arau_1695783344117"],
   ["Vertex AI Project ID", "argolis-arau"],
   ["Vertex AI Location", "us-central1"],
-  ["", ""],
-  ["EMBEDDING SEARCH SETTINGS", ""],
+
+  ["SEARCH SETTINGS", ""],
   ["maxExtractiveAnswerCount (1-5)", "2"], //maxExtractiveAnswerCount
   ["maxExtractiveSegmentCount (1-5)", "0"], //maxExtractiveSegmentCount
   ["maxSnippetCount (1-5)", "0"], //maxSnippetCount
   ["useSemanticChunks (True or False)", "False"], //useSemanticChunks
   ["ignoreAdversarialQuery (True or False)", "True"], // ignoreAdversarialQuery
   ["ignoreNonSummarySeekingQuery (True or False)", "True"], // ignoreNonSummarySeekingQuery
-  ["", ""],
+
   ["SUMMARY GENERATION SETTINGS", ""],
   ["summaryResultCount (1-5)", "2"], //summaryResultCount
   [
@@ -38,11 +38,9 @@ export const vertex_ai_search_configValues = [
     "SummaryMatchingAdditionalPrompt",
     "If there are monetary numbers in the answers, they should be matched exactly.",
   ],
-  ["", ""],
-  ["HALLUCINATION CHECK", ""],
   ["Generate Grounding Score", "True"], //generate grounding score
-  ["", ""],
-  ["TEST RUNTIME SETTINGS", ""],
+
+  ["BATCHING SETTINGS", ""],
   ["Batch Size (1-10)", "5"], // BatchSize
   ["Time between Batches in Seconds (1-10)", "1"],
 ];
@@ -82,8 +80,10 @@ export var summaryMatching_examples = `examples - answer_1: I was created by X. 
 // Synthetic Q&A  Table Format
 export const synth_q_and_a_configValues = [
   ["Config", "Value"],
+  ["GCP PARAMETERS", ""],
   ["Vertex AI Project ID", "argolis-arau"],
   ["Vertex AI Location", "us-central1"],
+  ["GENERATIVE AI MODEL SETTINGS", ""],
   ["Gemini Model ID", "gemini-1.5-flash-001"],
   [
     "System Instructions",
@@ -93,6 +93,7 @@ export const synth_q_and_a_configValues = [
     "Prompt",
     `You are an expert in reading call center policy and procedure documents. Generate question and answer a customer would ask from a Bank using the attached document.`,
   ],
+  ["Q&A EVAL SETTINGS]", ""],
   ["Generate Q & A Quality", "TRUE"],
   [
     "Q & A Quality Prompt",
@@ -128,6 +129,7 @@ STEP 2: Score based on the rubric.
 Return result in JSON format. example output: { 'rating': 2 , evaluation: 'reason'}`,
   ],
   ["Q & A Quality Model ID", "gemini-1.5-pro-001"],
+  ["BATCHING SETTINGS", ""],
   ["Max Concurrent Requests (1-10)", "5"],
   ["Request Interval in Seconds(1-10)", "1"],
 ];

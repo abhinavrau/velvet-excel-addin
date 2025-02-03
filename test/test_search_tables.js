@@ -27,11 +27,17 @@ describe("When Create Search Tables is clicked", () => {
     });
 
     mockData = {
+      GroupOption: {
+        byRows: 1,
+      },
       context: {
         workbook: {
           worksheets: {
             name: "WorksheetName",
             getActiveWorksheet: function () {
+              return this;
+            },
+            getItem: function (str) {
               return this;
             },
             range: {
@@ -56,6 +62,9 @@ describe("When Create Search Tables is clicked", () => {
                 return this.format;
               },
               clear: function () {
+                return true;
+              },
+              group: function (GroupOption) {
                 return true;
               },
             },
@@ -124,11 +133,12 @@ describe("When Create Search Tables is clicked", () => {
     const contextMock = new OfficeMockObject(mockData);
 
     global.Excel = contextMock;
-    await createVAIConfigTable();
 
-    const worksheetName = contextMock.context.workbook.worksheets.name;
+    const worksheetName = "WorksheetName";
+    await createVAIConfigTable(worksheetName);
+
     expect(contextMock.context.workbook.worksheets.range.values).toEqual([
-      ["Agent Builder Search Evaluation"],
+      [`${worksheetName} - Vertex AI Search Evaluation`],
     ]);
 
     expect(contextMock.context.workbook.worksheets.tables.name).toEqual(

@@ -140,11 +140,17 @@ describe("When Search Run Tests is clicked ", () => {
       ClearApplyTo: {
         formats: {},
       },
+      GroupOption: {
+        byRows: 1,
+      },
       context: {
         workbook: {
           worksheets: {
             name: "WorksheetName",
             getActiveWorksheet: function () {
+              return this;
+            },
+            getItem: function () {
               return this;
             },
             range: {
@@ -171,6 +177,9 @@ describe("When Search Run Tests is clicked ", () => {
                 return this.values[rowNum][colNum];
               },
               clear: function () {
+                return true;
+              },
+              group: function (GroupOption) {
                 return true;
               },
             },
@@ -343,12 +352,12 @@ describe("When Search Run Tests is clicked ", () => {
     const contextMock = new OfficeMockObject(mockTestData);
 
     global.Excel = contextMock;
+    const worksheetName = "WorksheetName";
+    // Simulate creating the Config table
+    await createVAIDataTable(worksheetName);
 
     // Simulate creating the Config table
-    await createVAIDataTable();
-
-    // Simulate creating the Config table
-    await createVAIConfigTable();
+    await createVAIConfigTable(worksheetName);
 
     var excelSearchRunner = new ExcelSearchRunner();
 

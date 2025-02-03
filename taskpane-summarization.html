@@ -31,68 +31,12 @@
         <label for="access-token">Access Token:</label>
         <input type="text" id="access-token" placeholder="Paste Access Token" size="100" />
       </p>
+
     </section>
     <ul class="tabs">
-      <li class="tab  active" data-target="summarization-tab">Summarization</li>
-      <li class="tab" data-target="search-tab">Search Eval</li>
-      <li class="tab" data-target="qa-tab">Synthetic Q&A</li>
+
+      <li class="tab active" data-target="summarization-tab">Summarization</li>
     </ul>
-
-    <div class="tab-content" id="search-tab">
-      <section class="step">
-
-        <h2 class="step-title">Vertex AI Search Eval</h2>
-        <h3>How to use </h3>
-        <p>
-          1. Click the button below to create a new sheet with required tables.</p>
-        </p>
-        <p><button id="createSearchTables">Create Search Eval Sheet ... </button></p>
-        <p>
-          2. Use the "Synthetic Q&A" Tab to generate Questions and Answers
-          <b>OR</b>
-          If you have your own test cases copy into the test case table.
-        </p>
-        <p>
-          3. Fill in Config Parameters for your GCP environment in the Config Table.
-          Adjust the <b>Premable</b> and other settings for your use case.
-        </p>
-        <p><b>
-            Note:</b> Tests will stop when it sees an empty ID value.
-        </p>
-        <button id="executeSearchTests">Run Tests</button>
-        <button id="cancelSearchTests" style="visibility: hidden; background: red">
-          Cancel Tests
-        </button>
-      </section>
-    </div>
-
-    <div class="tab-content" id="qa-tab">
-      <section class="step">
-        <h2 class="step-title">Synthetic Q&A Generation</h2>
-        <h3>How to use </h3>
-        <p>
-          1. Click the button below to create a new sheet with required tables.</p>
-        </p>
-        <p><button id="createGenQATables">Create Synth Q&A Sheet ...</button></p>
-        <p>
-          2. Fill in "FileUri" column with GCS doc link. <a
-            href="https://firebase.google.com/docs/vertex-ai/input-file-requirements"> Valid file types.</a>
-        </p>
-        <p>
-          3. Fill in Config Parameters for your GCP environment in the Config Table.
-          Adjust the <b>Prompt</b> and <b>Q&A Quality Prompt</b>
-          for your use case.
-
-        </p>
-        <p><b>
-            Note:</b> Generation will stop when it sees an empty ID value.
-        </p>
-        <button id="generateQAData">Generate Q&A</button>
-        <button id="cancelGenerateQAData" style="visibility: hidden; background: red">
-          Cancel Q&A Generation
-        </button>
-      </section>
-    </div>
 
     <div class="tab-content active" id="summarization-tab">
       <section class="step">

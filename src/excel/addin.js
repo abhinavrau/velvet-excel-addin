@@ -107,25 +107,28 @@ function setupButtonEvents(
 
 async function createSearchTables() {
   await promptSheetName(async (arg) => {
-    await createNewSheet(arg);
-    await createVAIConfigTable();
-    await createVAIDataTable();
+    const sheetName = arg.message;
+    await createNewSheet(sheetName);
+    await createVAIConfigTable(arg.message);
+    await createVAIDataTable(arg.message);
   });
 }
 
 async function createSyntheticQATables() {
   await promptSheetName(async (arg) => {
-    await createNewSheet(arg);
-    await createSyntheticQAConfigTable();
-    await createSyntheticQADataTable();
+    const sheetName = arg.message;
+    await createNewSheet(sheetName);
+    await createSyntheticQAConfigTable(sheetName);
+    await createSyntheticQADataTable(sheetName);
   });
 }
 
 async function createSummarizationTables() {
   await promptSheetName(async (arg) => {
-    await createNewSheet(arg);
-    await createSummarizationEvalConfigTable();
-    await createSummarizationEvalDataTable();
+    const sheetName = +arg.message;
+    await createNewSheet(sheetName);
+    await createSummarizationEvalConfigTable(sheetName);
+    await createSummarizationEvalDataTable(sheetName);
   });
 }
 
@@ -146,14 +149,14 @@ async function promptSheetName(callback) {
   );
 }
 
-async function createNewSheet(arg) {
-  console.log("SheetName:" + arg.message);
+async function createNewSheet(sheetName) {
+  console.log("SheetName:" + sheetName);
   dialog.close();
 
   // Create blank worksheet with sheetName
   Excel.run(async (context) => {
     const sheets = context.workbook.worksheets;
-    const sheet = sheets.add(arg.message); // Add a new worksheet
+    const sheet = sheets.add(sheetName); // Add a new worksheet
     sheet.activate(); // Activate the new sheet
     await context.sync(); // Synchronize changes
   }).catch(function (error) {

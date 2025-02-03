@@ -13,6 +13,7 @@
   "author": "arau@google.com",
   "license": "Apache-2.0",
   "dependencies": {
+    "@microsoft/office-js-helpers": "^1.0.2",
     "bottleneck": "^2.19.5",
     "dotenv": "^16.3.1",
     "jquery": "^3.7.1",

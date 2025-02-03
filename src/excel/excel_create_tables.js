@@ -35,7 +35,6 @@ export async function createExcelTable(
       excelTable.showFilterButton = false;
 
       excelTable.getHeaderRowRange().values = [valuesArray[0]];
-     
 
       if (tableType === "ConfigTable") {
         excelTable.rows.add(0, valuesArray.slice(1));
@@ -88,10 +87,12 @@ export async function createFormula(
   });
 }
 
-export async function makeRowBold(range) {
+export async function makeRowBold(worksheetName, range) {
   await Excel.run(async (context) => {
     try {
       const currentWorksheet = context.workbook.worksheets.getActiveWorksheet();
+      currentWorksheet.load("name");
+      await context.sync();
 
       const rowRange = currentWorksheet.getRange(range);
       // Apply bold formatting
@@ -102,6 +103,21 @@ export async function makeRowBold(range) {
     } catch (error) {
       showStatus(`Exception makeRowBold ${error.message}`, true);
       appendError(`Error makeRowBold :`, error);
+    }
+  });
+}
+
+export async function groupRows(worksheetName, range) {
+  await Excel.run(async (context) => {
+    try {
+      const worksheet = context.workbook.worksheets.getActiveWorksheet();
+      worksheet.getRange(range).group(Excel.GroupOption.byRows);
+      // collapse the group
+
+      await context.sync();
+    } catch (error) {
+      showStatus(`Exception groupRows ${error.message}`, true);
+      appendError(`Error groupRows :`, error);
     }
   });
 }

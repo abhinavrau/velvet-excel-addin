@@ -53,7 +53,7 @@ export async function createSummarizationEvalDataTable() {
 
   const summaryMatchCol = "summarization_quality";
 
-  const summaryFormula = `=IFERROR(AVERAGE(IFERROR(--LEFT(${worksheetName}.TestCasesTable[${summaryMatchCol}],1),FALSE)),0)`;
+  const summaryFormula = `=IFERROR(AVERAGE(IFERROR(--LEFT(${worksheetName}.SummarizationTestCasesTable[${summaryMatchCol}],1),FALSE)),0)`;
   await createFormula(
     worksheetName,
     "E9",

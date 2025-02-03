@@ -66,11 +66,17 @@ describe("When Summarization Eval is clicked ", () => {
       ClearApplyTo: {
         formats: {},
       },
+      GroupOption: {
+        byRows: 1,
+      },
       context: {
         workbook: {
           worksheets: {
             name: "WorksheetName",
             getActiveWorksheet: function () {
+              return this;
+            },
+            getItem: function (str) {
               return this;
             },
             range: {
@@ -97,6 +103,9 @@ describe("When Summarization Eval is clicked ", () => {
                 return this.values[rowNum][colNum];
               },
               clear: function () {
+                return true;
+              },
+              group: function (GroupOption) {
                 return true;
               },
             },
@@ -149,7 +158,7 @@ describe("When Summarization Eval is clicked ", () => {
               resize: function (str) {},
               getItem: function (str) {
                 // check is str ends with string "TestCasesTable"
-                if (str.endsWith("TestCasesTable")) {
+                if (str.endsWith("SummarizationTestCasesTable")) {
                   return this.testCaseTable;
                 } else if (str.endsWith("ConfigTable")) {
                   return this.configTable;
@@ -266,12 +275,12 @@ describe("When Summarization Eval is clicked ", () => {
     const contextMock = new OfficeMockObject(mockTestData);
 
     global.Excel = contextMock;
+    const worksheetName = "WorksheetName";
+    // Simulate creating the Config table
+    await createSummarizationEvalConfigTable(worksheetName);
 
     // Simulate creating the Config table
-    await createSummarizationEvalConfigTable();
-
-    // Simulate creating the Config table
-    await createSummarizationEvalDataTable();
+    await createSummarizationEvalDataTable(worksheetName);
 
     var summarizationRunner = new SummarizationRunner();
 

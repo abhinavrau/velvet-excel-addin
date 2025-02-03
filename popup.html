@@ -2,29 +2,107 @@
 <html>
 
 <head lang="en">
-  <title>Enter SheetName</title>
+  <title>Enter SheetName and Vertex AI Details</title>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=0.5">
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 20px;
+    }
 
-  <!-- For more information on Office UI Fabric, visit https://developer.microsoft.com/fabric. -->
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 16px;
+
+    }
+
+    input[type="text"] {
+      width: 250px;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+      font-size: 16px;
+
+    }
+  </style>
   <link rel="stylesheet" href="taskpane.css" />
   <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
-  <!-- <script type="text/javascript" src="popup.js"></script> -->
   <script>
-
     (async () => {
       await Office.onReady();
 
       document.getElementById("ok-button").onclick = sendStringToParentPage;
 
+      const gcpRegions = [
+        "us-central1", "us-east1", "us-east4", "us-west1", "us-west2", "us-west3", "us-west4",
+        "northamerica-northeast1", "northamerica-northeast2",
+        "southamerica-east1", "southamerica-west1",
+        "europe-west1", "europe-west2", "europe-west3", "europe-west4", "europe-west6",
+        "europe-central2", "europe-north1",
+        "asia-east1", "asia-east2",
+        "asia-northeast1", "asia-northeast2", "asia-northeast3",
+        "asia-south1", "asia-southeast1", "asia-southeast2",
+        "australia-southeast1", "australia-southeast2",
+        "me-central1", "me-west1", "me-central2",
+        "global" // Add "global" if needed
+      ];
+
+      const vertexAiLocationInput = document.getElementById("vertexAiLocation");
+
+      // Create the dropdown list
+      const datalist = document.createElement("datalist");
+      datalist.id = "gcp-regions";
+      gcpRegions.forEach(region => {
+        const option = document.createElement("option");
+        option.value = region;
+        datalist.appendChild(option);
+      });
+      vertexAiLocationInput.setAttribute("list", "gcp-regions");
+      document.body.appendChild(datalist);
+
+
       function sendStringToParentPage() {
         const sheetName = document.getElementById("sheetName").value;
+        const vertexAiAppId = document.getElementById("vertexAiAppId").value;
+        const vertexAiProjectId = document.getElementById("vertexAiProjectId").value;
+        const vertexAiLocation = document.getElementById("vertexAiLocation").value;
+
 
         // Check if the input matches the pattern
         if (!sheetName.match("^(?!History$)[^\/\\\?\*\:,']{1,31}$")) {
-          alert("Input is invalid. Please follow the rules.");
-          return false; // Prevent form submission
+          alert("Invalid Sheet name");
+          return false;
         }
+        // Input Validation
+        if (!sheetName || !vertexAiAppId || !vertexAiProjectId || !vertexAiLocation) {
+          alert("Please fill in all fields.");
+          return false;
+        }
+
+        const data = {
+          sheetName: sheetName,
+          vertexAiAppId: vertexAiAppId,
+          vertexAiProjectId: vertexAiProjectId,
+          vertexAiLocation: vertexAiLocation
+        };
 
         Office.context.ui.messageParent(sheetName);
       }
@@ -32,10 +110,21 @@
   </script>
 </head>
 
-<body style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+<body>
+
+  <label for="sheetName">Eval Name (This will also be the name of the sheet):</label>
   <input type="text" id="sheetName" value="" pattern="^(?!History$)[^\/\\\?\*\:,']{1,31}$"
-    placeholder="Enter Sheet Name" required="'required'" class="required placeholder" minlength="5"
-    maxlength="31" /><br><br>
+    placeholder="Enter Sheet Name" required="'required'" class="required placeholder" minlength="5" maxlength="31" />
+
+  <label for="vertexAiAppId">Vertex AI Search App ID:</label>
+  <input type="text" id="vertexAiAppId" placeholder="Vertex AI Search App ID" required>
+
+  <label for="vertexAiProjectId">Vertex AI Project ID:</label>
+  <input type="text" id="vertexAiProjectId" placeholder="Vertex AI Project ID" required>
+
+  <label for="vertexAiLocation">Vertex AI Location:</label>
+  <input type="text" id="vertexAiLocation" placeholder="Vertex AI Location" required>
+
   <button id="ok-button">OK</button>
 </body>
 

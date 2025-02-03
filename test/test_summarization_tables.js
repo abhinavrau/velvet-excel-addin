@@ -30,11 +30,17 @@ describe("When Summarization Eval Tables is clicked", () => {
     });
 
     mockData = {
+      GroupOption: {
+        byRows: 1,
+      },
       context: {
         workbook: {
           worksheets: {
             name: "WorksheetName",
             getActiveWorksheet: function () {
+              return this;
+            },
+            getItem: function (str) {
               return this;
             },
             range: {
@@ -61,6 +67,9 @@ describe("When Summarization Eval Tables is clicked", () => {
               clear: function () {
                 return true;
               },
+              group: function (GroupOption) {
+                return true;
+              },
             },
             getRange: function (str) {
               return this.range;
@@ -68,17 +77,20 @@ describe("When Summarization Eval Tables is clicked", () => {
             getUsedRange: function () {
               return this.range;
             },
+            clear: function () {
+              return true;
+            },
             tables: {
               // Test Cases Table
               name: "TestCasesTable",
               add: function (str, flag) {
                 return this;
               },
-              getHeaderRowRange: function () {
-                return this.header_row_range;
-              },
               getRange: function () {
                 return this.range;
+              },
+              getHeaderRowRange: function () {
+                return this.header_row_range;
               },
               resize: function (str) {},
               getItem: function (str) {

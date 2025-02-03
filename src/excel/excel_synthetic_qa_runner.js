@@ -100,7 +100,7 @@ export class SyntheticQARunner extends TaskRunner {
         await context.sync();
         const worksheetName = currentWorksheet.name;
 
-        const testCasesTable = currentWorksheet.tables.getItem(`${worksheetName}.TestCasesTable`);
+        const testCasesTable = currentWorksheet.tables.getItem(`${worksheetName}.SyntheticQATable`);
         this.idColumn = getColumn(testCasesTable, "ID");
         this.fileUriColumn = getColumn(testCasesTable, "GCS File URI");
         this.generatedQuestionColumn = getColumn(testCasesTable, "Generated Question");
@@ -131,7 +131,6 @@ export class SyntheticQARunner extends TaskRunner {
         // autofit the content
         //currentWorksheet.getUsedRange().format.autofitColumns();
         //currentWorksheet.getUsedRange().format.autofitRows();
-       
 
         await context.sync();
       } catch (error) {

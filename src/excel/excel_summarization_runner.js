@@ -93,7 +93,9 @@ export class SummarizationRunner extends TaskRunner {
         await context.sync();
         const worksheetName = currentWorksheet.name;
 
-        const testCasesTable = currentWorksheet.tables.getItem(`${worksheetName}.TestCasesTable`);
+        const testCasesTable = currentWorksheet.tables.getItem(
+          `${worksheetName}.SummarizationTestCasesTable`,
+        );
         this.idColumn = getColumn(testCasesTable, "ID");
         this.toSummarizeColumn = getColumn(testCasesTable, "Context");
         this.summaryColumn = getColumn(testCasesTable, "Summary");

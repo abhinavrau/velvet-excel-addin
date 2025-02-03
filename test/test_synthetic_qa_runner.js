@@ -54,11 +54,17 @@ describe("When Generate Synthetic Q&A is clicked ", () => {
       ClearApplyTo: {
         formats: {},
       },
+      GroupOption: {
+        byRows: 1,
+      },
       context: {
         workbook: {
           worksheets: {
             name: "WorksheetName",
             getActiveWorksheet: function () {
+              return this;
+            },
+            getItem: function () {
               return this;
             },
             range: {
@@ -89,6 +95,9 @@ describe("When Generate Synthetic Q&A is clicked ", () => {
               },
               getRange: function (str) {
                 return this;
+              },
+              group: function (GroupOption) {
+                return true;
               },
             },
             getRange: function (str) {
@@ -143,7 +152,7 @@ describe("When Generate Synthetic Q&A is clicked ", () => {
               resize: function (str) {},
               getItem: function (str) {
                 // check is str ends with string "TestCasesTable"
-                if (str.endsWith("TestCasesTable")) {
+                if (str.endsWith("SyntheticQATable")) {
                   return this.testCaseTable;
                 } else if (str.endsWith("ConfigTable")) {
                   return this.configTable;
@@ -263,11 +272,13 @@ describe("When Generate Synthetic Q&A is clicked ", () => {
     global.Excel = contextMock;
     // Spy on the Showstatus function
 
-    // Simulate creating the Config table
-    await createSyntheticQAConfigTable();
+    const worksheetName = "WorksheetName";
 
     // Simulate creating the Config table
-    await createSyntheticQADataTable();
+    await createSyntheticQAConfigTable(worksheetName);
+
+    // Simulate creating the Config table
+    await createSyntheticQADataTable(worksheetName);
 
     var syntheticQuestionAnswerRunner = new SyntheticQARunner();
 
