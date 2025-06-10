@@ -12,7 +12,7 @@ import {
 } from "../src/common.js";
 
 import {
-  calculateSimilarityUsingPalm2,
+  calculateSimilarityUsingGemini,
   callCheckGrounding,
   callVertexAISearch,
 } from "../src/vertex_ai.js";
@@ -53,20 +53,26 @@ describe("When calculateSimilarityUsingVertexAI is called ", () => {
     };
 
     var response = {
-      predictions: [
+      candidates: [
         {
-          content: "same",
+          content: {
+            parts: [
+              {
+                text: "same",
+              },
+            ],
+          },
         },
       ],
     };
-    const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/text-bison:predict`;
+    const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/gemini-2.0-flash-001:generateContent`;
     fetchMock.postOnce(url, {
       status: 200,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(response),
     });
 
-    const result = await calculateSimilarityUsingPalm2(1, sentence1, sentence2, config);
+    const result = await calculateSimilarityUsingGemini(1, sentence1, sentence2, config);
     const expectedResponse = {
       id: 1,
       status_code: 200,
@@ -86,13 +92,19 @@ describe("When calculateSimilarityUsingVertexAI is called ", () => {
     var full_prompt = `${prompt} answer_1: ${sentence1} answer_2: ${sentence2} output:`;
 
     expect(JSON.parse(fetchMock.lastCall()[1].body)).toEqual({
-      instances: [{ prompt: `${full_prompt}` }],
-      parameters: {
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              text: `${full_prompt}`,
+            },
+          ],
+        },
+      ],
+      generationConfig: {
         temperature: 0.2,
         maxOutputTokens: 256,
-        topK: 40,
-        topP: 0.95,
-        logprobs: 2,
       },
     });
 
@@ -113,7 +125,7 @@ describe("When calculateSimilarityUsingVertexAI is called ", () => {
         message: "Call failed with status code 500 and status message: Internal Server Error",
       },
     };
-    const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/text-bison:predict`;
+    const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/gemini-2.0-flash-001:generateContent`;
     fetchMock.postOnce(url, {
       status: 401,
       headers: { "Content-Type": "application/json" },
@@ -121,7 +133,7 @@ describe("When calculateSimilarityUsingVertexAI is called ", () => {
     });
 
     try {
-      const result = await calculateSimilarityUsingPalm2(1, sentence1, sentence2, config);
+      const result = await calculateSimilarityUsingGemini(1, sentence1, sentence2, config);
       assert.fail();
     } catch (err) {
       expect(fetchMock.called()).toBe(true);
@@ -140,13 +152,13 @@ describe("When calculateSimilarityUsingVertexAI is called ", () => {
       vertexAILocation: "YOUR_LOCATION",
     };
 
-    const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/text-bison:predict`;
+    const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/gemini-2.0-flash-001:generateContent`;
     fetchMock.postOnce(url, {
       throws: new Error("Mocked error"),
     });
 
     try {
-      const result = await calculateSimilarityUsingPalm2(1, sentence1, sentence2, config);
+      const result = await calculateSimilarityUsingGemini(1, sentence1, sentence2, config);
       assert.fail();
     } catch (err) {
       expect(fetchMock.called()).toBe(true);

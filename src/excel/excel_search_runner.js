@@ -1,5 +1,5 @@
 import {
-  calculateSimilarityUsingPalm2,
+  calculateSimilarityUsingGemini,
   callCheckGrounding,
   callVertexAISearch,
 } from "../vertex_ai.js";
@@ -358,7 +358,7 @@ export class ExcelSearchRunner extends TaskRunner {
         const score_cell = this.summaryScoreColumn.getRange().getCell(rowNum, 0);
         score_cell.clear(Excel.ClearApplyTo.formats);
 
-        const response = await calculateSimilarityUsingPalm2(
+        const response = await calculateSimilarityUsingGemini(
           rowNum,
           result.summary.summaryText,
           expectedSummary[rowNum][0],

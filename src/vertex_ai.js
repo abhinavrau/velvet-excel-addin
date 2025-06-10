@@ -54,7 +54,7 @@ export async function callVertexAISearch(id, query, config) {
   return { id: id, status_code: status, output: json_output };
 }
 
-export async function calculateSimilarityUsingPalm2(id, sentence1, sentence2, config) {
+export async function calculateSimilarityUsingGemini(id, sentence1, sentence2, config) {
   appendLog(`testCaseID: ${id}: SummaryMatch Started `);
 
   const token = config.accessToken;
@@ -68,20 +68,27 @@ export async function calculateSimilarityUsingPalm2(id, sentence1, sentence2, co
   var full_prompt = `${prompt} answer_1: ${sentence1} answer_2: ${sentence2} output:`;
 
   var data = {
-    instances: [{ prompt: `${full_prompt}` }],
-    parameters: {
+    contents: [
+      {
+        role: "user",
+        parts: [
+          {
+            text: `${full_prompt}`,
+          },
+        ],
+      },
+    ],
+    generationConfig: {
       temperature: 0.2,
       maxOutputTokens: 256,
-      topK: 40,
-      topP: 0.95,
-      logprobs: 2,
     },
   };
 
-  const url = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/text-bison:predict`;
+  const model_id = "gemini-2.0-flash-001";
+  const url = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${model_id}:generateContent`;
 
   const { status, json_output } = await callVertexAI(url, token, data, id);
-  const output = json_output.predictions[0].content;
+  const output = json_output.candidates[0].content.parts[0].text;
 
   appendLog(`testCaseID: ${id}: SummaryMatch Finished Successfully `);
 
