@@ -20,7 +20,7 @@ export async function callVertexAISearch(id, query, config) {
   const useSemanticChunks = config.useSemanticChunks;
   const ignoreAdversarialQuery = config.ignoreAdversarialQuery;
   const ignoreNonSummarySeekingQuery = config.ignoreNonSummarySeekingQuery;
-  const projectNumber = config.vertexAISearchProjectNumber;
+  const projectID = config.vertexAIProjectID;
   const searchAppId = config.vertexAISearchAppId;
 
   var data = {
@@ -45,7 +45,7 @@ export async function callVertexAISearch(id, query, config) {
     },
   };
 
-  const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${projectNumber}/locations/global/collections/default_collection/engines/${searchAppId}/servingConfigs/default_search:search`;
+  const url = `https://discoveryengine.googleapis.com/v1/projects/${projectID}/locations/global/collections/default_collection/engines/${searchAppId}/servingConfigs/default_search:search`;
 
   const { status, json_output } = await callVertexAI(url, token, data, id);
 
@@ -343,7 +343,7 @@ export async function callVertexAI(url, token, data, id) {
         case 401:
           throw new NotAuthenticatedError(id, errorMessage);
         case 429:
-          throw new QuotaError(id, errorMessage);
+          throw new QuotaError(id, errorMessage); // TODO: retry here
         case 403:
           throw new PermissionDeniedError(id, errorMessage);
         case 404:

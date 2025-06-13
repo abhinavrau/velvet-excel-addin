@@ -8,8 +8,7 @@ import { appendError, appendLog, showStatus } from "../ui.js";
 
 import { TaskRunner } from "../task_runner.js";
 
-import { findIndexByColumnsNameIn2DArray } from "../common.js";
-import { getColumn } from "./excel_common.js";
+import { getColumn, getSearchConfigFromActiveSheet } from "./excel_common.js";
 export class ExcelSearchRunner extends TaskRunner {
   constructor() {
     super();
@@ -23,146 +22,7 @@ export class ExcelSearchRunner extends TaskRunner {
   }
 
   async getSearchConfig() {
-    var config;
-    await Excel.run(async (context) => {
-      try {
-        const currentWorksheet = context.workbook.worksheets.getActiveWorksheet();
-        currentWorksheet.load("name");
-        await context.sync();
-        const worksheetName = currentWorksheet.name;
-        const configTable = currentWorksheet.tables.getItem(`${worksheetName}.ConfigTable`);
-        const valueColumn = getColumn(configTable, "Value");
-        const configColumn = getColumn(configTable, "Config");
-        await context.sync();
-
-        config = {
-          vertexAISearchProjectNumber:
-            valueColumn.values[
-              findIndexByColumnsNameIn2DArray(
-                configColumn.values,
-                "Vertex AI Search Project Number",
-              )
-            ][0],
-          vertexAISearchAppId:
-            valueColumn.values[
-              findIndexByColumnsNameIn2DArray(configColumn.values, "Vertex AI Search App ID")
-            ][0],
-          vertexAIProjectID:
-            valueColumn.values[
-              findIndexByColumnsNameIn2DArray(configColumn.values, "Vertex AI Project ID")
-            ][0],
-          vertexAILocation:
-            valueColumn.values[
-              findIndexByColumnsNameIn2DArray(configColumn.values, "Vertex AI Location")
-            ][0],
-          extractiveContentSpec: {
-            maxExtractiveAnswerCount:
-              valueColumn.values[
-                findIndexByColumnsNameIn2DArray(
-                  configColumn.values,
-                  "maxExtractiveAnswerCount (1-5)",
-                )
-              ][0] === 0
-                ? null
-                : valueColumn.values[
-                    findIndexByColumnsNameIn2DArray(
-                      configColumn.values,
-                      "maxExtractiveAnswerCount (1-5)",
-                    )
-                  ][0],
-            maxExtractiveSegmentCount:
-              valueColumn.values[
-                findIndexByColumnsNameIn2DArray(
-                  configColumn.values,
-                  "maxExtractiveSegmentCount (1-5)",
-                )
-              ][0] === 0
-                ? null
-                : valueColumn.values[
-                    findIndexByColumnsNameIn2DArray(
-                      configColumn.values,
-                      "maxExtractiveSegmentCount (1-5)",
-                    )
-                  ][0],
-          },
-          maxSnippetCount:
-            valueColumn.values[
-              findIndexByColumnsNameIn2DArray(configColumn.values, "maxSnippetCount (1-5)")
-            ][0] === 0
-              ? null
-              : valueColumn.values[
-                  findIndexByColumnsNameIn2DArray(configColumn.values, "maxSnippetCount (1-5)")
-                ][0],
-          preamble:
-            valueColumn.values[
-              findIndexByColumnsNameIn2DArray(
-                configColumn.values,
-                "Preamble (Customized Summaries)",
-              )
-            ][0],
-          model:
-            valueColumn.values[
-              findIndexByColumnsNameIn2DArray(configColumn.values, "Summarization Model")
-            ][0],
-          summaryResultCount:
-            valueColumn.values[
-              findIndexByColumnsNameIn2DArray(configColumn.values, "summaryResultCount (1-5)")
-            ][0],
-          genereateGrounding:
-            valueColumn.values[
-              findIndexByColumnsNameIn2DArray(configColumn.values, "Generate Grounding Score")
-            ][0],
-          useSemanticChunks:
-            valueColumn.values[
-              findIndexByColumnsNameIn2DArray(
-                configColumn.values,
-                "useSemanticChunks (True or False)",
-              )
-            ][0],
-          ignoreAdversarialQuery:
-            valueColumn.values[
-              findIndexByColumnsNameIn2DArray(
-                configColumn.values,
-                "ignoreAdversarialQuery (True or False)",
-              )
-            ][0],
-          ignoreNonSummarySeekingQuery:
-            valueColumn.values[
-              findIndexByColumnsNameIn2DArray(
-                configColumn.values,
-                "ignoreNonSummarySeekingQuery (True or False)",
-              )
-            ][0],
-          summaryMatchingAdditionalPrompt:
-            valueColumn.values[
-              findIndexByColumnsNameIn2DArray(
-                configColumn.values,
-                "SummaryMatchingAdditionalPrompt",
-              )
-            ][0],
-
-          batchSize: parseInt(
-            valueColumn.values[
-              findIndexByColumnsNameIn2DArray(configColumn.values, "Batch Size (1-10)")
-            ][0],
-          ),
-          timeBetweenCallsInSec: parseInt(
-            valueColumn.values[
-              findIndexByColumnsNameIn2DArray(
-                configColumn.values,
-                "Time between Batches in Seconds (1-10)",
-              )
-            ][0],
-          ),
-          accessToken: $("#access-token").val(),
-        };
-      } catch (error) {
-        appendError(`Caught Exception in getSearchConfig `, error);
-        showStatus(`Caught Exception in getSearchConfig: ${error}. Trace: ${error.stack}`, true);
-        return null;
-      }
-    });
-    return config;
+    return getSearchConfigFromActiveSheet(true, true);
   }
 
   async executeSearchTests(config) {
@@ -177,7 +37,7 @@ export class ExcelSearchRunner extends TaskRunner {
         await context.sync();
         const worksheetName = currentWorksheet.name;
 
-        const testCasesTable = currentWorksheet.tables.getItem(`${worksheetName}.TestCasesTable`);
+        const testCasesTable = currentWorksheet.tables.getItemOrNullObject(`${worksheetName}.TestCasesTable`);
         this.queryColumn = getColumn(testCasesTable, "Query");
         this.idColumn = getColumn(testCasesTable, "ID");
         this.link_1_Column = getColumn(testCasesTable, "Actual Link 1");
@@ -231,7 +91,7 @@ export class ExcelSearchRunner extends TaskRunner {
         // autofit the content
         //currentWorksheet.getUsedRange().format.autofitColumns();
         //currentWorksheet.getUsedRange().format.autofitRows();
-       
+
         await context.sync();
       } catch (error) {
         appendLog(`Caught Exception in executeSearchTests: ${error.message} `, error);

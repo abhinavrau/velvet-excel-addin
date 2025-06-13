@@ -1,5 +1,14 @@
-import { vertex_ai_search_configValues, vertex_ai_search_testTableHeader } from "../common.js";
-import { configTableFontSize, dataTableFontSize, sheetTitleFontSize } from "../ui.js";
+import {
+  findIndexByColumnsNameIn2DArray,
+  vertex_ai_search_configValues,
+  vertex_ai_search_testTableHeader,
+} from "../common.js";
+import {
+  configTableFontSize,
+  dataTableFontSize,
+  sheetTitleFontSize,
+  tableTitlesFontSize,
+} from "../ui.js";
 import {
   createExcelTable,
   createFormula,
@@ -7,9 +16,25 @@ import {
   makeRowBold,
   summaryHeading,
 } from "./excel_create_tables.js";
-export async function createVAIConfigTable(sheetName) {
+export async function createVAIConfigTable(data) {
+  vertex_ai_search_configValues[
+    findIndexByColumnsNameIn2DArray(vertex_ai_search_configValues, "Vertex AI Search App ID")
+  ][1] = data.config.vertexAISearchAppId;
+
+  vertex_ai_search_configValues[
+    findIndexByColumnsNameIn2DArray(vertex_ai_search_configValues, "Vertex AI Project ID")
+  ][1] = data.config.vertexAIProjectID;
+
+  vertex_ai_search_configValues[
+    findIndexByColumnsNameIn2DArray(vertex_ai_search_configValues, "Vertex AI Location")
+  ][1] = data.config.vertexAILocation;
+
+  vertex_ai_search_configValues[
+    findIndexByColumnsNameIn2DArray(vertex_ai_search_configValues, "Answer Model")
+  ][1] = data.config.model;
+
   const worksheetName = await createExcelTable(
-    sheetName + " - Vertex AI Search Evaluation",
+    data.sheetName + " - Vertex AI Search Evaluation",
     "C2",
     "ConfigTable",
     vertex_ai_search_configValues,
@@ -17,11 +42,12 @@ export async function createVAIConfigTable(sheetName) {
     "A3:B24",
     configTableFontSize,
     sheetTitleFontSize,
+    data.sheetName,
   );
 
-  Excel.run(async (context) => {
+  await Excel.run(async (context) => {
     // Get the active worksheet
-    let sheet = context.workbook.worksheets.getActiveWorksheet();
+    let sheet = context.workbook.worksheets.getItemOrNullObject(data.sheetName);
 
     sheet.getRange("B18").format.wrapText = true;
     sheet.getRange("B20").format.wrapText = true;
@@ -29,22 +55,22 @@ export async function createVAIConfigTable(sheetName) {
     await context.sync();
   });
 
-  await makeRowBold(worksheetName, "A4:B4");
-  await makeRowBold(worksheetName, "A9:B9");
-  await makeRowBold(worksheetName, "A16:B16");
-  await makeRowBold(worksheetName, "A22:B22");
+  await makeRowBold(data.sheetName, "A4:B4");
+  await makeRowBold(data.sheetName, "A9:B9");
+  await makeRowBold(data.sheetName, "A16:B16");
+  await makeRowBold(data.sheetName, "A22:B22");
 
-  await groupRows(worksheetName, "5:8");
-  await groupRows(worksheetName, "10:15");
-  await groupRows(worksheetName, "17:21");
-  await groupRows(worksheetName, "23:24");
-  await groupRows(worksheetName, "4:24");
+  await groupRows(data.sheetName, "5:8");
+  await groupRows(data.sheetName, "10:15");
+  await groupRows(data.sheetName, "17:21");
+  await groupRows(data.sheetName, "23:24");
+  await groupRows(data.sheetName, "4:24");
 }
 
 export async function createVAIDataTable(sheetName) {
-  Excel.run(async (context) => {
+  await Excel.run(async (context) => {
     // Get the active worksheet
-    let sheet = context.workbook.worksheets.getActiveWorksheet();
+    let sheet = context.workbook.worksheets.getItemOrNullObject(sheetName);
 
     sheet.getRange("A:A").format.columnWidth = 275;
 
@@ -59,7 +85,7 @@ export async function createVAIDataTable(sheetName) {
     await context.sync();
   });
 
-  const worksheetName = await createExcelTable(
+  await createExcelTable(
     "Search Test Cases",
     "A32",
     "TestCasesTable",
@@ -67,9 +93,11 @@ export async function createVAIDataTable(sheetName) {
     "A33:N33",
     "A33:N134",
     dataTableFontSize,
+    tableTitlesFontSize,
+    sheetName,
   );
-
-  await summaryHeading("A26:B26", "Evaluation Summary");
+  const worksheetName = sheetName;
+  await summaryHeading(sheetName, "A26:B26", "Evaluation Summary");
 
   const summaryMatchCol = "Summary Match";
   const summaryMatchFormula = `=IF(COUNTIF(${worksheetName}.TestCasesTable[${summaryMatchCol}], TRUE) + COUNTIF(${worksheetName}.TestCasesTable[${summaryMatchCol}], FALSE) > 0, COUNTIF(${worksheetName}.TestCasesTable[${summaryMatchCol}], TRUE) / (COUNTIF(${worksheetName}.TestCasesTable[${summaryMatchCol}], TRUE) + COUNTIF(${worksheetName}.TestCasesTable[${summaryMatchCol}], FALSE)), 0)`;

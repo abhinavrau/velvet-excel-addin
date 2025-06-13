@@ -1,9 +1,14 @@
-import { synth_q_and_a_configValues, synth_q_and_a_TableHeader } from "../common.js";
+import {
+  findIndexByColumnsNameIn2DArray,
+  synth_q_and_a_configValues,
+  synth_q_and_a_TableHeader,
+} from "../common.js";
 import {
   configTableFontSize,
   dataTableFontSize,
   sheetTitleFontSize,
   summaryFontSize,
+  tableTitlesFontSize,
 } from "../ui.js";
 import {
   createExcelTable,
@@ -12,9 +17,17 @@ import {
   makeRowBold,
   summaryHeading,
 } from "./excel_create_tables.js";
-export async function createSyntheticQAConfigTable(sheetName) {
+export async function createSyntheticQAConfigTable(data) {
+  synth_q_and_a_configValues[
+    findIndexByColumnsNameIn2DArray(synth_q_and_a_configValues, "Vertex AI Project ID")
+  ][1] = data.vertexAiProjectId;
+
+  synth_q_and_a_configValues[
+    findIndexByColumnsNameIn2DArray(synth_q_and_a_configValues, "Vertex AI Location")
+  ][1] = data.vertexAiLocation;
+
   const worksheetName = await createExcelTable(
-    sheetName + " - Synthetic Questions & Answers",
+    data.sheetName + " - Synthetic Questions & Answers",
     "C2",
     "ConfigTable",
     synth_q_and_a_configValues,
@@ -22,11 +35,12 @@ export async function createSyntheticQAConfigTable(sheetName) {
     "A3:B17",
     configTableFontSize,
     sheetTitleFontSize,
+    data.sheetName,
   );
 
   Excel.run(async (context) => {
     // Get the active worksheet
-    let sheet = context.workbook.worksheets.getActiveWorksheet();
+    let sheet = context.workbook.worksheets.getItemOrNullObject(data.sheetName);
 
     sheet.getRange("B9").format.wrapText = true;
     sheet.getRange("B10").format.wrapText = true;
@@ -35,22 +49,22 @@ export async function createSyntheticQAConfigTable(sheetName) {
     await context.sync();
   });
 
-  await makeRowBold(worksheetName, "A4:B4");
-  await makeRowBold(worksheetName, "A7:B7");
-  await makeRowBold(worksheetName, "A11:B11");
-  await makeRowBold(worksheetName, "A15:B15");
+  await makeRowBold(data.sheetName, "A4:B4");
+  await makeRowBold(data.sheetName, "A7:B7");
+  await makeRowBold(data.sheetName, "A11:B11");
+  await makeRowBold(data.sheetName, "A15:B15");
 
-  await groupRows(worksheetName, "5:6");
-  await groupRows(worksheetName, "8:10");
-  await groupRows(worksheetName, "12:14");
-  await groupRows(worksheetName, "16:17");
-  await groupRows(worksheetName, "4:17");
+  await groupRows(data.sheetName, "5:6");
+  await groupRows(data.sheetName, "8:10");
+  await groupRows(data.sheetName, "12:14");
+  await groupRows(data.sheetName, "16:17");
+  await groupRows(data.sheetName, "4:17");
 }
 
 export async function createSyntheticQADataTable(sheetName) {
   Excel.run(async (context) => {
     // Get the active worksheet
-    let sheet = context.workbook.worksheets.getActiveWorksheet();
+    let sheet = context.workbook.worksheets.getItemOrNullObject(sheetName);
 
     sheet.getRange("A:A").format.columnWidth = 275;
 
@@ -71,9 +85,11 @@ export async function createSyntheticQADataTable(sheetName) {
     "A23:E23",
     "A23:E124",
     dataTableFontSize,
+    tableTitlesFontSize,
+    sheetName,
   );
 
-  await summaryHeading("A19:B19", "Generate Synthetic Q&A Quality");
+  await summaryHeading(sheetName, "A19:B19", "Generate Synthetic Q&A Quality");
 
   const summaryMatchCol = "Q & A Quality";
 

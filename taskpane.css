@@ -3,17 +3,27 @@
  * See LICENSE in the project root for license information.
  */
 
- #sheetName:valid {
-    color: green;
+#sheetName:valid {
+  color: green;
 }
 #sheetName:invalid {
-    color: red;
+  color: red;
 }
 
 .container {
   /* Other container styles */
   font-family: sans-serif;
   padding: 20px;
+}
+
+.title-container {
+  display: flex; /* Enable flexbox */
+  align-items: center; /* Vertically center items */
+  justify-content: center; /* Horizontally center items */
+}
+
+.title-container img {
+  margin-right: 10px; /* Add some space between image and text */
 }
 
 .title {
@@ -30,7 +40,8 @@
 
 h1 {
   font-family: Arial, sans-serif;
-  color: #2d66eb;
+  font-size: 25px;
+  color: #000000;
 }
 
 p {
@@ -74,6 +85,12 @@ input[type="text"] {
 .status {
   margin: 0;
   height: 140px;
+}
+
+
+.status-popup {
+  margin: 0;
+  height: 40px;
 }
 
 .status-card {

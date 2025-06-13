@@ -67,6 +67,9 @@ describe("When Generate Synthetic Q&A is clicked ", () => {
             getItem: function () {
               return this;
             },
+            getItemOrNullObject(str) {
+              return this;
+            },
             range: {
               values: [[]],
               format: {
@@ -88,7 +91,7 @@ describe("When Generate Synthetic Q&A is clicked ", () => {
                 return this;
               },
               getCell: function (rowNum, colNum) {
-                return this.values[rowNum][colNum];
+                return this.values;
               },
               clear: function () {
                 return true;
@@ -272,10 +275,18 @@ describe("When Generate Synthetic Q&A is clicked ", () => {
     global.Excel = contextMock;
     // Spy on the Showstatus function
 
-    const worksheetName = "WorksheetName";
 
+    const data = {
+      sheetName: "WorksheetName",
+      vertexAiAppId: "l300-arau_1695783344117",
+      vertexAiProjectNumber: "384473000457",
+      vertexAiProjectId: "argolis-arau",
+      vertexAiLocation: "us-central1",
+    };
+
+    const worksheetName = data.sheetName;
     // Simulate creating the Config table
-    await createSyntheticQAConfigTable(worksheetName);
+    await createSyntheticQAConfigTable(data);
 
     // Simulate creating the Config table
     await createSyntheticQADataTable(worksheetName);

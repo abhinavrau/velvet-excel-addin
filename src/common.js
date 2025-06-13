@@ -6,15 +6,50 @@ export function findIndexByColumnsNameIn2DArray(array2D, searchValue) {
     }
   }
   // Value not found, return null or handle it as needed
-  return 0;
+  return -1;
 }
 
+export const test_search_runs_table = [
+  [
+    "Sheet",
+    "Time of Run",
+    "Project ID",
+    "Search App ID",
+    "Successful Queries",
+    "Failed Queries",
+    "% Summary Match Accuracy",
+    "% First Link Match",
+    "% Link in Top 2",
+    "Avg. Grounding Score",
+  ],
+];
+
+export const synth_qa_runs_table = [
+  [
+    "Sheet",
+    "Time of Run",
+    "Project ID",
+    "Num Success",
+    "Num Failed",
+    "Avg. Synthetic Q&A Quality (0-5)",
+  ],
+];
+
+export const summary_runs_table = [
+  [
+    "Sheet",
+    "Time of Run",
+    "Project ID",
+    "Num Success",
+    "Num Failed",
+    "Avg. Summarization Quality (0-5)",
+  ],
+];
 // Vertex AI Search Table Format
 export const vertex_ai_search_configValues = [
   ["Config", "Value"],
 
   ["GCP PARAMETERS", ""],
-  ["Vertex AI Search Project Number", "384473000457"],
   ["Vertex AI Search App ID", "l300-arau_1695783344117"],
   ["Vertex AI Project ID", "argolis-arau"],
   ["Vertex AI Location", "us-central1"],
@@ -33,7 +68,7 @@ export const vertex_ai_search_configValues = [
     "Preamble (Customized Summaries)",
     `You are an expert financial analyst.  Only use the data returned from documents. All finance numbers must be reported in billions, millions or thousands. Be brief. Answer should be no more than 2 sentences please.`,
   ],
-  ["Summarization Model", "gemini-1.0-pro-001/answer_gen/v1"],
+  ["Answer Model", "gemini-1.0-pro-001/answer_gen/v1"],
   [
     "SummaryMatchingAdditionalPrompt",
     "If there are monetary numbers in the answers, they should be matched exactly.",
@@ -130,8 +165,8 @@ Return result in JSON format. example output: { 'rating': 2 , evaluation: 'reaso
   ],
   ["Q & A Quality Model ID", "gemini-1.5-pro-001"],
   ["BATCHING SETTINGS", ""],
-  ["Max Concurrent Requests (1-10)", "5"],
-  ["Request Interval in Seconds(1-10)", "1"],
+  ["Batch Size (1-10)", "5"], // BatchSize
+  ["Time between Batches in Seconds (1-10)", "1"],
 ];
 
 export const synth_q_and_a_TableHeader = [
@@ -183,7 +218,7 @@ Return result in JSON format. example output: { 'rating': 2 , evaluation: 'reaso
   ["Time between Batches in Seconds (1-10)", "1"],
 ];
 
-export const summarization_TableHeader = [["ID", "Context", "Summary", "summarization_quality"]];
+export const summarization_TableHeader = [["ID", "Context", "Summary", "Summary Quality"]];
 
 export const mapGeminiSupportedMimeTypes = {
   ".flv": "video/x-flv",

@@ -153,8 +153,17 @@ describe("When Search Run Tests is clicked ", () => {
             getItem: function () {
               return this;
             },
+            getItemOrNullObject(str) {
+              return this;
+            },
+            getRange: function (str) {
+              return this.range;
+            },
             range: {
               values: [[]],
+              getCell: function (x, y) {
+                return this;
+              },
               format: {
                 font: {
                   bold: false,
@@ -174,7 +183,7 @@ describe("When Search Run Tests is clicked ", () => {
                 return this;
               },
               getCell: function (rowNum, colNum) {
-                return this.values[rowNum][colNum];
+                return this.values;
               },
               clear: function () {
                 return true;
@@ -230,7 +239,7 @@ describe("When Search Run Tests is clicked ", () => {
                 return this.header_row_range;
               },
               resize: function (str) {},
-              getItem: function (str) {
+              getItemOrNullObject: function (str) {
                 // check is str ends with string "TestCasesTable"
                 if (str.endsWith("TestCasesTable")) {
                   return this.testCaseTable;
@@ -247,6 +256,8 @@ describe("When Search Run Tests is clicked ", () => {
                 },
               },
               configTable: {
+                isNullObject: false,
+                name: "WorksheetName.ConfigTable",
                 columns: {
                   getItemOrNullObject: function (columnName) {
                     return {
@@ -269,6 +280,8 @@ describe("When Search Run Tests is clicked ", () => {
                 },
               },
               testCaseTable: {
+                isNullObject: false,
+                name: "WorksheetName.TestCasesTable",
                 // Initiallize our data object that will get populated
                 data: Array(testCaseRows.length)
                   .fill(null)
@@ -352,19 +365,34 @@ describe("When Search Run Tests is clicked ", () => {
     const contextMock = new OfficeMockObject(mockTestData);
 
     global.Excel = contextMock;
-    const worksheetName = "WorksheetName";
-    // Simulate creating the Config table
-    await createVAIDataTable(worksheetName);
+
+    const ui_config = {
+      vertexAISearchAppId: "l300-arau_1695783344117",
+      vertexAIProjectID: "argolis-arau",
+      vertexAILocation: "us-central1",
+      model: "gemini-1.0-pro-001/answer_gen/v1",
+    };
+
+    const data = {
+      sheetName: "WorksheetName",
+      config: ui_config,
+    };
+    const worksheetName = data.sheetName;
 
     // Simulate creating the Config table
-    await createVAIConfigTable(worksheetName);
+    await createVAIConfigTable(data);
+
+    // Simulate creating the Config table
+    await createVAIDataTable(worksheetName);
 
     var excelSearchRunner = new ExcelSearchRunner();
 
     // Get the config parameters from the config table
     const config = await excelSearchRunner.getSearchConfig();
 
-    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
+    expect(config).not.toBe(null);
+
+    const url = `https://discoveryengine.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
     // Prepare the request response mock the call to VertexAISearch
     const { requestJson, expectedResponse } = mockDiscoveryEngineRequestResponse(
       1,
@@ -496,22 +524,29 @@ describe("When Search Run Tests is clicked ", () => {
 
     global.Excel = contextMock;
 
+    const ui_config = {
+      vertexAISearchAppId: "l300-arau_1695783344117",
+      vertexAIProjectID: "argolis-arau",
+      vertexAILocation: "us-central1",
+      model: "gemini-1.0-pro-001/answer_gen/v1",
+    };
+    const data = {
+      sheetName: "WorksheetName",
+      config: ui_config,
+    };
+    const worksheetName = data.sheetName;
     // Simulate creating the Config table
-    await createVAIDataTable();
-    // Fail the test ifshow status is called
-    //expect(showStatusSpy.notCalled).toBe(true);
+    await createVAIDataTable(worksheetName);
 
     // Simulate creating the Config table
-    await createVAIConfigTable();
-    // Fail the test ifshow status is called
-    //expect(showStatusSpy.notCalled).toBe(true);
+    await createVAIConfigTable(data);
 
     var excelSearchRunner = new ExcelSearchRunner();
 
     // Get the config parameters from the config table
     const config = await excelSearchRunner.getSearchConfig();
 
-    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
+    const url = `https://discoveryengine.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
 
     // Prepare the request response mock the call to VertexAISearch
     const { requestJson, expectedResponse } = mockDiscoveryEngineRequestResponse(

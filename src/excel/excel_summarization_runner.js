@@ -20,6 +20,22 @@ export class SummarizationRunner extends TaskRunner {
         currentWorksheet.load("name");
         await context.sync();
         const worksheetName = currentWorksheet.name;
+
+        // check if the right data table is there
+        const summaryTestCaseTable = currentWorksheet.tables.getItem(
+          `${worksheetName}.SummarizationTestCasesTable`,
+        );
+        await context.sync();
+        if (summaryTestCaseTable === null) {
+          appendLog(
+            `Error: ${worksheetName}.SummarizationTestCasesTable not found in current sheet. Make sure you are in the right sheet`,
+          );
+          showStatus(
+            `Error: Summarization Eval table not found in current sheet. Make sure you are in the right sheet`,
+            true,
+          );
+          return null;
+        }
         const configTable = currentWorksheet.tables.getItem(`${worksheetName}.ConfigTable`);
         const valueColumn = getColumn(configTable, "Value");
         const configColumn = getColumn(configTable, "Config");
@@ -99,7 +115,7 @@ export class SummarizationRunner extends TaskRunner {
         this.idColumn = getColumn(testCasesTable, "ID");
         this.toSummarizeColumn = getColumn(testCasesTable, "Context");
         this.summaryColumn = getColumn(testCasesTable, "Summary");
-        this.summarization_qualityColumn = getColumn(testCasesTable, "summarization_quality");
+        this.summarization_qualityColumn = getColumn(testCasesTable, "Summary Quality");
         testCasesTable.rows.load("count");
         await context.sync();
 
@@ -124,7 +140,7 @@ export class SummarizationRunner extends TaskRunner {
         // autofit the content
         //currentWorksheet.getUsedRange().format.autofitColumns();
         //currentWorksheet.getUsedRange().format.autofitRows();
-        
+
         await context.sync();
       } catch (error) {
         appendError(`Caught Exception in createSummarizationData `, error);

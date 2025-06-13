@@ -79,6 +79,9 @@ describe("When Summarization Eval is clicked ", () => {
             getItem: function (str) {
               return this;
             },
+            getItemOrNullObject: function (str) {
+              return this;
+            },
             range: {
               values: [[]],
               format: {
@@ -100,7 +103,7 @@ describe("When Summarization Eval is clicked ", () => {
                 return this;
               },
               getCell: function (rowNum, colNum) {
-                return this.values[rowNum][colNum];
+                return this.values;
               },
               clear: function () {
                 return true;
@@ -193,6 +196,7 @@ describe("When Summarization Eval is clicked ", () => {
                 },
               },
               testCaseTable: {
+                name: "WorksheetName.SummarizationTestCasesTable",
                 // Initiallize our data object that will get populated
                 data: Array(testCaseRows.length)
                   .fill(null)
@@ -275,9 +279,19 @@ describe("When Summarization Eval is clicked ", () => {
     const contextMock = new OfficeMockObject(mockTestData);
 
     global.Excel = contextMock;
-    const worksheetName = "WorksheetName";
+    global.Excel = contextMock;
+
+    const data = {
+      sheetName: "WorksheetName",
+      vertexAiAppId: "l300-arau_1695783344117",
+      vertexAiProjectNumber: "384473000457",
+      vertexAiProjectId: "argolis-arau",
+      vertexAiLocation: "us-central1",
+    };
+
+    const worksheetName = data.sheetName;
     // Simulate creating the Config table
-    await createSummarizationEvalConfigTable(worksheetName);
+    await createSummarizationEvalConfigTable(data);
 
     // Simulate creating the Config table
     await createSummarizationEvalDataTable(worksheetName);
@@ -341,7 +355,7 @@ describe("When Summarization Eval is clicked ", () => {
  */
     // Check if summarization_quality score got populated
     const { cell: summarization_quality_cell, col_index: summarization_quality_col_index } =
-      getCellAndColumnIndexByName("summarization_quality", mockTestData);
+      getCellAndColumnIndexByName("Summary Quality", mockTestData);
     expect(summarization_quality_cell[0][0]).toEqual(
       testCaseRows[1][summarization_quality_col_index],
     );

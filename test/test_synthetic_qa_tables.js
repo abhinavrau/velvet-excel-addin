@@ -43,9 +43,18 @@ describe("When Create Q&A Tables is clicked", () => {
             getItem: function () {
               return this;
             },
+            getItemOrNullObject: function (str) {
+              return this;
+            },
+            getRange: function (str) {
+              return this.range;
+            },
             range: {
               // Config Table
               values: [[]],
+              getCell: function (x, y) {
+                return this;
+              },
               format: {
                 font: {
                   bold: false,
@@ -82,7 +91,7 @@ describe("When Create Q&A Tables is clicked", () => {
             },
             tables: {
               // Test Cases Table
-              name: "TestCasesTable",
+              name: "SyntheticQATable",
               add: function (str, flag) {
                 return this;
               },
@@ -137,8 +146,16 @@ describe("When Create Q&A Tables is clicked", () => {
 
     global.Excel = contextMock;
      
-    const worksheetName = "WorksheetName";
-    await createSyntheticQAConfigTable(worksheetName);
+    const data = {
+      sheetName: "WorksheetName",
+      vertexAiAppId: "l300-arau_1695783344117",
+      vertexAiProjectNumber: "384473000457",
+      vertexAiProjectId: "argolis-arau",
+      vertexAiLocation: "us-central1",
+    };
+
+    const worksheetName = data.sheetName;
+    await createSyntheticQAConfigTable(data);
 
     
     expect(contextMock.context.workbook.worksheets.range.values).toEqual([
@@ -161,12 +178,12 @@ describe("When Create Q&A Tables is clicked", () => {
     const contextMock = new OfficeMockObject(mockData);
 
     global.Excel = contextMock;
-    await createSyntheticQADataTable();
-    const worksheetName = contextMock.context.workbook.worksheets.name;
+    await createSyntheticQADataTable("WorksheetName");
+    const worksheetName = "WorksheetName";
 
-    expect(contextMock.context.workbook.worksheets.tables.name).toEqual(
+     expect(contextMock.context.workbook.worksheets.tables.name).toEqual(
       `${worksheetName}.SyntheticQATable`,
-    );
+    ); 
 
     expect(contextMock.context.workbook.worksheets.tables.getHeaderRowRange().values).toEqual([
       synth_q_and_a_TableHeader[0],

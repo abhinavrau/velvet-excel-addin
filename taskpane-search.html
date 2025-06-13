@@ -16,14 +16,20 @@
   <script defer type="module" src="src/excel/addin.js"></script>
 
   <link rel="stylesheet" href="taskpane.css" />
-  <title>Velvet</title>
+  <title>Velvet - Search Eval</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style></style>
 </head>
 
 <body>
   <div class="container">
-    <h1 class="title"><a href="https://github.com/abhinavrau/velvet-excel-addin">Velvet</a></h1>
+
+    <h1 class="title">
+      <div class="title-container">
+        <img src="assets/search-icon-64.png"></img>
+        Velvet
+      </div>
+    </h1>
     <section class="step">
       <h2 class="step-title">Authentication</h2>
 
@@ -34,28 +40,15 @@
 
     </section>
     <ul class="tabs">
-      <li class="tab active" data-target="search-tab">Search Eval</li>
-      <li class="tab" data-target="qa-tab">Synthetic Q&A</li>
+      <li class="tab active" data-target="search-tab">AgentSpace/VAI Search Eval</li>
+      <li class="tab" data-target="qa-tab">Generate Test Data</li>
     </ul>
 
     <div class="tab-content active" id="search-tab">
       <section class="step">
 
-        <h2 class="step-title">Vertex AI Search Eval</h2>
-        <h3>How to use </h3>
-        <p>
-          1. Click the button below to create a new sheet with required tables.</p>
-        </p>
+        <h2 class="step-title">AgentSpace/ Vertex AI Search Eval</h2>
         <p><button id="createSearchTables">Create Search Eval Sheet ... </button></p>
-        <p>
-          2. Use the "Synthetic Q&A" Tab to generate Questions and Answers
-          <b>OR</b>
-          If you have your own test cases copy into the test case table.
-        </p>
-        <p>
-          3. Fill in Config Parameters for your GCP environment in the Config Table.
-          Adjust the <b>Premable</b> and other settings for your use case.
-        </p>
         <p><b>
             Note:</b> Tests will stop when it sees an empty ID value.
         </p>
@@ -68,21 +61,12 @@
 
     <div class="tab-content" id="qa-tab">
       <section class="step">
-        <h2 class="step-title">Synthetic Q&A Generation</h2>
-        <h3>How to use </h3>
-        <p>
-          1. Click the button below to create a new sheet with required tables.</p>
-        </p>
-        <p><button id="createGenQATables">Create Synth Q&A Sheet ...</button></p>
-        <p>
-          2. Fill in "FileUri" column with GCS doc link. <a
-            href="https://firebase.google.com/docs/vertex-ai/input-file-requirements"> Valid file types.</a>
-        </p>
-        <p>
-          3. Fill in Config Parameters for your GCP environment in the Config Table.
-          Adjust the <b>Prompt</b> and <b>Q&A Quality Prompt</b>
-          for your use case.
+        <h2 class="step-title">Generate Synthetic Questions & Answers</h2>
 
+        <p><button id="createGenQATables">Create QnA Sheet ...</button></p>
+        <p>
+          Fill in "FileUri" column with GCS doc link. <a
+            href="https://firebase.google.com/docs/vertex-ai/input-file-requirements"> Valid file types.</a>
         </p>
         <p><b>
             Note:</b> Generation will stop when it sees an empty ID value.
@@ -167,6 +151,10 @@
       });
     });
   </script>
+  <footer>
+    <p>Made with ❤️ by <a href="https://github.com/abhinavrau/velvet-excel-addin">Abhinav Rau</a></p>
+  </footer>
+
 </body>
 
 </html>

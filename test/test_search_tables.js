@@ -40,9 +40,18 @@ describe("When Create Search Tables is clicked", () => {
             getItem: function (str) {
               return this;
             },
+            getItemOrNullObject: function (str) {
+              return this;
+            },
+            getRange: function (str) {
+              return this.range;
+            },
             range: {
               // Config Table
               values: [[]],
+              getCell: function (x, y) {
+                return this;
+              },
               format: {
                 font: {
                   bold: false,
@@ -134,8 +143,22 @@ describe("When Create Search Tables is clicked", () => {
 
     global.Excel = contextMock;
 
-    const worksheetName = "WorksheetName";
-    await createVAIConfigTable(worksheetName);
+    const ui_config = {
+      vertexAISearchAppId: "l300-arau_1695783344117",
+      vertexAIProjectID: "argolis-arau",
+      vertexAILocation: "us-central1",
+      model: "gemini-1.0-pro-001/answer_gen/v1",
+    };
+
+
+    const data = {
+      sheetName: "WorksheetName",
+      config: ui_config,
+      
+    };
+
+    const worksheetName = data.sheetName;
+    await createVAIConfigTable(data);
 
     expect(contextMock.context.workbook.worksheets.range.values).toEqual([
       [`${worksheetName} - Vertex AI Search Evaluation`],
@@ -157,8 +180,8 @@ describe("When Create Search Tables is clicked", () => {
     const contextMock = new OfficeMockObject(mockData);
 
     global.Excel = contextMock;
-    await createVAIDataTable();
-    const worksheetName = contextMock.context.workbook.worksheets.name;
+    await createVAIDataTable("WorksheetName");
+    const worksheetName = "WorksheetName";
 
     expect(contextMock.context.workbook.worksheets.tables.name).toEqual(
       `${worksheetName}.TestCasesTable`,

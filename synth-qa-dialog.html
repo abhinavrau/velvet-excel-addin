@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+  <title>Enter SheetName and Vertex AI Details</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=0.5">
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 20px;
+      width: 400px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 16px;
+
+    }
+
+    input[type="text"] {
+      width: 250px;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+      font-size: 16px;
+
+    }
+
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .checkbox-container input[type="checkbox"] {
+      width: auto;
+      margin-right: 10px;
+    }
+
+    .checkbox-container label {
+      margin-bottom: 0;
+    }
+  </style>
+  <link rel="stylesheet" href="taskpane.css" />
+  <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+
+  <script>
+    function showStatus(message, isError) {
+      const statusDiv = document.querySelector(".status-popup .status-popup");
+      statusDiv.textContent = message;
+      statusDiv.style.color = isError ? "red" : "green";
+      statusDiv.style.display = "block";
+    }
+
+    (async () => {
+      await Office.onReady();
+
+
+      document.getElementById("ok-button").onclick = sendStringToParentPage;
+
+      const urlParams = new URLSearchParams(window.location.search);
+
+      const encodedConfig = urlParams.get("config");
+      let config = null; // Initialize config
+
+      if (encodedConfig) {
+        try {
+          const decodedConfig = decodeURIComponent(encodedConfig);
+          config = JSON.parse(decodedConfig);
+        } catch (error) {
+          console.error("Error decoding or parsing config:", error);
+        }
+      }
+
+      const vertexAiProjectIdInput = document.getElementById("vertexAiProjectId");
+      const vertexAiLocationInput = document.getElementById("vertexAiLocation");
+      const geminiModelLabel = document.querySelector('label[for="gemini-model"]');
+      const geminiModelInput = document.getElementById("gemini-model");
+
+
+      if (config !== null) {
+        vertexAiAppIdInput.value = config.vertexAISearchAppId;
+        vertexAiProjectIdInput.value = config.vertexAIProjectID;
+        vertexAiLocationInput.value = config.vertexAILocation;
+        geminiModelInput.value = config.model;
+      } else {
+        // set checkbox to false
+        document.getElementById("copyConfig").checked = false;
+        document.getElementById("copyConfig").style.display = "none";
+        const copyConfigLabel = document.querySelector('label[for="copyConfig"]'); // Select the label
+        copyConfigLabel.style.display = "none";
+        vertexAiProjectIdInput.disabled = false;
+        vertexAiLocationInput.disabled = false;
+        geminiModelInput.disabled = false;
+      }
+
+      const gcpRegions = [
+        "us-central1", "us-east1", "us-east4", "us-west1", "us-west2", "us-west3", "us-west4",
+        "northamerica-northeast1", "northamerica-northeast2",
+        "southamerica-east1", "southamerica-west1",
+        "europe-west1", "europe-west2", "europe-west3", "europe-west4", "europe-west6",
+        "europe-central2", "europe-north1",
+        "asia-east1", "asia-east2",
+        "asia-northeast1", "asia-northeast2", "asia-northeast3",
+        "asia-south1", "asia-southeast1", "asia-southeast2",
+        "australia-southeast1", "australia-southeast2",
+        "me-central1", "me-west1", "me-central2",
+        "global" // Add "global" if needed
+      ];
+
+
+
+      // Create the dropdown list
+      const datalist = document.createElement("datalist");
+      datalist.id = "gcp-regions";
+      gcpRegions.forEach(region => {
+        const option = document.createElement("option");
+        option.value = region;
+        datalist.appendChild(option);
+      });
+      vertexAiLocationInput.setAttribute("list", "gcp-regions");
+      document.body.appendChild(datalist);
+
+
+      const geminiModels = [
+        "gemini-2.0-flash-001", "gemini-1.5-flash-002", "gemini-1.5-flash-001", "gemini-1.5-pro-002",
+      ];
+
+      const datalist2 = document.createElement("datalist");
+      datalist2.id = "model";
+      geminiModels.forEach(model => {
+        const option = document.createElement("option");
+        option.value = model;
+        datalist2.appendChild(option);
+      });
+      geminiModelInput.setAttribute("list", "model");
+      document.body.appendChild(datalist2);
+
+
+      function sendStringToParentPage() {
+        const sheetName = document.getElementById("sheetName").value;
+        const vertexAiProjectId = document.getElementById("vertexAiProjectId").value;
+        const vertexAiLocation = document.getElementById("vertexAiLocation").value;
+        const model = document.getElementById("gemini-model").value;
+
+        // Check if the input matches the pattern
+        if (!sheetName.match("^(?!History$)[^\/\\\?\*\:,']{1,31}$")) {
+          showStatus("Invalid Sheet name. Need to match following regexp: ^(?!History$)[^\/\\\?\*\:,']{1,31}$", true);
+          return;
+        }
+
+        if (config === null)
+          config = {};
+
+
+        config.vertexAIProjectID = vertexAiProjectId;
+        config.vertexAILocation = vertexAiLocation;
+        config.model = model;
+
+        const data = {
+          sheetName: sheetName,
+          config: config,
+
+        };
+        console.log("Sending data to parent page:", data);
+        Office.context.ui.messageParent(JSON.stringify(data));
+      }
+    })();
+  </script>
+</head>
+
+<body>
+
+  <label for="sheetName">Eval Name/Sheet Name (Cannot be renamed later!):</label>
+  <input type="text" id="sheetName" value="" pattern="^(?!History$)[^\/\\\?\*\:,']{1,31}$"
+    placeholder="Enter Sheet Name" required="'required'" class="required placeholder" minlength="5" maxlength="31" />
+
+  <div class="checkbox-container">
+    <input type="checkbox" id="copyConfig" name="copyConfig" checked>
+    <label for="copyConfig">Copy Config Values from Active Sheet</label>
+  </div>
+
+  <label for="vertexAiProjectId">Vertex AI Project ID:</label>
+  <input type="text" id="vertexAiProjectId" placeholder="Vertex AI Project ID" required disabled>
+
+  <label for="vertexAiLocation">Vertex AI Location:</label>
+  <input type="text" id="vertexAiLocation" placeholder="us-central1" required disabled>
+
+  <label for="gemini-model">Gemini Model:</label>
+  <input type="text" id="gemini-model" placeholder="Gemini Model" required disabled>
+
+  <script>
+    document.getElementById('copyConfig').addEventListener('change', function () {
+      const vertexAiProjectIdInput = document.getElementById("vertexAiProjectId");
+      const vertexAiLocationInput = document.getElementById("vertexAiLocation");
+      const geminiModelInput = document.getElementById("gemini-model");
+
+
+      vertexAiProjectIdInput.disabled = this.checked;
+      vertexAiLocationInput.disabled = this.checked;
+      geminiModelInput.disabled = this.checked;
+      searchGeminiModelInput.disabled = this.checked;
+    });
+  </script>
+
+  <section class="status-popup">
+    <div class="status-popup"></div>
+  </section>
+  <button id="ok-button">OK</button>
+
+
+</body>
+
+</html>

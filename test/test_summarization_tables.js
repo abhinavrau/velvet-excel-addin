@@ -43,9 +43,18 @@ describe("When Summarization Eval Tables is clicked", () => {
             getItem: function (str) {
               return this;
             },
+            getItemOrNullObject: function (str) {
+              return this;
+            },
+            getRange: function (str) {
+              return this.range;
+            },
             range: {
               // Config Table
               values: [[]],
+              getCell: function (x, y) {
+                return this;
+              },
               format: {
                 font: {
                   bold: false,
@@ -136,11 +145,21 @@ describe("When Summarization Eval Tables is clicked", () => {
     const contextMock = new OfficeMockObject(mockData);
 
     global.Excel = contextMock;
-    await createSummarizationEvalConfigTable();
 
-    const worksheetName = contextMock.context.workbook.worksheets.name;
+    const data = {
+      sheetName: "WorksheetName",
+      vertexAiAppId: "l300-arau_1695783344117",
+      vertexAiProjectNumber: "384473000457",
+      vertexAiProjectId: "argolis-arau",
+      vertexAiLocation: "us-central1",
+    };
+
+    const worksheetName = data.sheetName;
+
+    await createSummarizationEvalConfigTable(data);
+
     expect(contextMock.context.workbook.worksheets.range.values).toEqual([
-      ["Gemini Summarization Evaluation"],
+      [`${worksheetName} - Summary Evaluation`],
     ]);
 
     expect(contextMock.context.workbook.worksheets.tables.name).toEqual(
@@ -159,8 +178,8 @@ describe("When Summarization Eval Tables is clicked", () => {
     const contextMock = new OfficeMockObject(mockData);
 
     global.Excel = contextMock;
-    await createSummarizationEvalDataTable();
-    const worksheetName = contextMock.context.workbook.worksheets.name;
+    await createSummarizationEvalDataTable("WorksheetName");
+    const worksheetName = "WorksheetName";
 
     expect(contextMock.context.workbook.worksheets.tables.name).toEqual(
       `${worksheetName}.SummarizationTestCasesTable`,
