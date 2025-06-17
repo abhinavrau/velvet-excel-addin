@@ -3,12 +3,12 @@ import { configTableFontSize, sheetTitleFontSize } from "../ui.js";
 import { createExcelTable } from "./excel_create_tables.js";
 export async function createSearchRunsTable(sheetName) {
   await createExcelTable(
-    "Search Eval List",
+    "Search Eval Runs",
     "A2",
     "TestRunsTable",
     test_search_runs_table,
-    "A3:J3",
-    "A3:J50",
+    "A3:M3",
+    "A3:M50",
     configTableFontSize,
     sheetTitleFontSize,
     sheetName,
@@ -17,7 +17,7 @@ export async function createSearchRunsTable(sheetName) {
 
 export async function createSyntheticQnARunsTable(sheetName) {
   await createExcelTable(
-    "Synthetic Questions & Answers List",
+    "Synthetic Questions & Answers Eval Runs",
     "A2",
     "SynthQARunsTable",
     synth_qa_runs_table,
@@ -30,7 +30,7 @@ export async function createSyntheticQnARunsTable(sheetName) {
 }
 export async function createSummaryRunsTable(sheetName) {
   await createExcelTable(
-    "Summarization Eval List",
+    "Summarization Eval Runs",
     "A2",
     "SummarizationRunsTable",
     summary_runs_table,

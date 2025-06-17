@@ -12,7 +12,7 @@ import {
 } from "../src/common.js";
 
 import {
-  calculateSimilarityUsingPalm2,
+  calculateSimilarityUsingGemini,
   callCheckGrounding,
   callVertexAISearch,
 } from "../src/vertex_ai.js";
@@ -53,20 +53,32 @@ describe("When calculateSimilarityUsingVertexAI is called ", () => {
     };
 
     var response = {
-      predictions: [
+    "candidates": [
         {
-          content: "same",
-        },
+          content: {
+            role: "model",
+            parts: [
+              {
+                "text": "same"
+              }
+            ]
+          },
+        }
       ],
-    };
-    const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/text-bison:predict`;
+      usageMetadata: {
+        promptTokenCount: 634,
+        candidatesTokenCount: 166,
+        totalTokenCount: 800
+      }
+    }
+    const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/gemini-2.0-flash-001:generateContent`;
     fetchMock.postOnce(url, {
       status: 200,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(response),
     });
 
-    const result = await calculateSimilarityUsingPalm2(1, sentence1, sentence2, config);
+    const result = await calculateSimilarityUsingGemini(1, sentence1, sentence2, config);
     const expectedResponse = {
       id: 1,
       status_code: 200,
@@ -83,18 +95,52 @@ describe("When calculateSimilarityUsingVertexAI is called ", () => {
     var prompt =
       summaryMatching_prompt + config.summaryMatchingAdditionalPrompt + summaryMatching_examples;
 
-    var full_prompt = `${prompt} answer_1: ${sentence1} answer_2: ${sentence2} output:`;
+    var full_prompt = `answer_1: ${sentence1} answer_2: ${sentence2} output:`;
 
     expect(JSON.parse(fetchMock.lastCall()[1].body)).toEqual({
-      instances: [{ prompt: `${full_prompt}` }],
-      parameters: {
-        temperature: 0.2,
-        maxOutputTokens: 256,
-        topK: 40,
-        topP: 0.95,
-        logprobs: 2,
-      },
-    });
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text: `${full_prompt}`,
+              },
+            ],
+          },
+        ],
+        systemInstruction: {
+          parts: [
+            {
+              text: `${prompt}`,
+            },
+          ],
+        },
+        generationConfig: {
+          maxOutputTokens: 8192,
+          temperature: 1,
+          topP: 0.95,
+          response_mime_type: "text/plain",
+        },
+        safetySettings: [
+          {
+            category: "HARM_CATEGORY_HATE_SPEECH",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE",
+          },
+          {
+            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE",
+          },
+          {
+            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE",
+          },
+          {
+            category: "HARM_CATEGORY_HARASSMENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE",
+          },
+        ],
+      }
+    );
 
     expect(result).toEqual(expectedResponse);
   });
@@ -113,7 +159,7 @@ describe("When calculateSimilarityUsingVertexAI is called ", () => {
         message: "Call failed with status code 500 and status message: Internal Server Error",
       },
     };
-    const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/text-bison:predict`;
+    const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/gemini-2.0-flash-001:generateContent`;
     fetchMock.postOnce(url, {
       status: 401,
       headers: { "Content-Type": "application/json" },
@@ -121,7 +167,7 @@ describe("When calculateSimilarityUsingVertexAI is called ", () => {
     });
 
     try {
-      const result = await calculateSimilarityUsingPalm2(1, sentence1, sentence2, config);
+      const result = await calculateSimilarityUsingGemini(1, sentence1, sentence2, config);
       assert.fail();
     } catch (err) {
       expect(fetchMock.called()).toBe(true);
@@ -140,13 +186,13 @@ describe("When calculateSimilarityUsingVertexAI is called ", () => {
       vertexAILocation: "YOUR_LOCATION",
     };
 
-    const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/text-bison:predict`;
+    const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/gemini-2.0-flash-001:generateContent`;
     fetchMock.postOnce(url, {
       throws: new Error("Mocked error"),
     });
 
     try {
-      const result = await calculateSimilarityUsingPalm2(1, sentence1, sentence2, config);
+      const result = await calculateSimilarityUsingGemini(1, sentence1, sentence2, config);
       assert.fail();
     } catch (err) {
       expect(fetchMock.called()).toBe(true);
@@ -184,7 +230,7 @@ describe("When callVertexAISearch is called", () => {
         maxExtractiveSegmentCount: "0",
       },
       summaryResultCount: 2,
-      model: "gemini-1.0-pro-001/answer_gen/v1",
+      model: "gemini-2.0-flash-001/answer_gen/v1",
       useSemanticChunks: false,
       ignoreAdversarialQuery: true,
       ignoreNonSummarySeekingQuery: true,
@@ -326,7 +372,7 @@ describe("When callVertexAISearch is called", () => {
         maxExtractiveSegmentCount: "0",
       },
       summaryResultCount: 2,
-      model: "gemini-1.0-pro-001/answer_gen/v1",
+      model: "gemini-2.0-flash-001/answer_gen/v1",
       useSemanticChunks: false,
       ignoreAdversarialQuery: true,
       ignoreNonSummarySeekingQuery: true,
@@ -364,7 +410,7 @@ describe("When callVertexAISearch is called", () => {
         maxExtractiveSegmentCount: "0",
       },
       summaryResultCount: 2,
-      model: "gemini-1.0-pro-001/answer_gen/v1",
+      model: "gemini-2.0-flash-001/answer_gen/v1",
       useSemanticChunks: false,
       ignoreAdversarialQuery: true,
       ignoreNonSummarySeekingQuery: true,
@@ -433,7 +479,7 @@ describe("When callVertexAISearch is called", () => {
         maxExtractiveSegmentCount: "0",
       },
       summaryResultCount: 2,
-      model: "gemini-1.0-pro-001/answer_gen/v1",
+      model: "gemini-2.0-flash-001/answer_gen/v1",
       useSemanticChunks: false,
       ignoreAdversarialQuery: true,
       ignoreNonSummarySeekingQuery: true,
@@ -468,7 +514,7 @@ describe("When callVertexAISearch is called", () => {
         maxExtractiveSegmentCount: "0",
       },
       summaryResultCount: 2,
-      model: "gemini-1.0-pro-001/answer_gen/v1",
+      model: "gemini-2.0-flash-001/answer_gen/v1",
       useSemanticChunks: false,
       ignoreAdversarialQuery: true,
       ignoreNonSummarySeekingQuery: true,

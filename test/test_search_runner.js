@@ -14,9 +14,6 @@ import { vertex_ai_search_configValues, vertex_ai_search_testTableHeader } from 
 global.$ = $;
 global.JQuery = JQuery;
 
-//global.callVertexAISearch = callVertexAISearch;
-//global.calculateSimilarityUsingVertexAI = calculateSimilarityUsingPalm2;
-
 const { OfficeMockObject } = pkg;
 export var testCaseRows = vertex_ai_search_testTableHeader.concat([
   [
@@ -370,7 +367,7 @@ describe("When Search Run Tests is clicked ", () => {
       vertexAISearchAppId: "l300-arau_1695783344117",
       vertexAIProjectID: "argolis-arau",
       vertexAILocation: "us-central1",
-      model: "gemini-1.0-pro-001/answer_gen/v1",
+      model: "gemini-2.0-flash-001/answer_gen/v1",
     };
 
     const data = {
@@ -528,7 +525,7 @@ describe("When Search Run Tests is clicked ", () => {
       vertexAISearchAppId: "l300-arau_1695783344117",
       vertexAIProjectID: "argolis-arau",
       vertexAILocation: "us-central1",
-      model: "gemini-1.0-pro-001/answer_gen/v1",
+      model: "gemini-2.0-flash-001/answer_gen/v1",
     };
     const data = {
       sheetName: "WorksheetName",
@@ -613,13 +610,25 @@ function getCellAndColumnIndexByName(column_name, mockTestData, rowIndex) {
 
 function mockSimilarityUsingVertexAI(config, returnVal) {
   var response = {
-    predictions: [
+    candidates: [
       {
-        content: `${returnVal}`,
+        content: {
+          role: "model",
+          parts: [
+            {
+              text: "same",
+            },
+          ],
+        },
       },
     ],
+    usageMetadata: {
+      promptTokenCount: 634,
+      candidatesTokenCount: 166,
+      totalTokenCount: 800,
+    },
   };
-  const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/text-bison:predict`;
+  const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/gemini-2.0-flash-001:generateContent`;
   fetchMock.post(url, {
     status: 200,
     headers: { "Content-Type": "application/json" },

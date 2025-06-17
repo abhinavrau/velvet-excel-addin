@@ -1,5 +1,5 @@
 import {
-  calculateSimilarityUsingPalm2,
+  calculateSimilarityUsingGemini,
   callCheckGrounding,
   callVertexAISearch,
 } from "../vertex_ai.js";
@@ -8,6 +8,7 @@ import { appendError, appendLog, showStatus } from "../ui.js";
 
 import { TaskRunner } from "../task_runner.js";
 
+import { getAccuracyFormula, getAverageFormula } from "../common.js";
 import { getColumn, getSearchConfigFromActiveSheet } from "./excel_common.js";
 export class ExcelSearchRunner extends TaskRunner {
   constructor() {
@@ -37,7 +38,9 @@ export class ExcelSearchRunner extends TaskRunner {
         await context.sync();
         const worksheetName = currentWorksheet.name;
 
-        const testCasesTable = currentWorksheet.tables.getItemOrNullObject(`${worksheetName}.TestCasesTable`);
+        const testCasesTable = currentWorksheet.tables.getItemOrNullObject(
+          `${worksheetName}.TestCasesTable`,
+        );
         this.queryColumn = getColumn(testCasesTable, "Query");
         this.idColumn = getColumn(testCasesTable, "ID");
         this.link_1_Column = getColumn(testCasesTable, "Actual Link 1");
@@ -86,7 +89,9 @@ export class ExcelSearchRunner extends TaskRunner {
         }
         const countRows = testCasesTable.rows.count;
 
-        await this.processsAllRows(context, config, countRows, this.idColumn.values);
+        const run_results = await this.processsAllRows(context, config, countRows, this.idColumn.values);
+
+        await this.addSearchRunToTable(context, config, worksheetName, run_results);
 
         // autofit the content
         //currentWorksheet.getUsedRange().format.autofitColumns();
@@ -218,7 +223,7 @@ export class ExcelSearchRunner extends TaskRunner {
         const score_cell = this.summaryScoreColumn.getRange().getCell(rowNum, 0);
         score_cell.clear(Excel.ClearApplyTo.formats);
 
-        const response = await calculateSimilarityUsingPalm2(
+        const response = await calculateSimilarityUsingGemini(
           rowNum,
           result.summary.summaryText,
           expectedSummary[rowNum][0],
@@ -304,6 +309,86 @@ export class ExcelSearchRunner extends TaskRunner {
     } else {
       top2_cell.values = [["FALSE"]];
       top2_cell.format.fill.color = "#FFCCCB";
+    }
+  }
+
+  async addSearchRunToTable(context, config, worksheetName, run_results) {
+    try {
+      const searchEvalRunsSheet = context.workbook.worksheets.getItemOrNullObject("Search Evals");
+      searchEvalRunsSheet.load();
+      await context.sync();
+
+      if (searchEvalRunsSheet.isNullObject) {
+        appendLog("Could not find searchEvalRunsSheet.", new Error("Search Evals sheet not found"));
+        return;
+      }
+
+      const runsTable = searchEvalRunsSheet.tables.getItemOrNullObject("SearchEvals.TestRunsTable");
+      runsTable.load("name");
+      await context.sync();
+
+      if (runsTable.isNullObject) {
+        appendLog(
+          "Could not find 'Search Evals.TestRunsTable' in 'Search Evals' sheet.",
+          new Error("TestRunsTable not found"),
+        );
+        return;
+      }
+
+      const summaryMatchAccuracyFormula = getAccuracyFormula(worksheetName, "Summary Match");
+      const firstLinkMatchAccuracyFormula = getAccuracyFormula(worksheetName, "First Link Match");
+      const linkInTop2AccuracyFormula = getAccuracyFormula(worksheetName, "Link in Top 2");
+      const avgGroundingScoreFormula = getAverageFormula(worksheetName, "Grounding Score");
+
+      // I'll assume num_success and num_errors are available from the TaskRunner base class.
+      // In TaskRunner, they are initialized to 0.
+      // In processsAllRows, they are incremented.
+      const newRowData = [
+        [
+          worksheetName,
+          new Date().toLocaleString(),
+          config.vertexAIProjectID,
+          config.vertexAISearchAppId,
+          run_results.numSuccessful,
+          run_results.numFails,
+          summaryMatchAccuracyFormula,
+          firstLinkMatchAccuracyFormula,
+          linkInTop2AccuracyFormula,
+          avgGroundingScoreFormula,
+          run_results.numCallsMade,
+          run_results.timeTakenSeconds,
+          run_results.stoppedReason,
+        ],
+      ];
+
+      const tableBodyRange = runsTable.getDataBodyRange();
+      tableBodyRange.load(["values", "rowCount"]);
+      await context.sync();
+
+      const tableValues = tableBodyRange.values;
+      let rowIndex = -1;
+      for (let i = 0; i < tableBodyRange.rowCount; i++) {
+        if (tableValues[i][0] === worksheetName) {
+          rowIndex = i;
+          break;
+        }
+      }
+
+      if (rowIndex > -1) {
+        // Update existing row
+        const rowRange = tableBodyRange.getRow(rowIndex);
+        rowRange.values = newRowData;
+        appendLog(`Updated row for ${worksheetName} in 'Search Eval Runs' table.`);
+      } else {
+        // Add new row
+        runsTable.rows.add(null, newRowData);
+        appendLog("Added a new row to 'Search Eval Runs' table.");
+      }
+
+      await context.sync();
+    } catch (error) {
+      appendError(`Error in addSearchRunToTable: ${error.message}`, error);
+      showStatus(`Error adding row to Search Eval Runs table: ${JSON.stringify(error)}`, true);
     }
   }
 }

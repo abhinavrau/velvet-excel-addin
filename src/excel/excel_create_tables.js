@@ -9,6 +9,7 @@ export async function createExcelTable(
   fontSize,
   titlesFontSize,
   sheetName,
+  csvData = null,
 ) {
   await Excel.run(async (context) => {
     try {
@@ -44,7 +45,10 @@ export async function createExcelTable(
         excelTable.rows.add(0, valuesArray.slice(1));
         excelTable.resize(tableRangeEnd);
       } else {
-        excelTable.resize(tableRangeEnd);
+        if (csvData) {
+          excelTable.rows.add(0, csvData);
+        }
+        // excelTable.resize(tableRangeEnd);
         excelTable.showFilterButton = true;
       }
       await context.sync();
@@ -156,6 +160,3 @@ export async function addImageToSheet(sheetName, imageUrl, cell) {
     appendError(`Error adding image:`, error);
   });
 }
-
-
-

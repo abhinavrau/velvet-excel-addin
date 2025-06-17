@@ -58,6 +58,22 @@
     .checkbox-container label {
       margin-bottom: 0;
     }
+
+    select {
+      width: 250px;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+
+    .dropdown-container {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 10px;
+    }
   </style>
   <link rel="stylesheet" href="taskpane.css" />
   <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
@@ -101,6 +117,7 @@
       if (config !== null) {
         vertexAiProjectIdInput.value = config.vertexAIProjectID;
         vertexAiLocationInput.value = config.vertexAILocation;
+        vertexAiAppIdInput.value = config.vertexAISearchAppId;
         searchGeminiModelInput.value = config.model;
       } else {
         // set checkbox to false
@@ -144,9 +161,7 @@
 
       const search_geminiModels = [
         "stable", "gemini-2.0-flash-001/answer_gen/v1",
-        "gemini-1.5-flash-002/answer_gen/v1", "gemini-1.5-flash-001/answer_gen/v2",
-        "gemini-1.5-flash-001/answer_gen/v1", "gemini-1.5-pro-002/answer_gen/v1",
-        "gemini-1.0-pro-002/answer_gen/v1", "preview",
+        "gemini-1.5-flash-002/answer_gen/v1", "preview",
 
       ];
 
@@ -190,6 +205,7 @@
         const data = {
           sheetName: sheetName,
           config: config,
+          sampleData: document.getElementById("sampleDataDropdown").value,
 
         };
         console.log("Sending data to parent page:", data);
@@ -210,6 +226,8 @@
     <label for="copyConfig">Copy All Config Values from Active Sheet</label>
   </div>
 
+
+
   <label for="vertexAiProjectId">Vertex AI Project ID:</label>
   <input type="text" id="vertexAiProjectId" placeholder="Vertex AI Project ID" required disabled>
 
@@ -224,6 +242,21 @@
 
   <label for="search-gemini-model">Answer Generation Gemini Model:</label>
   <input type="text" id="search-gemini-model" placeholder="Answer Generation Gemini Model" required disabled>
+
+  <div class="checkbox-container">
+    <input type="checkbox" id="populateSampleData" name="populateSampleData" checked>
+    <label for="populateSampleData">Populate with Test Data</label>
+  </div>
+
+  <div id="sampleDataDropdownContainer" class="dropdown-container">
+    <label for="sampleDataDropdown">Select Test Data:</label>
+    <select id="sampleDataDropdown">
+      <option value="current_sheet">Data from Current Sheet</option>
+      <option value="alphabet">Alphabet Quaterly & Annual Reports</option>
+      <option value="gemini_bank">Gemini Bank Policies and Procedures</option>
+      <option value="device_manuals">Device User Manuals</option>
+    </select>
+  </div>
   <script>
     document.getElementById('copyConfig').addEventListener('change', function () {
       const vertexAiAppIdInput = document.getElementById("vertexAiAppId");
@@ -236,11 +269,19 @@
       vertexAiLocationInput.disabled = this.checked;
       searchGeminiModelInput.disabled = this.checked;
     });
-  </script>
 
-  <section class="status-popup">
-    <div class="status-popup"></div>
-  </section>
+    document.getElementById('populateSampleData').addEventListener('change', function () {
+      const dropdownContainer = document.getElementById('sampleDataDropdownContainer');
+      dropdownContainer.style.display = this.checked ? 'block' : 'none';
+    });
+
+    // Set initial state based on checkbox
+    document.addEventListener('DOMContentLoaded', function () {
+      const populateCheckbox = document.getElementById('populateSampleData');
+      const dropdownContainer = document.getElementById('sampleDataDropdownContainer');
+      dropdownContainer.style.display = populateCheckbox.checked ? 'block' : 'none';
+    });
+  </script>
   <button id="ok-button">OK</button>
 
 

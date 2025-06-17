@@ -1,5 +1,7 @@
 import {
   findIndexByColumnsNameIn2DArray,
+  getAccuracyFormula,
+  getAverageFormula,
   vertex_ai_search_configValues,
   vertex_ai_search_testTableHeader,
 } from "../common.js";
@@ -67,7 +69,12 @@ export async function createVAIConfigTable(data) {
   await groupRows(data.sheetName, "4:24");
 }
 
-export async function createVAIDataTable(sheetName) {
+export async function createVAIDataTable(sheetName, sampleData = null) {
+
+  let csvData = null;
+  if (sampleData) {
+    csvData = await loadSampleData(sampleData);
+  }
   await Excel.run(async (context) => {
     // Get the active worksheet
     let sheet = context.workbook.worksheets.getItemOrNullObject(sheetName);
@@ -84,7 +91,7 @@ export async function createVAIDataTable(sheetName) {
 
     await context.sync();
   });
-
+  
   await createExcelTable(
     "Search Test Cases",
     "A32",
@@ -95,29 +102,122 @@ export async function createVAIDataTable(sheetName) {
     dataTableFontSize,
     tableTitlesFontSize,
     sheetName,
+    csvData,
   );
+
   const worksheetName = sheetName;
   await summaryHeading(sheetName, "A26:B26", "Evaluation Summary");
 
   const summaryMatchCol = "Summary Match";
-  const summaryMatchFormula = `=IF(COUNTIF(${worksheetName}.TestCasesTable[${summaryMatchCol}], TRUE) + COUNTIF(${worksheetName}.TestCasesTable[${summaryMatchCol}], FALSE) > 0, COUNTIF(${worksheetName}.TestCasesTable[${summaryMatchCol}], TRUE) / (COUNTIF(${worksheetName}.TestCasesTable[${summaryMatchCol}], TRUE) + COUNTIF(${worksheetName}.TestCasesTable[${summaryMatchCol}], FALSE)), 0)`;
+  const summaryMatchFormula = getAccuracyFormula(worksheetName, summaryMatchCol);
   await createFormula(worksheetName, "A27", "Summary Match Accuracy", "B27", summaryMatchFormula);
 
   const firstLinkMatchCol = "First Link Match";
-  const firstLinkMatchFormula = `=IF(COUNTIF(${worksheetName}.TestCasesTable[${firstLinkMatchCol}], TRUE) + COUNTIF(${worksheetName}.TestCasesTable[${firstLinkMatchCol}], FALSE) > 0, COUNTIF(${worksheetName}.TestCasesTable[${firstLinkMatchCol}], TRUE) / (COUNTIF(${worksheetName}.TestCasesTable[${firstLinkMatchCol}], TRUE) + COUNTIF(${worksheetName}.TestCasesTable[${firstLinkMatchCol}], FALSE)), 0)`;
+  const firstLinkMatchFormula = getAccuracyFormula(worksheetName, firstLinkMatchCol);
   await createFormula(worksheetName, "A28", "First Link Match", "B28", firstLinkMatchFormula);
 
   const linkInTop2MatchCol = "Link in Top 2";
-  const linkInTop2MatchFormula = `=IF(COUNTIF(${worksheetName}.TestCasesTable[${linkInTop2MatchCol}], TRUE) + COUNTIF(${worksheetName}.TestCasesTable[${linkInTop2MatchCol}], FALSE) > 0, COUNTIF(${worksheetName}.TestCasesTable[${linkInTop2MatchCol}], TRUE) / (COUNTIF(${worksheetName}.TestCasesTable[${linkInTop2MatchCol}], TRUE) + COUNTIF(${worksheetName}.TestCasesTable[${linkInTop2MatchCol}], FALSE)), 0)`;
+  const linkInTop2MatchFormula = getAccuracyFormula(worksheetName, linkInTop2MatchCol);
   await createFormula(worksheetName, "A29", "Link in Top 2", "B29", linkInTop2MatchFormula);
 
   const groundingScoreCol = "Grounding Score";
-  const groundingScoreFormula = `=IF(COUNTA(${worksheetName}.TestCasesTable[${groundingScoreCol}])>0,AVERAGE(${worksheetName}.TestCasesTable[${groundingScoreCol}]), 0)`;
+  const groundingScoreFormula = getAverageFormula(worksheetName, groundingScoreCol);
   await createFormula(
     worksheetName,
     "A30",
     "Average Grounding Score",
     "B30",
-    groundingScoreFormula,
+    groundingScoreFormula
   );
+}
+
+function parseCSV(csv) {
+  const rows = [];
+  let currentRow = [];
+  let currentField = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < csv.length; i++) {
+    const char = csv[i];
+
+    if (inQuotes) {
+      if (char === '"') {
+        if (i + 1 < csv.length && csv[i + 1] === '"') {
+          currentField += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        currentField += char;
+      }
+    } else {
+      if (char === '"') {
+        inQuotes = true;
+      } else if (char === ",") {
+        currentRow.push(currentField);
+        currentField = "";
+      } else if (char === "\n" || char === "\r") {
+        if (i > 0 && csv[i - 1] !== "\n" && csv[i - 1] !== "\r") {
+          currentRow.push(currentField);
+          rows.push(currentRow);
+          currentRow = [];
+          currentField = "";
+        }
+      } else {
+        currentField += char;
+      }
+    }
+  }
+
+  if (currentField) {
+    currentRow.push(currentField);
+  }
+  if (currentRow.length > 0) {
+    rows.push(currentRow);
+  }
+
+  return rows;
+}
+
+async function loadSampleData(sampleData) {
+  if (sampleData === "current_sheet") {
+    console.log("sampleData is current_sheet, returning.");
+    return;
+  }
+  let fileName = "";
+  if (sampleData === "alphabet") {
+    fileName = "alphabet-reports_dataset.csv";
+  } else if (sampleData === "gemini_bank") {
+    fileName = "gemini-bank_dataset.csv";
+  } else if (sampleData === "device_manuals") {
+    fileName = "user-manuals_dataset.csv";
+  }
+  console.log(`Fetching data from: assets/datasets/${fileName}`);
+
+  const response = await fetch(`assets/datasets/${fileName}`);
+  const csvData = await response.text();
+  console.log("CSV data fetched successfully.");
+  const csvRows = parseCSV(csvData).filter((row) => row.length > 1 || (row.length === 1 && row[0] !== ""));
+  const csvHeader = csvRows[0];
+  const tableHeader = vertex_ai_search_testTableHeader[0];
+  console.log("CSV Header: " + JSON.stringify(csvHeader));
+  console.log("Table Header: " + JSON.stringify(tableHeader));
+
+  const columnIndexMap = tableHeader.map((headerName) => csvHeader.indexOf(headerName));
+  console.log("Column Index Map: " + JSON.stringify(columnIndexMap));
+
+  const alignedRows = csvRows.slice(1).map((row) => {
+    const alignedRow = [];
+    columnIndexMap.forEach((csvIndex, tableIndex) => {
+      if (csvIndex !== -1) {
+        alignedRow[tableIndex] = row[csvIndex];
+      } else {
+        alignedRow[tableIndex] = ""; // Or some default value
+      }
+    });
+    return alignedRow;
+  });
+  console.log("Aligned Rows: " + JSON.stringify(alignedRows));
+  return alignedRows;
 }

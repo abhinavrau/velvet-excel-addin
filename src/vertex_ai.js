@@ -12,7 +12,7 @@ import { appendLog } from "./ui.js";
 export async function callVertexAISearch(id, query, config) {
   const token = config.accessToken;
   const preamble = config.preamble;
-  const model = config.model === "" ? "gemini-1.0-pro-002/answer_gen/v1" : config.model;
+  const model = config.model === "" ? "gemini-2.0-flash-001/answer_gen/v1" : config.model;
   const summaryResultCount = config.summaryResultCount;
   const extractiveContentSpec =
     config.extractiveContentSpec === null ? {} : config.extractiveContentSpec;
@@ -54,38 +54,31 @@ export async function callVertexAISearch(id, query, config) {
   return { id: id, status_code: status, output: json_output };
 }
 
-export async function calculateSimilarityUsingPalm2(id, sentence1, sentence2, config) {
+export async function calculateSimilarityUsingGemini(id, sentence1, sentence2, config) {
   appendLog(`testCaseID: ${id}: SummaryMatch Started `);
 
-  const token = config.accessToken;
-  const projectId = config.vertexAIProjectID;
-  const location = config.vertexAILocation;
   const summaryMatchingAdditionalPrompt =
     config.summaryMatchingAdditionalPrompt === null ? "" : config.summaryMatchingAdditionalPrompt;
 
   var prompt = summaryMatching_prompt + summaryMatchingAdditionalPrompt + summaryMatching_examples;
 
-  var full_prompt = `${prompt} answer_1: ${sentence1} answer_2: ${sentence2} output:`;
+  var full_prompt = `answer_1: ${sentence1} answer_2: ${sentence2} output:`;
 
-  var data = {
-    instances: [{ prompt: `${full_prompt}` }],
-    parameters: {
-      temperature: 0.2,
-      maxOutputTokens: 256,
-      topK: 40,
-      topP: 0.95,
-      logprobs: 2,
-    },
-  };
-
-  const url = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/text-bison:predict`;
-
-  const { status, json_output } = await callVertexAI(url, token, data, id);
-  const output = json_output.predictions[0].content;
+  const json_output = await callGeminiMultitModal(
+    id,
+    full_prompt,
+    prompt,
+    null,
+    null,
+    "gemini-2.0-flash-001",
+    "text/plain",
+    config,
+  );
+  const output = json_output.output.candidates[0].content.parts[0].text;
 
   appendLog(`testCaseID: ${id}: SummaryMatch Finished Successfully `);
 
-  return { id: id, status_code: status, output: `${output}` };
+  return { id: json_output.id, status_code: json_output.status_code, output: `${output}` };
 }
 
 export async function callGeminiMultitModal(

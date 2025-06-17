@@ -6,7 +6,7 @@ import {
   createSearchRunsTable,
   createSummaryRunsTable,
   createSyntheticQnARunsTable,
-} from "./excel_history_tables.js";
+} from "./excel_eval_runs_tables.js";
 import { ExcelSearchRunner } from "./excel_search_runner.js";
 import { SummarizationRunner } from "./excel_summarization_runner.js";
 import {
@@ -122,7 +122,7 @@ async function createSearchTables() {
     const sheetName = data.sheetName;
     await createNewSheet(sheetName, "Search Evals", createSearchRunsTable);
     await createVAIConfigTable(data);
-    await createVAIDataTable(sheetName);
+    await createVAIDataTable(sheetName, data.sampleData);
   });
 }
 

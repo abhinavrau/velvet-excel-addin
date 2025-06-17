@@ -21,6 +21,9 @@ export const test_search_runs_table = [
     "% First Link Match",
     "% Link in Top 2",
     "Avg. Grounding Score",
+    "Num Calls to Vertex AI",
+    "Time Taken",
+    "Stopped Reason",
   ],
 ];
 
@@ -68,7 +71,7 @@ export const vertex_ai_search_configValues = [
     "Preamble (Customized Summaries)",
     `You are an expert financial analyst.  Only use the data returned from documents. All finance numbers must be reported in billions, millions or thousands. Be brief. Answer should be no more than 2 sentences please.`,
   ],
-  ["Answer Model", "gemini-1.0-pro-001/answer_gen/v1"],
+  ["Answer Model", "gemini-2.0-flash-001/answer_gen/v1"],
   [
     "SummaryMatchingAdditionalPrompt",
     "If there are monetary numbers in the answers, they should be matched exactly.",
@@ -106,6 +109,12 @@ export const vertex_ai_search_testTableHeader = [
     "Actual Link 3",
   ],
 ];
+
+export const getAccuracyFormula = (worksheetName, columnName) =>
+  `=IF(COUNTIF(${worksheetName}.TestCasesTable[${columnName}], TRUE) + COUNTIF(${worksheetName}.TestCasesTable[${columnName}], FALSE) > 0, COUNTIF(${worksheetName}.TestCasesTable[${columnName}], TRUE) / (COUNTIF(${worksheetName}.TestCasesTable[${columnName}], TRUE) + COUNTIF(${worksheetName}.TestCasesTable[${columnName}], FALSE)), 0)`;
+
+export const getAverageFormula = (worksheetName, columnName) =>
+  `=IF(COUNTA(${worksheetName}.TestCasesTable[${columnName}])>0,AVERAGE(${worksheetName}.TestCasesTable[${columnName}]), 0)`;
 
 export var summaryMatching_prompt =
   "You will get two answers to a question, you should determine if they are semantically similar or not. ";
@@ -163,7 +172,7 @@ STEP 2: Score based on the rubric.
 
 Return result in JSON format. example output: { 'rating': 2 , evaluation: 'reason'}`,
   ],
-  ["Q & A Quality Model ID", "gemini-1.5-pro-001"],
+  ["Q & A Quality Model ID", "gemini-2.0-flash-001"],
   ["BATCHING SETTINGS", ""],
   ["Batch Size (1-10)", "5"], // BatchSize
   ["Time between Batches in Seconds (1-10)", "1"],
@@ -213,7 +222,7 @@ STEP 2: Score based on the rubric.
 
 Return result in JSON format. example output: { 'rating': 2 , evaluation: 'reason'}`,
   ],
-  ["Summarization Quality Model ID", "gemini-1.5-pro-001"],
+  ["Summarization Quality Model ID", "gemini-2.0-flash-001"],
   ["Batch Size (1-10)", "5"], // BatchSize
   ["Time between Batches in Seconds (1-10)", "1"],
 ];
