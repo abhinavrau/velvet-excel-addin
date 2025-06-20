@@ -5,6 +5,7 @@ import {
   vertex_ai_search_configValues,
   vertex_ai_search_testTableHeader,
 } from "../common.js";
+import { getSyntheticQAData } from "./excel_synthetic_qa_tables.js";
 import {
   configTableFontSize,
   dataTableFontSize,
@@ -51,29 +52,28 @@ export async function createVAIConfigTable(data) {
     // Get the active worksheet
     let sheet = context.workbook.worksheets.getItemOrNullObject(data.sheetName);
 
-    sheet.getRange("B18").format.wrapText = true;
-    sheet.getRange("B20").format.wrapText = true;
+    sheet.getRange("B17").format.wrapText = true;
+    sheet.getRange("B19").format.wrapText = true;
 
     await context.sync();
   });
 
   await makeRowBold(data.sheetName, "A4:B4");
-  await makeRowBold(data.sheetName, "A9:B9");
-  await makeRowBold(data.sheetName, "A16:B16");
-  await makeRowBold(data.sheetName, "A22:B22");
+  await makeRowBold(data.sheetName, "A8:B8");
+  await makeRowBold(data.sheetName, "A15:B15");
+  await makeRowBold(data.sheetName, "A21:B21");
 
-  await groupRows(data.sheetName, "5:8");
-  await groupRows(data.sheetName, "10:15");
-  await groupRows(data.sheetName, "17:21");
-  await groupRows(data.sheetName, "23:24");
-  await groupRows(data.sheetName, "4:24");
+  await groupRows(data.sheetName, "5:7");
+  await groupRows(data.sheetName, "9:14");
+  await groupRows(data.sheetName, "16:20");
+  await groupRows(data.sheetName, "22:23");
+  await groupRows(data.sheetName, "4:23");
 }
 
-export async function createVAIDataTable(sheetName, sampleData = null) {
-
+export async function createVAIDataTable(sheetName, originalWorksheetName = null, sampleData = null) {
   let csvData = null;
   if (sampleData) {
-    csvData = await loadSampleData(sampleData);
+    csvData = await loadSampleData(originalWorksheetName, sampleData);
   }
   await Excel.run(async (context) => {
     // Get the active worksheet
@@ -91,7 +91,7 @@ export async function createVAIDataTable(sheetName, sampleData = null) {
 
     await context.sync();
   });
-  
+
   await createExcelTable(
     "Search Test Cases",
     "A32",
@@ -127,7 +127,7 @@ export async function createVAIDataTable(sheetName, sampleData = null) {
     "A30",
     "Average Grounding Score",
     "B30",
-    groundingScoreFormula
+    groundingScoreFormula,
   );
 }
 
@@ -180,10 +180,24 @@ function parseCSV(csv) {
   return rows;
 }
 
-async function loadSampleData(sampleData) {
+async function getCurrentSheetData(originalWorksheetName) {
+  let data = [];
+  await Excel.run(async (context) => {
+    const worksheet = context.workbook.worksheets.getItemOrNullObject(originalWorksheetName);
+    const table = worksheet.tables.getItemOrNullObject(`${originalWorksheetName}.TestCasesTable`);
+    const tableRange = table.getRange();
+    tableRange.load("values");
+    await context.sync();
+    const tableValues = tableRange.values;
+    tableValues.shift();
+    data = tableValues;
+  });
+  return data;
+}
+
+async function loadSampleData(originalWorksheetName, sampleData) {
   if (sampleData === "current_sheet") {
-    console.log("sampleData is current_sheet, returning.");
-    return;
+    return await getCurrentSheetData(originalWorksheetName);
   }
   let fileName = "";
   if (sampleData === "alphabet") {
@@ -192,13 +206,17 @@ async function loadSampleData(sampleData) {
     fileName = "gemini-bank_dataset.csv";
   } else if (sampleData === "device_manuals") {
     fileName = "user-manuals_dataset.csv";
+  } else {
+    return await getSyntheticQAData(sampleData);
   }
   console.log(`Fetching data from: assets/datasets/${fileName}`);
 
   const response = await fetch(`assets/datasets/${fileName}`);
   const csvData = await response.text();
   console.log("CSV data fetched successfully.");
-  const csvRows = parseCSV(csvData).filter((row) => row.length > 1 || (row.length === 1 && row[0] !== ""));
+  const csvRows = parseCSV(csvData).filter(
+    (row) => row.length > 1 || (row.length === 1 && row[0] !== ""),
+  );
   const csvHeader = csvRows[0];
   const tableHeader = vertex_ai_search_testTableHeader[0];
   console.log("CSV Header: " + JSON.stringify(csvHeader));
@@ -218,6 +236,5 @@ async function loadSampleData(sampleData) {
     });
     return alignedRow;
   });
-  console.log("Aligned Rows: " + JSON.stringify(alignedRows));
   return alignedRows;
 }

@@ -285,7 +285,7 @@ describe("When Summarization Eval is clicked ", () => {
       sheetName: "WorksheetName",
       vertexAiAppId: "l300-arau_1695783344117",
       vertexAiProjectNumber: "384473000457",
-      vertexAiProjectId: "argolis-arau",
+      vertexAiProjectId: "test_project",
       vertexAiLocation: "us-central1",
     };
 

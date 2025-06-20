@@ -54,7 +54,7 @@ export const vertex_ai_search_configValues = [
 
   ["GCP PARAMETERS", ""],
   ["Vertex AI Search App ID", "l300-arau_1695783344117"],
-  ["Vertex AI Project ID", "argolis-arau"],
+  ["Vertex AI Project ID", "test_project"],
   ["Vertex AI Location", "us-central1"],
 
   ["SEARCH SETTINGS", ""],
@@ -125,7 +125,7 @@ export var summaryMatching_examples = `examples - answer_1: I was created by X. 
 export const synth_q_and_a_configValues = [
   ["Config", "Value"],
   ["GCP PARAMETERS", ""],
-  ["Vertex AI Project ID", "argolis-arau"],
+  ["Vertex AI Project ID", "test_project"],
   ["Vertex AI Location", "us-central1"],
   ["GENERATIVE AI MODEL SETTINGS", ""],
   ["Gemini Model ID", "gemini-1.5-flash-001"],
@@ -185,7 +185,7 @@ export const synth_q_and_a_TableHeader = [
 // Summarization  Table Format
 export const summarization_configValues = [
   ["Config", "Value"],
-  ["Vertex AI Project ID", "argolis-arau"],
+  ["Vertex AI Project ID", "test_project"],
   ["Vertex AI Location", "us-central1"],
   ["Gemini Model ID", "gemini-1.5-flash-001"],
   ["System Instructions", ""],

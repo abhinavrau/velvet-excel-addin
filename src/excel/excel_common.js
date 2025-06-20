@@ -1,5 +1,9 @@
-import { findIndexByColumnsNameIn2DArray } from "../common.js";
-import { appendError, showStatus } from "../ui.js";
+import {
+  findIndexByColumnsNameIn2DArray,
+  synth_q_and_a_TableHeader,
+  vertex_ai_search_testTableHeader,
+} from "../common.js";
+import { appendError, appendLog, showStatus } from "../ui.js";
 
 /**
  * @typedef {Object} ConfigFieldMap
@@ -71,21 +75,49 @@ export function getColumn(table, columnName) {
   }
 }
 
+
 export async function getSearchConfigFromActiveSheet(
   reportErrorTableNotFound = false,
   getAccessToken = false,
 ) {
-  return getConfigFromActiveSheet(buildSearchConfig, reportErrorTableNotFound, getAccessToken);
+  return getConfigFromActiveSheet(
+    buildSearchConfig,
+    "TestCasesTable",
+    reportErrorTableNotFound,
+    getAccessToken,
+  );
 }
 
 export async function getSyntheticQAConfigFromActiveSheet(
   reportErrorTableNotFound = false,
   getAccessToken = false,
 ) {
-  return getConfigFromActiveSheet(buildSynthQAConfig, reportErrorTableNotFound, getAccessToken);
+  return getConfigFromActiveSheet(
+    buildSynthQAConfig,
+    "SyntheticQATable",
+    reportErrorTableNotFound,
+    getAccessToken,
+  );
 }
 
-async function getConfigFromActiveSheet(fn_buildConfig, reportErrorTableNotFound, getAccessToken) {
+export async function getSummarizationConfigFromActiveSheet(
+  reportErrorTableNotFound = false,
+  getAccessToken = false,
+) {
+  return getConfigFromActiveSheet(
+    buildSummarizationConfig,
+    "SummarizationTestCasesTable",
+    reportErrorTableNotFound,
+    getAccessToken,
+  );
+}
+
+async function getConfigFromActiveSheet(
+  fn_buildConfig,
+  typeOfTable,
+  reportErrorTableNotFound,
+  getAccessToken,
+) {
   var config = null;
   await Excel.run(async (context) => {
     try {
@@ -94,20 +126,22 @@ async function getConfigFromActiveSheet(fn_buildConfig, reportErrorTableNotFound
       await context.sync();
       const worksheetName = currentWorksheet.name;
 
-      // check if we search data table is there
-
-      const searchTable = currentWorksheet.tables.getItemOrNullObject(
-        `${worksheetName}.TestCasesTable`,
-      );
-
       // check if we config  table is there
       const configTable = currentWorksheet.tables.getItemOrNullObject(
         `${worksheetName}.ConfigTable`,
       );
-      await context.sync();
       configTable.load();
+
+      // check if we search data table is there
+      const searchTable = currentWorksheet.tables.getItemOrNullObject(
+        `${worksheetName}.${typeOfTable}`,
+      );
+      searchTable.load();
       await context.sync();
-      if (configTable.isNullObject === false) {
+
+      // if both tables are found, then the current sheet is of same type as config being fetched
+      // So return the current config
+      if (configTable.isNullObject === false && searchTable.isNullObject === false) {
         const valueColumn = getColumn(configTable, "Value");
         const configColumn = getColumn(configTable, "Config");
         await context.sync();
@@ -117,40 +151,29 @@ async function getConfigFromActiveSheet(fn_buildConfig, reportErrorTableNotFound
         if (getAccessToken) {
           config.accessToken = $("#access-token").val();
         }
-      } else {
+        config.originalWorksheetName = worksheetName;
+        
+      } else if (reportErrorTableNotFound) {
+        var message = "Error in ${worksheetName}: ";
         if (searchTable.isNullObject) {
-          if (reportErrorTableNotFound) {
-            appendLog(
-              `Error: ${worksheetName}.TestCasesTable not found in current sheet. Make sure you are in the right sheet`,
-            );
-            showStatus(
-              `Error: Search Eval table not found in current sheet. Make sure you are in the right sheet`,
-              true,
-            );
-          }
+          message += `${typeOfTable} not found in current sheet. Make sure you are in the right sheet`;
         }
         if (configTable.isNullObject) {
-          if (reportErrorTableNotFound) {
-            appendLog(
-              `Error: ${worksheetName}.ConfigTable not found in current sheet. Make sure you are in the right sheet`,
-            );
-            showStatus(
-              `Error: Search Eval Config Table found in current sheet. Make sure you are in the right sheet`,
-              true,
-            );
-          }
-          // if its not there just return null since this is not a search test sheet
-          return null;
+          message += `ConfigTable not found in current sheet. Make sure you are in the right sheet`;
         }
+        appendLog(message);
+        showStatus(message, true);
       }
     } catch (error) {
-      appendError(`Caught Exception in getSearchConfigFromActiveSheet `, error);
+      const message = `Caught Exception in getSearchConfigFromActiveSheet `;
+      appendError(message, error);
       showStatus(
         `Caught Exception in getSearchConfigFromActiveSheet: ${error}. Trace: ${error.stack}`,
         true,
       );
     }
   });
+  
   return config;
 }
 
@@ -259,7 +282,7 @@ function buildSearchConfig(config, valueColumn, configColumn) {
   return config;
 }
 
-export async function buildSynthQAConfig() {
+export async function buildSynthQAConfig(config, valueColumn, configColumn) {
   config = {
     vertexAIProjectID:
       valueColumn.values[
@@ -301,6 +324,68 @@ export async function buildSynthQAConfig() {
     timeBetweenCallsInSec: parseInt(
       valueColumn.values[
         findIndexByColumnsNameIn2DArray(configColumn.values, synthQAFieldMap.timeBetweenCallsInSec)
+      ][0],
+    ),
+  };
+  return config;
+}
+
+function buildSummarizationConfig(config, valueColumn, configColumn) {
+  config = {
+    vertexAIProjectID:
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(configColumn.values, configFieldMap.vertexAIProjectID)
+      ][0],
+    vertexAILocation:
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(configColumn.values, configFieldMap.vertexAILocation)
+      ][0],
+    model:
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(configColumn.values, configFieldMap.model)
+      ][0],
+    preamble:
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(configColumn.values, configFieldMap.preamble)
+      ][0],
+    summaryResultCount:
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(configColumn.values, configFieldMap.summaryResultCount)
+      ][0],
+    genereateGrounding:
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(configColumn.values, configFieldMap.genereateGrounding)
+      ][0],
+    useSemanticChunks:
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(configColumn.values, configFieldMap.useSemanticChunks)
+      ][0],
+    ignoreAdversarialQuery:
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(configColumn.values, configFieldMap.ignoreAdversarialQuery)
+      ][0],
+    ignoreNonSummarySeekingQuery:
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(
+          configColumn.values,
+          configFieldMap.ignoreNonSummarySeekingQuery,
+        )
+      ][0],
+    summaryMatchingAdditionalPrompt:
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(
+          configColumn.values,
+          configFieldMap.summaryMatchingAdditionalPrompt,
+        )
+      ][0],
+    batchSize: parseInt(
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(configColumn.values, configFieldMap.batchSize)
+      ][0],
+    ),
+    timeBetweenCallsInSec: parseInt(
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(configColumn.values, configFieldMap.timeBetweenCallsInSec)
       ][0],
     ),
   };

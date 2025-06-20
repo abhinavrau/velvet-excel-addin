@@ -80,11 +80,17 @@
 
   <script>
     function showStatus(message, isError) {
-      const statusDiv = document.querySelector(".status-popup .status-popup");
-      statusDiv.textContent = message;
-      statusDiv.style.color = isError ? "red" : "green";
-      statusDiv.style.display = "block";
+      const statusDiv = document.getElementById("status-message-area"); // Use a specific ID
+      if (statusDiv) {
+        statusDiv.textContent = message;
+        statusDiv.style.color = isError ? "red" : "green";
+        statusDiv.style.display = "block"; // Make it visible
+      } else {
+        console.error("Status message area not found!");
+      }
     }
+
+    
 
     (async () => {
       await Office.onReady();
@@ -95,6 +101,7 @@
       const urlParams = new URLSearchParams(window.location.search);
 
       const encodedConfig = urlParams.get("config");
+      const synthQASheetsEncoded = urlParams.get("synthQASheets");
       let config = null; // Initialize config
 
       if (encodedConfig) {
@@ -106,21 +113,47 @@
         }
       }
 
+      let synthQASheets = []; // Initialize synthQASheets
+      if (synthQASheetsEncoded) {
+        try {
+          const decodedSheets = decodeURIComponent(synthQASheetsEncoded);
+          synthQASheets = JSON.parse(decodedSheets);
+        } catch (error) {
+          console.error("Error decoding or parsing synthQASheets:", error);
+        }
+      }
+
       const vertexAiAppIdInput = document.getElementById("vertexAiAppId");
       const vertexAiAppIdLabel = document.querySelector('label[for="vertexAiAppId"]');
       const vertexAiProjectIdInput = document.getElementById("vertexAiProjectId");
       const vertexAiLocationInput = document.getElementById("vertexAiLocation");
       const searchGeminiModelLabel = document.querySelector('label[for="search-gemini-model"]');
       const searchGeminiModelInput = document.getElementById("search-gemini-model");
+      const sampleDataDropdown = document.getElementById("sampleDataDropdown");
 
+      // Store existing static options
+      const staticOptions = Array.from(sampleDataDropdown.options).map(option => ({
+        value: option.value,
+        textContent: option.textContent
+      }));
 
+      // Clear existing options
+      sampleDataDropdown.innerHTML = '';
+
+      // if there is a config, then it means the we have been passed config params to set in the sheet.
+      // Set the values of the inputs
       if (config !== null) {
         vertexAiProjectIdInput.value = config.vertexAIProjectID;
         vertexAiLocationInput.value = config.vertexAILocation;
         vertexAiAppIdInput.value = config.vertexAISearchAppId;
         searchGeminiModelInput.value = config.model;
+        const option = document.createElement("option");
+        option.value = "current_sheet";
+        option.textContent = "Test Cases from Current Sheet";
+        sampleDataDropdown.appendChild(option);
+
       } else {
-        // set checkbox to false
+        // set checkbox to false since there is no config passed in
         document.getElementById("copyConfig").checked = false;
         document.getElementById("copyConfig").style.display = "none";
         const copyConfigLabel = document.querySelector('label[for="copyConfig"]'); // Select the label
@@ -131,6 +164,24 @@
         searchGeminiModelInput.disabled = false;
 
       }
+
+      // See if we have any Synthetic QnA Sheets in the current workbook
+      // If we do then add them to the dropdown
+
+      synthQASheets.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = `Synthetic Questions and Answers from Sheet:${name}`;
+        sampleDataDropdown.appendChild(option);
+      });
+
+      // Add back static options
+      staticOptions.forEach(opt => {
+        const option = document.createElement("option");
+        option.value = opt.value;
+        option.textContent = opt.textContent;
+        sampleDataDropdown.appendChild(option);
+      });
 
 
       const gcpRegions = [
@@ -217,6 +268,8 @@
 
 <body>
 
+  <div id="status-message-area" style="display: none; margin-bottom: 10px; font-weight: bold; padding: 5px; border-radius: 4px;"></div>
+
   <label for="sheetName">Eval Name/Sheet Name (Cannot be renamed later!):</label>
   <input type="text" id="sheetName" value="" pattern="^(?!History$)[^\/\\\?\*\:,']{1,31}$"
     placeholder="Enter Sheet Name" required="'required'" class="required placeholder" minlength="5" maxlength="31" />
@@ -251,7 +304,6 @@
   <div id="sampleDataDropdownContainer" class="dropdown-container">
     <label for="sampleDataDropdown">Select Test Data:</label>
     <select id="sampleDataDropdown">
-      <option value="current_sheet">Data from Current Sheet</option>
       <option value="alphabet">Alphabet Quaterly & Annual Reports</option>
       <option value="gemini_bank">Gemini Bank Policies and Procedures</option>
       <option value="device_manuals">Device User Manuals</option>

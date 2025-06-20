@@ -2,6 +2,7 @@ import {
   findIndexByColumnsNameIn2DArray,
   synth_q_and_a_configValues,
   synth_q_and_a_TableHeader,
+  vertex_ai_search_testTableHeader,
 } from "../common.js";
 import {
   configTableFontSize,
@@ -20,12 +21,16 @@ import {
 export async function createSyntheticQAConfigTable(data) {
   synth_q_and_a_configValues[
     findIndexByColumnsNameIn2DArray(synth_q_and_a_configValues, "Vertex AI Project ID")
-  ][1] = data.vertexAiProjectId;
+  ][1] = data.config.vertexAIProjectID;
 
   synth_q_and_a_configValues[
     findIndexByColumnsNameIn2DArray(synth_q_and_a_configValues, "Vertex AI Location")
-  ][1] = data.vertexAiLocation;
+  ][1] = data.config.vertexAILocation;
 
+  synth_q_and_a_configValues[
+    findIndexByColumnsNameIn2DArray(synth_q_and_a_configValues, "Gemini Model ID")
+  ][1] = data.config.model;
+  
   const worksheetName = await createExcelTable(
     data.sheetName + " - Synthetic Questions & Answers",
     "C2",
@@ -103,4 +108,47 @@ export async function createSyntheticQADataTable(sheetName) {
     summaryFontSize,
     false,
   );
+}
+
+export async function getSyntheticQAData(syntheticQASheetName) {
+  let data = [];
+  await Excel.run(async (context) => {
+    const worksheet = context.workbook.worksheets.getItemOrNullObject(syntheticQASheetName);
+    const table = worksheet.tables.getItem(`${syntheticQASheetName}.SyntheticQATable`);
+    const tableRange = table.getRange();
+    tableRange.load("values");
+    await context.sync();
+
+    const tableValues = tableRange.values;
+    const synthHeader = tableValues[0];
+    const searchHeader = vertex_ai_search_testTableHeader[0];
+
+    const questionIndex = synthHeader.indexOf("Generated Question");
+    const expectedAnswerIndex = synthHeader.indexOf("Expected Answer");
+    const gcsUriIndex = synthHeader.indexOf("GCS File URI");
+
+    const searchQuestionIndex = searchHeader.indexOf("Query");
+    const searchExpectedAnswerIndex = searchHeader.indexOf("Expected Summary");
+    const searchExpectedLink1Index = searchHeader.indexOf("Expected Link 1");
+
+    const alignedRows = tableValues.slice(1).map((row) => {
+      const alignedRow = [];
+      alignedRow[searchQuestionIndex] = row[questionIndex];
+      alignedRow[searchExpectedAnswerIndex] = row[expectedAnswerIndex];
+      alignedRow[searchExpectedLink1Index] = row[gcsUriIndex];
+      // Fill the rest of the columns with empty strings
+      for (let i = 0; i < searchHeader.length; i++) {
+        if (
+          i !== searchQuestionIndex &&
+          i !== searchExpectedAnswerIndex &&
+          i !== searchExpectedLink1Index
+        ) {
+          alignedRow[i] = "";
+        }
+      }
+      return alignedRow;
+    });
+    data = alignedRows;
+  });
+  return data;
 }

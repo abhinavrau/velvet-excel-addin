@@ -278,10 +278,11 @@ describe("When Generate Synthetic Q&A is clicked ", () => {
 
     const data = {
       sheetName: "WorksheetName",
-      vertexAiAppId: "l300-arau_1695783344117",
-      vertexAiProjectNumber: "384473000457",
-      vertexAiProjectId: "argolis-arau",
-      vertexAiLocation: "us-central1",
+      config: {
+        model: "gemini-1.5-flash",
+        vertexAIProjectId: "project_name",
+        vertexAILocation: "us-central1",
+      },
     };
 
     const worksheetName = data.sheetName;

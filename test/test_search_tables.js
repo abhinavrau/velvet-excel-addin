@@ -145,7 +145,7 @@ describe("When Create Search Tables is clicked", () => {
 
     const ui_config = {
       vertexAISearchAppId: "l300-arau_1695783344117",
-      vertexAIProjectID: "argolis-arau",
+      vertexAIProjectID: "test_project",
       vertexAILocation: "us-central1",
       model: "gemini-2.0-flash-001/answer_gen/v1",
     };

@@ -145,19 +145,19 @@ describe("When Create Q&A Tables is clicked", () => {
     const contextMock = new OfficeMockObject(mockData);
 
     global.Excel = contextMock;
-     
+
     const data = {
       sheetName: "WorksheetName",
-      vertexAiAppId: "l300-arau_1695783344117",
-      vertexAiProjectNumber: "384473000457",
-      vertexAiProjectId: "argolis-arau",
-      vertexAiLocation: "us-central1",
+      config: {
+        model: "gemini-1.5-flash",
+        vertexAIProjectId: "test_project",
+        vertexAILocation: "us-central1",
+      },
     };
 
     const worksheetName = data.sheetName;
     await createSyntheticQAConfigTable(data);
 
-    
     expect(contextMock.context.workbook.worksheets.range.values).toEqual([
       [`${worksheetName} - Synthetic Questions & Answers`],
     ]);
@@ -181,9 +181,9 @@ describe("When Create Q&A Tables is clicked", () => {
     await createSyntheticQADataTable("WorksheetName");
     const worksheetName = "WorksheetName";
 
-     expect(contextMock.context.workbook.worksheets.tables.name).toEqual(
+    expect(contextMock.context.workbook.worksheets.tables.name).toEqual(
       `${worksheetName}.SyntheticQATable`,
-    ); 
+    );
 
     expect(contextMock.context.workbook.worksheets.tables.getHeaderRowRange().values).toEqual([
       synth_q_and_a_TableHeader[0],
