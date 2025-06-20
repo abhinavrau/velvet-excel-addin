@@ -5,20 +5,23 @@ export const summaryFontSize = 18;
 export const sheetTitleFontSize = 20;
 
 export function showStatus(message, isError) {
-  $(".status").empty();
+  const statusDiv = $(".status");
+  statusDiv.empty();
 
-  var element = $("<div/>", {
-    class: `status-card ms-depth-4 ${isError ? "error-msg" : "success-msg"}`,
-  }).append(
-    $("<p/>", {
-      class: "ms-fontSize-24 ms-fontWeight-bold",
-      text: isError ? "An error occurred" : "Success",
-      class: "ms-fontSize-16 ms-fontWeight-regular",
-      text: message,
-    }),
-  );
+  // remove any existing color classes from previous status messages
+  statusDiv.removeClass("bg-gray-50 text-gray-700 bg-green-100 text-green-700 bg-red-100 text-red-700");
 
-  $(".status").append(element);
+  if (isError) {
+    statusDiv.addClass("bg-red-100 text-red-700");
+    const title = $("<p/>", { class: "font-bold", text: "An error occurred" });
+    const msg = $("<p/>", { text: message });
+    statusDiv.append(title).append(msg);
+  } else {
+    statusDiv.addClass("bg-green-100 text-green-700");
+    const title = $("<p/>", { class: "font-bold", text: "Success" });
+    const msg = $("<p/>", { text: message });
+    statusDiv.append(title).append(msg);
+  }
 }
 
 export function appendLog(message) {

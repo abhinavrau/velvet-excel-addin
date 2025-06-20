@@ -36,15 +36,25 @@ describe("When Generate Synthetic Q&A is clicked ", () => {
   var showStatusSpy;
   var mockTestData;
   var $stub;
+  var appendStub = sinon.stub();
+  var addClassStub = sinon.stub();
+  var removeClassStub = sinon.stub();
+  var emptyStub = sinon.stub();
+  var jQueryObject;
+
   beforeEach(() => {
     // stub out jQuery calls
-    $stub = sinon.stub(globalThis, "$").returns({
-      empty: sinon.stub(),
-      append: sinon.stub(),
+    jQueryObject = {
+      empty: emptyStub,
+      append: appendStub,
       val: sinon.stub(),
       tabulator: sinon.stub(),
       prop: sinon.stub().returns(true),
-    });
+      removeClass: removeClassStub,
+      addClass: addClassStub,
+    };
+    appendStub.returns(jQueryObject);
+    $stub = sinon.stub(globalThis, "$").returns(jQueryObject);
     // Spy on showStatus
     showStatusSpy = sinon.spy(globalThis, "showStatus");
 
@@ -265,6 +275,10 @@ describe("When Generate Synthetic Q&A is clicked ", () => {
   afterEach(() => {
     $stub.restore();
     showStatusSpy.restore();
+    appendStub.reset();
+    addClassStub.reset();
+    removeClassStub.reset();
+    emptyStub.reset();
     sinon.reset();
   });
 
@@ -282,6 +296,7 @@ describe("When Generate Synthetic Q&A is clicked ", () => {
         model: "gemini-1.5-flash",
         vertexAIProjectId: "project_name",
         vertexAILocation: "us-central1",
+
       },
     };
 

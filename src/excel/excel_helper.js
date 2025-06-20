@@ -1,5 +1,3 @@
-
-
 export async function findSheetsWithTableSuffix(tableSuffix) {
   const sheetNames = [];
   await Excel.run(async (context) => {

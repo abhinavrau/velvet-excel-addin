@@ -1,15 +1,15 @@
 import {
   getSearchConfigFromActiveSheet,
-  getSyntheticQAConfigFromActiveSheet,
   getSummarizationConfigFromActiveSheet,
+  getSyntheticQAConfigFromActiveSheet,
 } from "./excel_common.js";
 
-import { findSheetsWithTableSuffix } from "./excel_helper.js";
 import {
   createSearchRunsTable,
   createSummaryRunsTable,
   createSyntheticQnARunsTable,
 } from "./excel_eval_runs_tables.js";
+import { findSheetsWithTableSuffix } from "./excel_helper.js";
 import { ExcelSearchRunner } from "./excel_search_runner.js";
 import { SummarizationRunner } from "./excel_summarization_runner.js";
 import {
@@ -20,6 +20,7 @@ import { SyntheticQARunner } from "./excel_synthetic_qa_runner.js";
 import {
   createSyntheticQAConfigTable,
   createSyntheticQADataTable,
+  generatePrompt,
 } from "./excel_synthetic_qa_tables.js";
 
 import { createVAIConfigTable, createVAIDataTable } from "./excel_search_tables.js";
@@ -119,7 +120,6 @@ function setupButtonEvents(
 async function createSearchTables() {
   const config = await getSearchConfigFromActiveSheet();
 
-
   await promptSheetName("search", config, async (arg) => {
     //console.log("data:" + arg.message);
     const data = JSON.parse(arg.message);
@@ -138,6 +138,13 @@ async function createSyntheticQATables() {
     const data = JSON.parse(arg.message);
     console.log("data:" + arg.message);
     const sheetName = data.sheetName;
+    if (data.config.persona && data.config.verbosity) {
+      data.config.prompt = generatePrompt({
+        persona: data.config.persona,
+        answerVerbosity: data.config.verbosity,
+        focusArea: data.config.focusArea,
+      });
+    }
     await createNewSheet(sheetName, "Synthetic QnAs", createSyntheticQnARunsTable);
     await createSyntheticQAConfigTable(data);
     await createSyntheticQADataTable(sheetName);
@@ -146,7 +153,7 @@ async function createSyntheticQATables() {
 
 async function createSummarizationTables() {
   const config = await getSummarizationConfigFromActiveSheet();
-  
+
   await promptSheetName("summary", config, async (arg) => {
     const data = JSON.parse(arg.message);
     const sheetName = data.sheetName;
@@ -162,12 +169,12 @@ async function promptSheetName(type, config, callback) {
   const baseUrl = window.location.origin;
   var page = "";
   var synthQASheets = [];
-  
+
   switch (type) {
     case "search":
       page = `search-dialog.html`;
       synthQASheets = await findSheetsWithTableSuffix("SyntheticQATable");
-      
+
       break;
     case "synthQA":
       page = `synth-qa-dialog.html`;
@@ -180,7 +187,7 @@ async function promptSheetName(type, config, callback) {
       break;
   }
   // Creae URL object
-  const url = new URL(`${baseUrl}/${page}`)
+  const url = new URL(`${baseUrl}/${page}`);
 
   if (config !== null) {
     const encodedConfig = encodeURIComponent(JSON.stringify(config));
@@ -194,7 +201,7 @@ async function promptSheetName(type, config, callback) {
   // pass it to the dialog popup.html below
   Office.context.ui.displayDialogAsync(
     url.href,
-    { height: 45, width: 55 },
+    { height: 55, width: 35 },
 
     function (result) {
       dialog = result.value;

@@ -50,15 +50,25 @@ export var testCaseRows = summarization_TableHeader.concat([
 describe("When Summarization Eval is clicked ", () => {
   var mockTestData;
   var $stub;
+  var appendStub = sinon.stub();
+  var addClassStub = sinon.stub();
+  var removeClassStub = sinon.stub();
+  var emptyStub = sinon.stub();
+  var jQueryObject;
+
   beforeEach(() => {
     // stub out jQuery calls
-    $stub = sinon.stub(globalThis, "$").returns({
-      empty: sinon.stub(),
-      append: sinon.stub(),
+    jQueryObject = {
+      empty: emptyStub,
+      append: appendStub,
       val: sinon.stub(),
       tabulator: sinon.stub(),
       prop: sinon.stub().returns(true),
-    });
+      removeClass: removeClassStub,
+      addClass: addClassStub,
+    };
+    appendStub.returns(jQueryObject);
+    $stub = sinon.stub(globalThis, "$").returns(jQueryObject);
 
     fetchMock.reset();
 
@@ -271,6 +281,10 @@ describe("When Summarization Eval is clicked ", () => {
 
   afterEach(() => {
     $stub.restore();
+    appendStub.reset();
+    addClassStub.reset();
+    removeClassStub.reset();
+    emptyStub.reset();
     sinon.reset();
   });
 

@@ -30,6 +30,13 @@ export async function createSyntheticQAConfigTable(data) {
   synth_q_and_a_configValues[
     findIndexByColumnsNameIn2DArray(synth_q_and_a_configValues, "Gemini Model ID")
   ][1] = data.config.model;
+
+  if (data.config.prompt) {
+    
+    synth_q_and_a_configValues[
+      findIndexByColumnsNameIn2DArray(synth_q_and_a_configValues, "Prompt")
+    ][1] = data.config.prompt;
+  }
   
   const worksheetName = await createExcelTable(
     data.sheetName + " - Synthetic Questions & Answers",
@@ -151,4 +158,41 @@ export async function getSyntheticQAData(syntheticQASheetName) {
     data = alignedRows;
   });
   return data;
+}
+
+export function generatePrompt(options) {
+  // --- Input Validation (optional but recommended) ---
+  if (
+    !options.persona ||
+    !options.answerVerbosity
+  ) {
+    throw new Error("Missing required options for prompt generation.");
+  }
+
+  // --- Constructing Optional Guidelines ---
+  let additionalConsiderations = "";
+  if (options.focusArea) {
+    additionalConsiderations += `\n    * ${options.focusArea}`;
+  }
+
+  // --- The Prompt Template ---
+  const promptTemplate = `
+You are a ${options.persona}. Your goal is to find specific information within the provided document(s) that is relevant to your role and responsibilities.
+You are detail-oriented and need accurate, contextually-aware answers.
+
+**Generation Guidelines**
+
+When generating the question-answer pairs, you must adhere to the following guidelines:
+
+* **Verbosity of Answers:** The answers should be ${options.answerVerbosity}.
+* **Question Complexity & Style:** The questions should be formulated to mimic real-world inquiries. This includes:
+    * **Direct Fact-Finding Questions:** (e.g., "What is the maximum liability coverage for Project X?")
+    * **Comparative Questions:** (e.g., "What are the differences in the maintenance schedules for the A-series and B-series equipment?")
+    * **Multi-Detail Questions:** These questions should require synthesizing information from multiple parts of the document to form a complete answer. (e.g., "What are the security protocols and the associated reporting procedures for a data breach?")
+    * **Scenario-Based Questions:** Frame some questions as if you are facing a real-world problem. (e.g., "I am a new project manager. What are the first three steps I need to take to initiate a project according to the 'Project Initiation' section?")
+* **Additional Considerations:**${additionalConsiderations || "\n    * None."}
+
+`;
+
+  return promptTemplate.trim();
 }

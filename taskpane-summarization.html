@@ -18,7 +18,13 @@
   <link rel="stylesheet" href="taskpane.css" />
   <title>Velvet</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style></style>
+  <style>
+    #toggleLogs.logs-shown {
+      background-color: #e0e0e0; /* Lighter background when logs are shown */
+      color: #333;
+      border: 1px solid #ccc;
+    }
+  </style>
 </head>
 
 <body>
@@ -71,7 +77,7 @@
       <div class="status"></div>
     </section>
     <section class="logs">
-      <button id="toggleLogs">Show/Hide Logs</button>
+      <button id="toggleLogs">Show Logs ▼</button>
       <div class="log-container">
         <div id="log-pane" style="display: none"></div>
       </div>
@@ -117,11 +123,18 @@
     const toggleLogsButton = document.getElementById("toggleLogs");
     const logPane = document.getElementById("log-pane");
 
+    // Set initial button text based on log pane's initial state
+    logPane.style.display === "none" ? toggleLogsButton.textContent = "Show Logs ▼" : toggleLogsButton.textContent = "Hide Logs ▲";
+
     toggleLogsButton.addEventListener("click", () => {
       if (logPane.style.display === "none") {
         logPane.style.display = "block"; // Or 'inline' depending on your layout
+        toggleLogsButton.textContent = "Hide Logs ▲";
+        toggleLogsButton.classList.add("logs-shown");
       } else {
         logPane.style.display = "none";
+        toggleLogsButton.textContent = "Show Logs ▼";
+        toggleLogsButton.classList.remove("logs-shown");
       }
     });
     const tabs = document.querySelectorAll(".tab");

@@ -121,15 +121,24 @@ describe("When Search Run Tests is clicked ", () => {
   var $stub;
   var tabulatorStub = sinon.stub();
   var appendStub = sinon.stub();
+  var addClassStub = sinon.stub();
+  var removeClassStub = sinon.stub();
+  var emptyStub = sinon.stub();
+  var jQueryObject;
+
   beforeEach(() => {
     // stub out jQuery calls
-    $stub = sinon.stub(globalThis, "$").returns({
-      empty: sinon.stub(),
+    jQueryObject = {
+      empty: emptyStub,
       append: appendStub,
       val: sinon.stub(),
       tabulator: tabulatorStub,
       prop: sinon.stub().returns(true),
-    });
+      removeClass: removeClassStub,
+      addClass: addClassStub,
+    };
+    appendStub.returns(jQueryObject);
+    $stub = sinon.stub(globalThis, "$").returns(jQueryObject);
 
     fetchMock.reset();
 
@@ -354,6 +363,9 @@ describe("When Search Run Tests is clicked ", () => {
   afterEach(() => {
     $stub.restore();
     appendStub.reset();
+    addClassStub.reset();
+    removeClassStub.reset();
+    emptyStub.reset();
     sinon.reset();
   });
 
@@ -508,11 +520,9 @@ describe("When Search Run Tests is clicked ", () => {
     }
     expect($stub.calledWith("#log-pane")).toBe(true);
     expect($stub.calledWith(".status")).toBe(true);
-    expect(
-      $stub.calledWith("<div/>", {
-        class: `status-card ms-depth-4 success-msg`,
-      }),
-    ).toBe(true);
+    expect(removeClassStub.called).toBe(true);
+    expect(addClassStub.calledWith("bg-green-100 text-green-700")).toBe(true);
+    expect(appendStub.called).toBe(true);
   });
 
   it("should log error when there is error in vertex ai api", async () => {
@@ -578,22 +588,9 @@ describe("When Search Run Tests is clicked ", () => {
 
     // ensure things are written to the status div
     expect($stub.calledWith(".status")).toBe(true);
-    // emsure error status in status card
-    expect(
-      $stub.calledWith("<div/>", {
-        class: `status-card ms-depth-4 error-msg`,
-      }),
-    ).toBe(true);
-
-    // Make sure status is correct
-    expect(
-      $stub.calledWith("<p/>", {
-        class: "ms-fontSize-24 ms-fontWeight-bold",
-        text: "An error occurred",
-        class: "ms-fontSize-16 ms-fontWeight-regular",
-        text: "Finished! Successful: 0. Failed: 1. See logs for details.",
-      }),
-    ).toBe(true);
+    expect(removeClassStub.called).toBe(true);
+    expect(addClassStub.calledWith("bg-red-100 text-red-700")).toBe(true);
+    expect(appendStub.called).toBe(true);
   });
 });
 
