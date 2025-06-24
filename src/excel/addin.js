@@ -1,5 +1,6 @@
 import {
   getSearchConfigFromActiveSheet,
+  getAnswerConfigFromActiveSheet,
   getSummarizationConfigFromActiveSheet,
   getSyntheticQAConfigFromActiveSheet,
 } from "./excel_common.js";
@@ -11,6 +12,7 @@ import {
 } from "./excel_eval_runs_tables.js";
 import { findSheetsWithTableSuffix } from "./excel_helper.js";
 import { ExcelSearchRunner } from "./excel_search_runner.js";
+import { ExcelAnswerRunner } from "./excel_answer_runner.js";
 import { SummarizationRunner } from "./excel_summarization_runner.js";
 import {
   createSummarizationEvalConfigTable,
@@ -23,9 +25,15 @@ import {
   generatePrompt,
 } from "./excel_synthetic_qa_tables.js";
 
-import { createVAIConfigTable, createVAIDataTable } from "./excel_search_tables.js";
+import {
+  createVAIConfigTable,
+  createVAIDataTable,
+  createVAIAnswerConfigTable,
+} from "./excel_search_tables.js";
+
 
 let excelSearchRunner;
+let excelAnswerRunner;
 let summarizationRunner;
 let syntheticQuestionAnswerRunner;
 // Initialize Office API
@@ -34,6 +42,7 @@ Office.onReady((info) => {
   // Check that we loaded into Excel
   if (info.host === Office.HostType.Excel) {
     excelSearchRunner = new ExcelSearchRunner();
+    excelAnswerRunner = new ExcelAnswerRunner();
     setupButtonEvents(
       "createSearchTables",
       createSearchTables,
@@ -46,6 +55,20 @@ Office.onReady((info) => {
       "cancelSearchTests",
       async function () {
         await excelSearchRunner.cancelProcessing();
+      },
+    );
+    setupButtonEvents(
+      "createAnswerTablesBtn",
+      createAnswerTables,
+      "executeAnswerTests",
+      async function () {
+        const config = await excelAnswerRunner.getSearchConfig();
+        if (config == null) return;
+        await excelAnswerRunner.executeSearchTests(config);
+      },
+      "cancelAnswerTests",
+      async function () {
+        await excelAnswerRunner.cancelProcessing();
       },
     );
     syntheticQuestionAnswerRunner = new SyntheticQARunner();
@@ -131,6 +154,20 @@ async function createSearchTables() {
   });
 }
 
+async function createAnswerTables() {
+  const config = await getAnswerConfigFromActiveSheet();
+
+  await promptSheetName("answer", config, async (arg) => {
+    //console.log("data:" + arg.message);
+    const data = JSON.parse(arg.message);
+    const sheetName = data.sheetName;
+
+    await createNewSheet(sheetName, "Search Evals", createSearchRunsTable);
+    await createVAIAnswerConfigTable(data);
+    await createVAIDataTable(sheetName, data.config.originalWorksheetName, data.sampleData);
+  });
+}
+
 async function createSyntheticQATables() {
   const config = await getSyntheticQAConfigFromActiveSheet();
 
@@ -172,6 +209,7 @@ async function promptSheetName(type, config, callback) {
 
   switch (type) {
     case "search":
+    case "answer":
       page = `search-dialog.html`;
       synthQASheets = await findSheetsWithTableSuffix("SyntheticQATable");
 

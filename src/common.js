@@ -76,7 +76,37 @@ export const vertex_ai_search_configValues = [
     "SummaryMatchingAdditionalPrompt",
     "If there are monetary numbers in the answers, they should be matched exactly.",
   ],
-  ["Generate Grounding Score", "True"], //generate grounding score
+  ["Generate Grounding Score", "False"], //generate grounding score
+
+  ["BATCHING SETTINGS", ""],
+  ["Batch Size (1-10)", "5"], // BatchSize
+  ["Time between Batches in Seconds (1-10)", "1"],
+];
+
+export const vertex_ai_answer_configValues = [
+  ["Config", "Value"],
+
+  ["GCP PARAMETERS", ""],
+  ["Vertex AI Search App ID", "l300-arau_1695783344117"],
+  ["Vertex AI Project ID", "test_project"],
+  ["Vertex AI Location", "us-central1"],
+
+  ["SUMMARY GENERATION SETTINGS", ""],
+  [
+    "Preamble (Customized Summaries)",
+    `You are an expert financial analyst. Focus on questions related to financial amounts, dates, and deadlines.`,
+  ],
+  ["Answer Model", "stable"],
+  [
+    "SummaryMatchingAdditionalPrompt",
+    "If there are monetary numbers in the answers, they should be matched exactly.",
+  ],
+  ["SEARCH SETTINGS", ""],
+  ["ignoreAdversarialQuery (True or False)", "True"], // ignoreAdversarialQuery
+  ["ignoreNonAnswerSeekingQuery (True or False)", "False"], // ignoreNonAnswerSeekingQuery
+  ["ignoreLowRelevantContent (True or False)", "True"], // ignoreLowRelevantContent
+  ["includeGroundingSupports (True or False)", "True"], // includeGroundingSupports
+  ["includeCitations (True or False)", "True"], // includeCitations
 
   ["BATCHING SETTINGS", ""],
   ["Batch Size (1-10)", "5"], // BatchSize

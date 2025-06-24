@@ -1,0 +1,158 @@
+{
+  "answer": {
+    "state": "SUCCEEDED",
+    "answerText": "The gross revenue currency neutral growth for Q1/24 actual is 201.5%.\n",
+    "citations": [
+      {
+        "endIndex": "69",
+        "sources": [
+          {
+            "referenceId": "0"
+          },
+          {
+            "referenceId": "1"
+          }
+        ]
+      }
+    ],
+    "references": [
+      {
+        "structuredDocumentInfo": {
+          "document": "projects/384473000457/locations/global/collections/default_collection/dataStores/mastercard-sheets_1749570681670/branches/0/documents/1d-qJ9bSyYsGnHy0XZtRaO7p0Sd-Y6TEt",
+          "structData": {},
+          "title": "RevenueForcast-Actuals.xlsx",
+          "uri": "https://drive.google.com/a/arau.altostrat.com/open?id=1d-qJ9bSyYsGnHy0XZtRaO7p0Sd-Y6TEt"
+        }
+      },
+      {
+        "structuredDocumentInfo": {
+          "document": "projects/384473000457/locations/global/collections/default_collection/dataStores/mastercard-sheets_1749570681670/branches/0/documents/1d-qJ9bSyYsGnHy0XZtRaO7p0Sd-Y6TEt",
+          "structData": {},
+          "title": "RevenueForcast-Actuals.xlsx",
+          "uri": "https://drive.google.com/a/arau.altostrat.com/open?id=1d-qJ9bSyYsGnHy0XZtRaO7p0Sd-Y6TEt"
+        }
+      }
+    ],
+    "steps": [
+      {
+        "state": "SUCCEEDED",
+        "description": "Rephrase the query and search.",
+        "actions": [
+          {
+            "searchAction": {
+              "query": " What is the gross revenue for Q1/24 actual?"
+            },
+            "observation": {
+              "searchResults": [
+                {
+                  "document": "projects/384473000457/locations/global/collections/default_collection/dataStores/mastercard-sheets_1749570681670/branches/0/documents/1d-qJ9bSyYsGnHy0XZtRaO7p0Sd-Y6TEt",
+                  "structData": {
+                    "owner_email": "ce-arau@arau.altostrat.com",
+                    "snippets": [
+                      {
+                        "snippet": "Sheet1 ,Line,Short,Metric,Q1/2025 \u003cb\u003eactual\u003c/b\u003e,Q1/2024 forecast,Q2/2024 forecast,Q3/2024 forecast,Q4/2024 forecast,FY/2024 forecast,Q1/2024 \u003cb\u003eActual\u003c/b\u003e ...",
+                        "snippet_status": "SUCCESS"
+                      }
+                    ],
+                    "link": "https://drive.google.com/a/arau.altostrat.com/open?id=1d-qJ9bSyYsGnHy0XZtRaO7p0Sd-Y6TEt",
+                    "update_time": 1749576401,
+                    "owner": "CE-Abhinav Rau",
+                    "create_time": 1749570603,
+                    "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "share_scope": "LIMITED",
+                    "title": "RevenueForcast-Actuals.xlsx",
+                    "tags_data": [
+                      {
+                        "metadata_type": "date",
+                        "order": 0,
+                        "label": "created_on",
+                        "value": "2025-06-10T08:50:03-07:00"
+                      },
+                      {
+                        "label": "updated_on",
+                        "value": "2025-06-10T10:26:41-07:00",
+                        "metadata_type": "date",
+                        "order": 1
+                      },
+                      {
+                        "label": "created_by",
+                        "order": 2,
+                        "metadata_type": "person",
+                        "value": "CE-Abhinav Rau"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "searchAction": {
+              "query": " What is the currency neutral growth for Q1/24 actual?"
+            },
+            "observation": {
+              "searchResults": [
+                {
+                  "document": "projects/384473000457/locations/global/collections/default_collection/dataStores/mastercard-sheets_1749570681670/branches/0/documents/1d-qJ9bSyYsGnHy0XZtRaO7p0Sd-Y6TEt",
+                  "structData": {
+                    "update_time": 1749576401,
+                    "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "owner": "CE-Abhinav Rau",
+                    "link": "https://drive.google.com/a/arau.altostrat.com/open?id=1d-qJ9bSyYsGnHy0XZtRaO7p0Sd-Y6TEt",
+                    "title": "RevenueForcast-Actuals.xlsx",
+                    "share_scope": "LIMITED",
+                    "create_time": 1749570603,
+                    "owner_email": "ce-arau@arau.altostrat.com",
+                    "tags_data": [
+                      {
+                        "metadata_type": "date",
+                        "label": "created_on",
+                        "value": "2025-06-10T08:50:03-07:00",
+                        "order": 0
+                      },
+                      {
+                        "metadata_type": "date",
+                        "order": 1,
+                        "label": "updated_on",
+                        "value": "2025-06-10T10:26:41-07:00"
+                      },
+                      {
+                        "value": "CE-Abhinav Rau",
+                        "order": 2,
+                        "label": "created_by",
+                        "metadata_type": "person"
+                      }
+                    ],
+                    "snippets": [
+                      {
+                        "snippet": "Sheet1 ,Line,Short,Metric,Q1/2025 \u003cb\u003eactual\u003c/b\u003e,Q1/2024 forecast,Q2/2024 forecast,Q3/2024 forecast,Q4/2024 forecast,FY/2024 forecast,Q1/2024 \u003cb\u003eActual\u003c/b\u003e ...",
+                        "snippet_status": "SUCCESS"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "groundingScore": 0.553,
+    "groundingSupports": [
+      {
+        "endIndex": "69",
+        "groundingScore": 0.553,
+        "groundingCheckRequired": true,
+        "sources": [
+          {
+            "referenceId": "0"
+          },
+          {
+            "referenceId": "1"
+          }
+        ]
+      }
+    ]
+  },
+  "answerQueryToken": "NMwKDAjVk-vCBhDU8Z23AxIkNjg1YTY2MzMtMDAwMC0yZWY1LWI3ODItNzQ3NDQ2M2M2N2Q1"
+}

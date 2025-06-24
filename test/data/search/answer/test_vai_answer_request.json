@@ -1,0 +1,21 @@
+{
+  "query": {
+    "text": "What is the gross revenue currency neutral growth for Q1/24?"
+  },
+  "groundingSpec": {
+    "includeGroundingSupports": "true"
+  },
+  "answerGenerationSpec": {
+    "ignoreAdversarialQuery": "true",
+    "ignoreNonAnswerSeekingQuery": "false",
+    "ignoreLowRelevantContent": "true",
+    "multimodalSpec": {},
+    "includeCitations": "true",
+    "modelSpec": {
+      "modelVersion": "stable"
+    },
+    "promptSpec": {
+      "preamble": "You are an expert financial analyst. Focus on questions related to financial amounts, dates, and deadlines."
+    }
+  }
+}

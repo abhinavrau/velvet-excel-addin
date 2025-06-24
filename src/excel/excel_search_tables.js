@@ -3,6 +3,7 @@ import {
   getAccuracyFormula,
   getAverageFormula,
   vertex_ai_search_configValues,
+  vertex_ai_answer_configValues,
   vertex_ai_search_testTableHeader,
 } from "../common.js";
 import { getSyntheticQAData } from "./excel_synthetic_qa_tables.js";
@@ -19,6 +20,59 @@ import {
   makeRowBold,
   summaryHeading,
 } from "./excel_create_tables.js";
+
+
+export async function createVAIAnswerConfigTable(data) {
+  vertex_ai_answer_configValues[
+    findIndexByColumnsNameIn2DArray(vertex_ai_answer_configValues, "Vertex AI Search App ID")
+  ][1] = data.config.vertexAISearchAppId;
+
+  vertex_ai_answer_configValues[
+    findIndexByColumnsNameIn2DArray(vertex_ai_answer_configValues, "Vertex AI Project ID")
+  ][1] = data.config.vertexAIProjectID;
+
+  vertex_ai_answer_configValues[
+    findIndexByColumnsNameIn2DArray(vertex_ai_answer_configValues, "Vertex AI Location")
+  ][1] = data.config.vertexAILocation;
+
+  vertex_ai_answer_configValues[
+    findIndexByColumnsNameIn2DArray(vertex_ai_answer_configValues, "Answer Model")
+  ][1] = data.config.model;
+
+  const worksheetName = await createExcelTable(
+    data.sheetName + " : Agentspace (Answer method) Evaluation",
+    "C2",
+    "ConfigTable",
+    vertex_ai_answer_configValues,
+    "A3:B3",
+    "A3:B21",
+    configTableFontSize,
+    sheetTitleFontSize,
+    data.sheetName,
+  );
+
+  await Excel.run(async (context) => {
+    // Get the active worksheet
+    let sheet = context.workbook.worksheets.getItemOrNullObject(data.sheetName);
+
+    sheet.getRange("B9").format.wrapText = true;
+    sheet.getRange("B11").format.wrapText = true;
+
+    await context.sync();
+  });
+
+  await makeRowBold(data.sheetName, "A4:B4");
+  await makeRowBold(data.sheetName, "A8:B8");
+  await makeRowBold(data.sheetName, "A12:B12");
+  await makeRowBold(data.sheetName, "A18:B18");
+
+  await groupRows(data.sheetName, "5:7");
+  await groupRows(data.sheetName, "9:11");
+  await groupRows(data.sheetName, "13:17");
+  await groupRows(data.sheetName, "19:20");
+  await groupRows(data.sheetName, "4:20");
+}
+
 export async function createVAIConfigTable(data) {
   vertex_ai_search_configValues[
     findIndexByColumnsNameIn2DArray(vertex_ai_search_configValues, "Vertex AI Search App ID")
@@ -37,7 +91,7 @@ export async function createVAIConfigTable(data) {
   ][1] = data.config.model;
 
   const worksheetName = await createExcelTable(
-    data.sheetName + " - Vertex AI Search Evaluation",
+    data.sheetName + " : Vertex AI Search (Generic) Evaluation",
     "C2",
     "ConfigTable",
     vertex_ai_search_configValues,

@@ -4,10 +4,18 @@ import pkg from "office-addin-mock";
 import { default as $, default as JQuery } from "jquery";
 
 import sinon from "sinon";
-import { createVAIConfigTable, createVAIDataTable } from "../src/excel/excel_search_tables.js";
+import {
+  createVAIConfigTable,
+  createVAIDataTable,
+  createVAIAnswerConfigTable,
+} from "../src/excel/excel_search_tables.js";
 import { showStatus } from "../src/ui.js";
 
-import { vertex_ai_search_configValues, vertex_ai_search_testTableHeader } from "../src/common.js";
+import {
+  vertex_ai_search_configValues,
+  vertex_ai_answer_configValues,
+  vertex_ai_search_testTableHeader,
+} from "../src/common.js";
 // mock the UI components
 global.showStatus = showStatus;
 global.$ = $;
@@ -170,6 +178,42 @@ describe("When Create Search Tables is clicked", () => {
     ]);
     expect(contextMock.context.workbook.worksheets.tables.rows.values).toEqual(
       vertex_ai_search_configValues.slice(1),
+    );
+  });
+
+  it("should create the Answer Config table with the correct name and headers", async () => {
+    // Create the final mock object from the seed object.
+    const contextMock = new OfficeMockObject(mockData);
+
+    global.Excel = contextMock;
+
+    const ui_config = {
+      vertexAISearchAppId: "l300-arau_1695783344117",
+      vertexAIProjectID: "test_project",
+      vertexAILocation: "us-central1",
+      model: "gemini-2.0-flash-001/answer_gen/v1",
+    };
+
+    const data = {
+      sheetName: "WorksheetName",
+      config: ui_config,
+    };
+
+    const worksheetName = data.sheetName;
+    await createVAIAnswerConfigTable(data);
+
+    expect(contextMock.context.workbook.worksheets.range.values).toEqual([
+      [`${worksheetName} : Agentspace (Answer method) Evaluation`],
+    ]);
+
+    expect(contextMock.context.workbook.worksheets.tables.name).toEqual(
+      `${worksheetName}.ConfigTable`,
+    );
+    expect(contextMock.context.workbook.worksheets.tables.getHeaderRowRange().values).toEqual([
+      vertex_ai_answer_configValues[0],
+    ]);
+    expect(contextMock.context.workbook.worksheets.tables.rows.values).toEqual(
+      vertex_ai_answer_configValues.slice(1),
     );
   });
 

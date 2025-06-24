@@ -1,8 +1,4 @@
-import {
-  findIndexByColumnsNameIn2DArray,
-  synth_q_and_a_TableHeader,
-  vertex_ai_search_testTableHeader,
-} from "../common.js";
+import { findIndexByColumnsNameIn2DArray } from "../common.js";
 import { appendError, appendLog, showStatus } from "../ui.js";
 
 /**
@@ -51,6 +47,22 @@ const configFieldMap = {
   },
 };
 
+const answerConfigFieldMap = {
+  vertexAISearchAppId: "Vertex AI Search App ID",
+  vertexAIProjectID: "Vertex AI Project ID",
+  vertexAILocation: "Vertex AI Location",
+  model: "Answer Model",
+  preamble: "Preamble (Customized Summaries)",
+  ignoreAdversarialQuery: "ignoreAdversarialQuery (True or False)",
+  ignoreNonAnswerSeekingQuery: "ignoreNonAnswerSeekingQuery (True or False)",
+  ignoreLowRelevantContent: "ignoreLowRelevantContent (True or False)",
+  includeGroundingSupports: "includeGroundingSupports (True or False)",
+  includeCitations: "includeCitations (True or False)",
+  summaryMatchingAdditionalPrompt: "SummaryMatchingAdditionalPrompt",
+  batchSize: "Batch Size (1-10)",
+  timeBetweenCallsInSec: "Time between Batches in Seconds (1-10)",
+};
+
 const synthQAFieldMap = {
   vertexAIProjectID: "Vertex AI Project ID",
   vertexAILocation: "Vertex AI Location",
@@ -75,13 +87,42 @@ export function getColumn(table, columnName) {
   }
 }
 
-
 export async function getSearchConfigFromActiveSheet(
   reportErrorTableNotFound = false,
   getAccessToken = false,
 ) {
-  return getConfigFromActiveSheet(
+  const config = await getConfigFromActiveSheet(
     buildSearchConfig,
+    "TestCasesTable",
+    reportErrorTableNotFound,
+    getAccessToken,
+  );
+
+  if (config) {
+    // Validate config
+    const isValid =
+      (config.extractiveContentSpec.maxExtractiveAnswerCount !== null) ^
+      (config.extractiveContentSpec.maxExtractiveSegmentCount !== null) ^
+      (config.maxSnippetCount !== null);
+
+    if (!isValid) {
+      // None, multiple, or all variables are non-null
+      showStatus(
+        `Error in executeSearchTests: Only one of the maxExtractiveAnswerCount, maxExtractiveSegmentCount, or maxSnippetCount should be set to a non-zero value`,
+        true,
+      );
+      return null;
+    }
+  }
+  return config;
+}
+
+export async function getAnswerConfigFromActiveSheet(
+  reportErrorTableNotFound = false,
+  getAccessToken = false,
+) {
+  return getConfigFromActiveSheet(
+    buildAnswerConfig,
     "TestCasesTable",
     reportErrorTableNotFound,
     getAccessToken,
@@ -152,7 +193,6 @@ async function getConfigFromActiveSheet(
           config.accessToken = $("#access-token").val();
         }
         config.originalWorksheetName = worksheetName;
-        
       } else if (reportErrorTableNotFound) {
         var message = "Error in ${worksheetName}: ";
         if (searchTable.isNullObject) {
@@ -173,7 +213,7 @@ async function getConfigFromActiveSheet(
       );
     }
   });
-  
+
   return config;
 }
 
@@ -276,6 +316,89 @@ function buildSearchConfig(config, valueColumn, configColumn) {
     timeBetweenCallsInSec: parseInt(
       valueColumn.values[
         findIndexByColumnsNameIn2DArray(configColumn.values, configFieldMap.timeBetweenCallsInSec)
+      ][0],
+    ),
+  };
+  return config;
+}
+
+function buildAnswerConfig(config, valueColumn, configColumn) {
+  config = {
+    vertexAISearchAppId:
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(
+          configColumn.values,
+          answerConfigFieldMap.vertexAISearchAppId,
+        )
+      ][0],
+    vertexAIProjectID:
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(configColumn.values, answerConfigFieldMap.vertexAIProjectID)
+      ][0],
+    vertexAILocation:
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(configColumn.values, answerConfigFieldMap.vertexAILocation)
+      ][0],
+    preamble:
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(configColumn.values, answerConfigFieldMap.preamble)
+      ][0],
+    model:
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(configColumn.values, answerConfigFieldMap.model)
+      ][0],
+
+    ignoreAdversarialQuery:
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(
+          configColumn.values,
+          answerConfigFieldMap.ignoreAdversarialQuery,
+        )
+      ][0],
+    ignoreNonAnswerSeekingQuery:
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(
+          configColumn.values,
+          answerConfigFieldMap.ignoreNonAnswerSeekingQuery,
+        )
+      ][0],
+    ignoreLowRelevantContent:
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(
+          configColumn.values,
+          answerConfigFieldMap.ignoreLowRelevantContent,
+        )
+      ][0],
+    includeGroundingSupports:
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(
+          configColumn.values,
+          answerConfigFieldMap.includeGroundingSupports,
+        )
+      ][0],
+    includeCitations:
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(configColumn.values, answerConfigFieldMap.includeCitations)
+      ][0],
+    summaryMatchingAdditionalPrompt:
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(
+          configColumn.values,
+          answerConfigFieldMap.summaryMatchingAdditionalPrompt,
+        )
+      ][0],
+
+    batchSize: parseInt(
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(configColumn.values, answerConfigFieldMap.batchSize)
+      ][0],
+    ),
+    timeBetweenCallsInSec: parseInt(
+      valueColumn.values[
+        findIndexByColumnsNameIn2DArray(
+          configColumn.values,
+          answerConfigFieldMap.timeBetweenCallsInSec,
+        )
       ][0],
     ),
   };

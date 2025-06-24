@@ -65,20 +65,7 @@ export class ExcelSearchRunner extends TaskRunner {
           return;
         }
 
-        // Validate config
-        const isValid =
-          (config.extractiveContentSpec.maxExtractiveAnswerCount !== null) ^
-          (config.extractiveContentSpec.maxExtractiveSegmentCount !== null) ^
-          (config.maxSnippetCount !== null);
-
-        if (!isValid) {
-          // None, multiple, or all variables are non-null
-          showStatus(
-            `Error in executeSearchTests: Only one of the maxExtractiveAnswerCount, maxExtractiveSegmentCount, or maxSnippetCount should be set to a non-zero value`,
-            true,
-          );
-          return;
-        }
+        
 
         if (this.queryColumn.isNullObject || this.idColumn.isNullObject) {
           showStatus(
@@ -89,7 +76,12 @@ export class ExcelSearchRunner extends TaskRunner {
         }
         const countRows = testCasesTable.rows.count;
 
-        const run_results = await this.processsAllRows(context, config, countRows, this.idColumn.values);
+        const run_results = await this.processsAllRows(
+          context,
+          config,
+          countRows,
+          this.idColumn.values,
+        );
 
         await this.addSearchRunToTable(context, config, worksheetName, run_results);
 
@@ -128,7 +120,7 @@ export class ExcelSearchRunner extends TaskRunner {
         context,
         config,
         rowNum,
-        response_json,
+        response_json.summary.summaryText,
         this.expectedSummaryColumn.values,
       ).then(async (callsSoFar) => {
         appendLog(`testCaseID: ${rowNum} Processed Search Summary.`);
@@ -213,19 +205,21 @@ export class ExcelSearchRunner extends TaskRunner {
 
   async processSummary(context, config, rowNum, result, expectedSummary) {
     // Set the actual summary
+    const score_cell = this.summaryScoreColumn.getRange().getCell(rowNum, 0);
+    const actualSummarycell = this.actualSummaryColumn.getRange().getCell(rowNum, 0);
     try {
-      const actualSummarycell = this.actualSummaryColumn.getRange().getCell(rowNum, 0);
+     
       actualSummarycell.clear(Excel.ClearApplyTo.formats);
-      actualSummarycell.values = [[result.summary.summaryText]];
+      actualSummarycell.values = [[result]];
 
       // match summaries only if they are not null or not empty
       if (expectedSummary[rowNum][0] !== null && expectedSummary[rowNum][0] !== "") {
-        const score_cell = this.summaryScoreColumn.getRange().getCell(rowNum, 0);
+        
         score_cell.clear(Excel.ClearApplyTo.formats);
 
         const response = await calculateSimilarityUsingGemini(
           rowNum,
-          result.summary.summaryText,
+          result,
           expectedSummary[rowNum][0],
           config,
         );
@@ -242,7 +236,7 @@ export class ExcelSearchRunner extends TaskRunner {
       }
       // Catch any errors here and report it in the cell. We don't want failures here to stop processing.
     } catch (err) {
-      appendError(`testCaseID: ${rowNum} Error getting Similarity. Error: ${err.message} `, err);
+      appendError(`testCaseID: ${rowNum} Error in processSummary. Error: ${err.message} `, err);
       // put the error in the cell.
       score_cell.values = [["Failed. Error: " + err.message]];
       score_cell.format.fill.color = "#FFCCCB";

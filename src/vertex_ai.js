@@ -54,6 +54,49 @@ export async function callVertexAISearch(id, query, config) {
   return { id: id, status_code: status, output: json_output };
 }
 
+export async function callVertexAIAnswer(id, query, config) {
+  const token = config.accessToken;
+  const projectID = config.vertexAIProjectID;
+  const searchAppId = config.vertexAISearchAppId;
+  const preamble = config.preamble;
+  const model = config.model === "" ? "gemini-2.0-flash-001/answer_gen/v1" : config.model;
+  const ignoreAdversarialQuery = config.ignoreAdversarialQuery;
+  const ignoreNonAnswerSeekingQuery = config.ignoreNonAnswerSeekingQuery;
+  const ignoreLowRelevantContent = config.ignoreLowRelevantContent;
+  const includeGroundingSupports = config.includeGroundingSupports;
+  const includeCitations = config.includeCitations;
+
+  const data = {
+    query: {
+      text: query,
+    },
+    groundingSpec: {
+      includeGroundingSupports: `${includeGroundingSupports}`.toLowerCase(),
+    },
+    answerGenerationSpec: {
+      ignoreAdversarialQuery: `${ignoreAdversarialQuery}`.toLowerCase(),
+      ignoreNonAnswerSeekingQuery: `${ignoreNonAnswerSeekingQuery}`.toLowerCase(),
+      ignoreLowRelevantContent: `${ignoreLowRelevantContent}`.toLowerCase(),
+      includeCitations: `${includeCitations}`.toLowerCase(),
+      multimodalSpec: {},
+      promptSpec: {
+        preamble: `${preamble}`,
+      },
+      modelSpec: {
+        modelVersion: `${model}`,
+      },
+    },
+  };
+
+  const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${projectID}/locations/global/collections/default_collection/engines/${searchAppId}/servingConfigs/default_search:answer`;
+
+  const { status, json_output } = await callVertexAI(url, token, data, id);
+
+  appendLog(`testCaseID: ${id}: Answer Query Finished Successfully`);
+
+  return { id: id, status_code: status, output: json_output };
+}
+
 export async function calculateSimilarityUsingGemini(id, sentence1, sentence2, config) {
   appendLog(`testCaseID: ${id}: SummaryMatch Started `);
 
