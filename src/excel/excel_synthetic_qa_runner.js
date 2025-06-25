@@ -65,14 +65,14 @@ export class SyntheticQARunner extends TaskRunner {
             ][0],
           batchSize: parseInt(
             valueColumn.values[
-              findIndexByColumnsNameIn2DArray(configColumn.values, "Max Concurrent Requests (1-10)")
+              findIndexByColumnsNameIn2DArray(configColumn.values, "Batch Size (1-10)")
             ][0],
           ),
           timeBetweenCallsInSec: parseInt(
             valueColumn.values[
               findIndexByColumnsNameIn2DArray(
                 configColumn.values,
-                "Request Interval in Seconds(1-10)",
+                "Time between Batches in Seconds (1-10)",
               )
             ][0],
           ),
@@ -100,6 +100,21 @@ export class SyntheticQARunner extends TaskRunner {
         await context.sync();
         const worksheetName = currentWorksheet.name;
 
+        // check if the right data table is there
+        const synthTestCaseTable = currentWorksheet.tables.getItem(
+          `${worksheetName}.SyntheticQATable`,
+        );
+        await context.sync();
+        if (synthTestCaseTable === null) {
+          appendLog(
+            `Error: ${worksheetName}.SyntheticQATable not found in current sheet. Make sure you are in the right sheet`,
+          );
+          showStatus(
+            `Error: Synthetic Q&A table not found in current sheet. Make sure you are in the right sheet`,
+            true,
+          );
+          return null;
+        }
         const testCasesTable = currentWorksheet.tables.getItem(`${worksheetName}.SyntheticQATable`);
         this.idColumn = getColumn(testCasesTable, "ID");
         this.fileUriColumn = getColumn(testCasesTable, "GCS File URI");

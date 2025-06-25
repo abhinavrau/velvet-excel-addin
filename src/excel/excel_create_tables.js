@@ -1,4 +1,4 @@
-import { appendError, showStatus, summaryFontSize, tableTitlesFontSize } from "../ui.js";
+import { appendError, showStatus, summaryFontSize } from "../ui.js";
 export async function createExcelTable(
   title,
   titleCellLocation,
@@ -7,16 +7,19 @@ export async function createExcelTable(
   tableRangeStart,
   tableRangeEnd,
   fontSize,
-  titlesFontSize = tableTitlesFontSize,
+  titlesFontSize,
+  sheetName,
+  csvData = null,
 ) {
-  var worksheetName = "";
   await Excel.run(async (context) => {
     try {
-      const currentWorksheet = context.workbook.worksheets.getActiveWorksheet();
-      currentWorksheet.load("name");
+      var currentWorksheet = null;
+      if (sheetName !== null) {
+        currentWorksheet = context.workbook.worksheets.getItemOrNullObject(sheetName);
+      } else {
+        throw new Error("Sheetname is null");
+      }
       await context.sync();
-      worksheetName = currentWorksheet.name;
-
       currentWorksheet.getRange().format.font.name = "Aptos";
 
       if (title !== null) {
@@ -28,7 +31,9 @@ export async function createExcelTable(
       }
 
       var excelTable = currentWorksheet.tables.add(tableRangeStart, true /*hasHeaders*/);
-      excelTable.name = `${worksheetName}.${tableType}`;
+      // remove space from sheetName
+      sheetName = sheetName.replace(/\s/g, "");
+      excelTable.name = `${sheetName}.${tableType}`;
       excelTable.getRange().format.font.size = fontSize;
 
       //excelTable.getRange().format.wrapText = true;
@@ -38,18 +43,22 @@ export async function createExcelTable(
 
       if (tableType === "ConfigTable") {
         excelTable.rows.add(0, valuesArray.slice(1));
-      } else {
         excelTable.resize(tableRangeEnd);
+      } else {
+        if (csvData) {
+          excelTable.rows.add(0, csvData);
+        }
+        // excelTable.resize(tableRangeEnd);
         excelTable.showFilterButton = true;
       }
       await context.sync();
     } catch (error) {
-      showStatus(`Exception when creating ${title}  Table: ${error.message}`, true);
-      appendError(`Error creating ${title}  Table:`, error);
+      showStatus(`Exception when creating ${tableType}  Table: ${error.message}`, true);
+      appendError(`Error creating ${tableType}  Table:`, error);
     }
   });
 
-  return worksheetName;
+  return sheetName;
 }
 
 export async function createFormula(
@@ -63,7 +72,7 @@ export async function createFormula(
 ) {
   await Excel.run(async (context) => {
     try {
-      const currentWorksheet = context.workbook.worksheets.getActiveWorksheet();
+      const currentWorksheet = context.workbook.worksheets.getItemOrNullObject(worksheetName);
       var labelCell = currentWorksheet.getRange(labelRange);
       labelCell.clear();
       labelCell.format.font.name = "Aptos";
@@ -90,9 +99,7 @@ export async function createFormula(
 export async function makeRowBold(worksheetName, range) {
   await Excel.run(async (context) => {
     try {
-      const currentWorksheet = context.workbook.worksheets.getActiveWorksheet();
-      currentWorksheet.load("name");
-      await context.sync();
+      const currentWorksheet = context.workbook.worksheets.getItemOrNullObject(worksheetName);
 
       const rowRange = currentWorksheet.getRange(range);
       // Apply bold formatting
@@ -110,7 +117,7 @@ export async function makeRowBold(worksheetName, range) {
 export async function groupRows(worksheetName, range) {
   await Excel.run(async (context) => {
     try {
-      const worksheet = context.workbook.worksheets.getActiveWorksheet();
+      const worksheet = context.workbook.worksheets.getItemOrNullObject(worksheetName);
       worksheet.getRange(range).group(Excel.GroupOption.byRows);
       // collapse the group
 
@@ -122,10 +129,10 @@ export async function groupRows(worksheetName, range) {
   });
 }
 
-export async function summaryHeading(range, text, fontSize = summaryFontSize) {
-  Excel.run(async (context) => {
+export async function summaryHeading(sheetName, range, text, fontSize = summaryFontSize) {
+  await Excel.run(async (context) => {
     // Get the active worksheet
-    let sheet = context.workbook.worksheets.getActiveWorksheet();
+    let sheet = context.workbook.worksheets.getItemOrNullObject(sheetName);
 
     // Get the range you want to format (adjust as needed)
     let cells = sheet.getRange(range); // Change "A1" to your target cell or range
@@ -139,5 +146,17 @@ export async function summaryHeading(range, text, fontSize = summaryFontSize) {
 
     // Sync the changes back to Excel
     await context.sync();
+  });
+}
+export async function addImageToSheet(sheetName, imageUrl, cell) {
+  await Excel.run(async (context) => {
+    const sheet = context.workbook.worksheets.getItemOrNullObject(sheetName);
+    const image = sheet.getRange(cell).addImageFromBase64(imageUrl, "png");
+    image.setHeight(100);
+    image.setWidth(100);
+    await context.sync();
+  }).catch((error) => {
+    showStatus(`Error adding image: ${error.message}`, true);
+    appendError(`Error adding image:`, error);
   });
 }

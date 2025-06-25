@@ -1,19 +1,39 @@
-import { ExcelSearchRunner } from "./excel_search_runner.js";
-import { createVAIConfigTable, createVAIDataTable } from "./excel_search_tables.js";
-import { SummarizationRunner } from "./excel_summarization_runner.js";
-import { SyntheticQARunner } from "./excel_synthetic_qa_runner.js";
+import {
+  getSearchConfigFromActiveSheet,
+  getAnswerConfigFromActiveSheet,
+  getSummarizationConfigFromActiveSheet,
+  getSyntheticQAConfigFromActiveSheet,
+} from "./excel_common.js";
 
 import {
-  createSyntheticQAConfigTable,
-  createSyntheticQADataTable,
-} from "./excel_synthetic_qa_tables.js";
-
+  createSearchRunsTable,
+  createSummaryRunsTable,
+  createSyntheticQnARunsTable,
+} from "./excel_eval_runs_tables.js";
+import { findSheetsWithTableSuffix } from "./excel_helper.js";
+import { ExcelSearchRunner } from "./excel_search_runner.js";
+import { ExcelAnswerRunner } from "./excel_answer_runner.js";
+import { SummarizationRunner } from "./excel_summarization_runner.js";
 import {
   createSummarizationEvalConfigTable,
   createSummarizationEvalDataTable,
 } from "./excel_summarization_tables.js";
+import { SyntheticQARunner } from "./excel_synthetic_qa_runner.js";
+import {
+  createSyntheticQAConfigTable,
+  createSyntheticQADataTable,
+  generatePrompt,
+} from "./excel_synthetic_qa_tables.js";
+
+import {
+  createVAIConfigTable,
+  createVAIDataTable,
+  createVAIAnswerConfigTable,
+} from "./excel_search_tables.js";
+
 
 let excelSearchRunner;
+let excelAnswerRunner;
 let summarizationRunner;
 let syntheticQuestionAnswerRunner;
 // Initialize Office API
@@ -22,6 +42,7 @@ Office.onReady((info) => {
   // Check that we loaded into Excel
   if (info.host === Office.HostType.Excel) {
     excelSearchRunner = new ExcelSearchRunner();
+    excelAnswerRunner = new ExcelAnswerRunner();
     setupButtonEvents(
       "createSearchTables",
       createSearchTables,
@@ -34,6 +55,20 @@ Office.onReady((info) => {
       "cancelSearchTests",
       async function () {
         await excelSearchRunner.cancelProcessing();
+      },
+    );
+    setupButtonEvents(
+      "createAnswerTablesBtn",
+      createAnswerTables,
+      "executeAnswerTests",
+      async function () {
+        const config = await excelAnswerRunner.getSearchConfig();
+        if (config == null) return;
+        await excelAnswerRunner.executeSearchTests(config);
+      },
+      "cancelAnswerTests",
+      async function () {
+        await excelAnswerRunner.cancelProcessing();
       },
     );
     syntheticQuestionAnswerRunner = new SyntheticQARunner();
@@ -106,38 +141,105 @@ function setupButtonEvents(
 }
 
 async function createSearchTables() {
-  await promptSheetName(async (arg) => {
-    const sheetName = arg.message;
-    await createNewSheet(sheetName);
-    await createVAIConfigTable(arg.message);
-    await createVAIDataTable(arg.message);
+  const config = await getSearchConfigFromActiveSheet();
+
+  await promptSheetName("search", config, async (arg) => {
+    //console.log("data:" + arg.message);
+    const data = JSON.parse(arg.message);
+    const sheetName = data.sheetName;
+
+    await createNewSheet(sheetName, "Search Evals", createSearchRunsTable);
+    await createVAIConfigTable(data);
+    await createVAIDataTable(sheetName, data.config.originalWorksheetName, data.sampleData);
+  });
+}
+
+async function createAnswerTables() {
+  const config = await getAnswerConfigFromActiveSheet();
+
+  await promptSheetName("answer", config, async (arg) => {
+    //console.log("data:" + arg.message);
+    const data = JSON.parse(arg.message);
+    const sheetName = data.sheetName;
+
+    await createNewSheet(sheetName, "Search Evals", createSearchRunsTable);
+    await createVAIAnswerConfigTable(data);
+    await createVAIDataTable(sheetName, data.config.originalWorksheetName, data.sampleData);
   });
 }
 
 async function createSyntheticQATables() {
-  await promptSheetName(async (arg) => {
-    const sheetName = arg.message;
-    await createNewSheet(sheetName);
-    await createSyntheticQAConfigTable(sheetName);
+  const config = await getSyntheticQAConfigFromActiveSheet();
+
+  await promptSheetName("synthQA", config, async (arg) => {
+    const data = JSON.parse(arg.message);
+    console.log("data:" + arg.message);
+    const sheetName = data.sheetName;
+    if (data.config.persona && data.config.verbosity) {
+      data.config.prompt = generatePrompt({
+        persona: data.config.persona,
+        answerVerbosity: data.config.verbosity,
+        focusArea: data.config.focusArea,
+      });
+    }
+    await createNewSheet(sheetName, "Synthetic QnAs", createSyntheticQnARunsTable);
+    await createSyntheticQAConfigTable(data);
     await createSyntheticQADataTable(sheetName);
   });
 }
 
 async function createSummarizationTables() {
-  await promptSheetName(async (arg) => {
-    const sheetName = +arg.message;
-    await createNewSheet(sheetName);
-    await createSummarizationEvalConfigTable(sheetName);
+  const config = await getSummarizationConfigFromActiveSheet();
+
+  await promptSheetName("summary", config, async (arg) => {
+    const data = JSON.parse(arg.message);
+    const sheetName = data.sheetName;
+    await createNewSheet(sheetName, "Summarization Evals", createSummaryRunsTable);
+    await createSummarizationEvalConfigTable(data);
     await createSummarizationEvalDataTable(sheetName);
   });
 }
 
 let dialog = null;
 
-async function promptSheetName(callback) {
+async function promptSheetName(type, config, callback) {
+  const baseUrl = window.location.origin;
+  var page = "";
+  var synthQASheets = [];
+
+  switch (type) {
+    case "search":
+    case "answer":
+      page = `search-dialog.html`;
+      synthQASheets = await findSheetsWithTableSuffix("SyntheticQATable");
+
+      break;
+    case "synthQA":
+      page = `synth-qa-dialog.html`;
+      break;
+    case "summary":
+      page = `summary-dialog.html`;
+      break;
+    default:
+      page = `search-dialog.html`;
+      break;
+  }
+  // Creae URL object
+  const url = new URL(`${baseUrl}/${page}`);
+
+  if (config !== null) {
+    const encodedConfig = encodeURIComponent(JSON.stringify(config));
+    url.searchParams.set("config", encodedConfig);
+  }
+  if (synthQASheets && synthQASheets.length > 0) {
+    const synthQASheetsEncoded = encodeURIComponent(JSON.stringify(synthQASheets));
+    url.searchParams.set("synthQASheets", synthQASheetsEncoded);
+  }
+
+  // pass it to the dialog popup.html below
   Office.context.ui.displayDialogAsync(
-    "https://localhost:5500/popup.html",
-    { height: 45, width: 55 },
+    url.href,
+    { height: 55, width: 35 },
 
     function (result) {
       dialog = result.value;
@@ -149,15 +251,27 @@ async function promptSheetName(callback) {
   );
 }
 
-async function createNewSheet(sheetName) {
+async function createNewSheet(sheetName, historySheetName, fn_createResults) {
   console.log("SheetName:" + sheetName);
   dialog.close();
 
   // Create blank worksheet with sheetName
-  Excel.run(async (context) => {
+  await Excel.run(async (context) => {
     const sheets = context.workbook.worksheets;
-    const sheet = sheets.add(sheetName); // Add a new worksheet
-    sheet.activate(); // Activate the new sheet
+
+    // check if History sheet is created.
+    const historySheet = context.workbook.worksheets.getItemOrNullObject(historySheetName);
+    await context.sync();
+    if (historySheet.isNullObject) {
+      const newHistorySheet = sheets.add(historySheetName);
+      await newHistorySheet.activate(); // Activate the new sheet
+      await context.sync(); // Synchronize changes
+      await fn_createResults(historySheetName);
+    }
+
+    // Add a new worksheet
+    const sheet = sheets.add(sheetName);
+    await sheet.activate(); // Activate the new sheet
     await context.sync(); // Synchronize changes
   }).catch(function (error) {
     console.log("Error: " + error);

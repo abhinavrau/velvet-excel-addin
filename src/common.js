@@ -6,17 +6,55 @@ export function findIndexByColumnsNameIn2DArray(array2D, searchValue) {
     }
   }
   // Value not found, return null or handle it as needed
-  return 0;
+  return -1;
 }
 
+export const test_search_runs_table = [
+  [
+    "Sheet",
+    "Time of Run",
+    "Project ID",
+    "Search App ID",
+    "Successful Queries",
+    "Failed Queries",
+    "% Summary Match Accuracy",
+    "% First Link Match",
+    "% Link in Top 2",
+    "Avg. Grounding Score",
+    "Num Calls to Vertex AI",
+    "Time Taken",
+    "Stopped Reason",
+  ],
+];
+
+export const synth_qa_runs_table = [
+  [
+    "Sheet",
+    "Time of Run",
+    "Project ID",
+    "Num Success",
+    "Num Failed",
+    "Avg. Synthetic Q&A Quality (0-5)",
+  ],
+];
+
+export const summary_runs_table = [
+  [
+    "Sheet",
+    "Time of Run",
+    "Project ID",
+    "Num Success",
+    "Num Failed",
+    "Avg. Summarization Quality (0-5)",
+  ],
+];
 // Vertex AI Search Table Format
 export const vertex_ai_search_configValues = [
   ["Config", "Value"],
 
   ["GCP PARAMETERS", ""],
-  ["Vertex AI Search Project Number", "384473000457"],
   ["Vertex AI Search App ID", "l300-arau_1695783344117"],
-  ["Vertex AI Project ID", "argolis-arau"],
+  ["Vertex AI Project ID", "test_project"],
   ["Vertex AI Location", "us-central1"],
 
   ["SEARCH SETTINGS", ""],
@@ -33,12 +71,42 @@ export const vertex_ai_search_configValues = [
     "Preamble (Customized Summaries)",
     `You are an expert financial analyst.  Only use the data returned from documents. All finance numbers must be reported in billions, millions or thousands. Be brief. Answer should be no more than 2 sentences please.`,
   ],
-  ["Summarization Model", "gemini-1.0-pro-001/answer_gen/v1"],
+  ["Answer Model", "gemini-2.0-flash-001/answer_gen/v1"],
   [
     "SummaryMatchingAdditionalPrompt",
     "If there are monetary numbers in the answers, they should be matched exactly.",
   ],
-  ["Generate Grounding Score", "True"], //generate grounding score
+  ["Generate Grounding Score", "False"], //generate grounding score
+
+  ["BATCHING SETTINGS", ""],
+  ["Batch Size (1-10)", "5"], // BatchSize
+  ["Time between Batches in Seconds (1-10)", "1"],
+];
+
+export const vertex_ai_answer_configValues = [
+  ["Config", "Value"],
+
+  ["GCP PARAMETERS", ""],
+  ["Vertex AI Search App ID", "l300-arau_1695783344117"],
+  ["Vertex AI Project ID", "test_project"],
+  ["Vertex AI Location", "us-central1"],
+
+  ["SUMMARY GENERATION SETTINGS", ""],
+  [
+    "Preamble (Customized Summaries)",
+    `You are an expert financial analyst. Focus on questions related to financial amounts, dates, and deadlines.`,
+  ],
+  ["Answer Model", "stable"],
+  [
+    "SummaryMatchingAdditionalPrompt",
+    "If there are monetary numbers in the answers, they should be matched exactly.",
+  ],
+  ["SEARCH SETTINGS", ""],
+  ["ignoreAdversarialQuery (True or False)", "True"], // ignoreAdversarialQuery
+  ["ignoreNonAnswerSeekingQuery (True or False)", "False"], // ignoreNonAnswerSeekingQuery
+  ["ignoreLowRelevantContent (True or False)", "True"], // ignoreLowRelevantContent
+  ["includeGroundingSupports (True or False)", "True"], // includeGroundingSupports
+  ["includeCitations (True or False)", "True"], // includeCitations
 
   ["BATCHING SETTINGS", ""],
   ["Batch Size (1-10)", "5"], // BatchSize
@@ -72,6 +140,12 @@ export const vertex_ai_search_testTableHeader = [
   ],
 ];
 
+export const getAccuracyFormula = (worksheetName, columnName) =>
+  `=IF(COUNTIF(${worksheetName}.TestCasesTable[${columnName}], TRUE) + COUNTIF(${worksheetName}.TestCasesTable[${columnName}], FALSE) > 0, COUNTIF(${worksheetName}.TestCasesTable[${columnName}], TRUE) / (COUNTIF(${worksheetName}.TestCasesTable[${columnName}], TRUE) + COUNTIF(${worksheetName}.TestCasesTable[${columnName}], FALSE)), 0)`;
+
+export const getAverageFormula = (worksheetName, columnName) =>
+  `=IF(COUNTA(${worksheetName}.TestCasesTable[${columnName}])>0,AVERAGE(${worksheetName}.TestCasesTable[${columnName}]), 0)`;
+
 export var summaryMatching_prompt =
   "You will get two answers to a question, you should determine if they are semantically similar or not. ";
 export var summaryMatching_examples = `examples - answer_1: I was created by X. answer_2: X created me. output:same 
@@ -81,7 +155,7 @@ export var summaryMatching_examples = `examples - answer_1: I was created by X. 
 export const synth_q_and_a_configValues = [
   ["Config", "Value"],
   ["GCP PARAMETERS", ""],
-  ["Vertex AI Project ID", "argolis-arau"],
+  ["Vertex AI Project ID", "test_project"],
   ["Vertex AI Location", "us-central1"],
   ["GENERATIVE AI MODEL SETTINGS", ""],
   ["Gemini Model ID", "gemini-1.5-flash-001"],
@@ -128,10 +202,10 @@ STEP 2: Score based on the rubric.
 
 Return result in JSON format. example output: { 'rating': 2 , evaluation: 'reason'}`,
   ],
-  ["Q & A Quality Model ID", "gemini-1.5-pro-001"],
+  ["Q & A Quality Model ID", "gemini-2.0-flash-001"],
   ["BATCHING SETTINGS", ""],
-  ["Max Concurrent Requests (1-10)", "5"],
-  ["Request Interval in Seconds(1-10)", "1"],
+  ["Batch Size (1-10)", "5"], // BatchSize
+  ["Time between Batches in Seconds (1-10)", "1"],
 ];
 
 export const synth_q_and_a_TableHeader = [
@@ -141,7 +215,7 @@ export const synth_q_and_a_TableHeader = [
 // Summarization  Table Format
 export const summarization_configValues = [
   ["Config", "Value"],
-  ["Vertex AI Project ID", "argolis-arau"],
+  ["Vertex AI Project ID", "test_project"],
   ["Vertex AI Location", "us-central1"],
   ["Gemini Model ID", "gemini-1.5-flash-001"],
   ["System Instructions", ""],
@@ -178,12 +252,12 @@ STEP 2: Score based on the rubric.
 
 Return result in JSON format. example output: { 'rating': 2 , evaluation: 'reason'}`,
   ],
-  ["Summarization Quality Model ID", "gemini-1.5-pro-001"],
+  ["Summarization Quality Model ID", "gemini-2.0-flash-001"],
   ["Batch Size (1-10)", "5"], // BatchSize
   ["Time between Batches in Seconds (1-10)", "1"],
 ];
 
-export const summarization_TableHeader = [["ID", "Context", "Summary", "summarization_quality"]];
+export const summarization_TableHeader = [["ID", "Context", "Summary", "Summary Quality"]];
 
 export const mapGeminiSupportedMimeTypes = {
   ".flv": "video/x-flv",

@@ -43,9 +43,18 @@ describe("When Create Q&A Tables is clicked", () => {
             getItem: function () {
               return this;
             },
+            getItemOrNullObject: function (str) {
+              return this;
+            },
+            getRange: function (str) {
+              return this.range;
+            },
             range: {
               // Config Table
               values: [[]],
+              getCell: function (x, y) {
+                return this;
+              },
               format: {
                 font: {
                   bold: false,
@@ -82,7 +91,7 @@ describe("When Create Q&A Tables is clicked", () => {
             },
             tables: {
               // Test Cases Table
-              name: "TestCasesTable",
+              name: "SyntheticQATable",
               add: function (str, flag) {
                 return this;
               },
@@ -136,11 +145,19 @@ describe("When Create Q&A Tables is clicked", () => {
     const contextMock = new OfficeMockObject(mockData);
 
     global.Excel = contextMock;
-     
-    const worksheetName = "WorksheetName";
-    await createSyntheticQAConfigTable(worksheetName);
 
-    
+    const data = {
+      sheetName: "WorksheetName",
+      config: {
+        model: "gemini-1.5-flash",
+        vertexAIProjectId: "test_project",
+        vertexAILocation: "us-central1",
+      },
+    };
+
+    const worksheetName = data.sheetName;
+    await createSyntheticQAConfigTable(data);
+
     expect(contextMock.context.workbook.worksheets.range.values).toEqual([
       [`${worksheetName} - Synthetic Questions & Answers`],
     ]);
@@ -161,8 +178,8 @@ describe("When Create Q&A Tables is clicked", () => {
     const contextMock = new OfficeMockObject(mockData);
 
     global.Excel = contextMock;
-    await createSyntheticQADataTable();
-    const worksheetName = contextMock.context.workbook.worksheets.name;
+    await createSyntheticQADataTable("WorksheetName");
+    const worksheetName = "WorksheetName";
 
     expect(contextMock.context.workbook.worksheets.tables.name).toEqual(
       `${worksheetName}.SyntheticQATable`,

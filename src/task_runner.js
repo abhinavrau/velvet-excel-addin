@@ -1,7 +1,5 @@
 import { appendError, appendLog, showStatus } from "./ui.js";
 
-//import { default as Bottleneck } from "../lib/bottleneck-2.19.5/lib/index.js";
-
 import { AbortError, default as pThrottle } from "../lib/p-throttle.js";
 import {
   NotAuthenticatedError,
@@ -174,6 +172,14 @@ export class TaskRunner {
     appendLog(summary);
     appendLog(`Num Calls to Vertex AI:${numCallsMade} Time taken: ${timeTakenSeconds}`);
     showStatus(summary, numFails > 0);
+
+    return {
+      numSuccessful,
+      numFails,
+      numCallsMade,
+      timeTakenSeconds,
+      stoppedReason,
+    };
   }
 
   async cancelProcessing() {

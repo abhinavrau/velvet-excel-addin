@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+  <title>Enter SheetName and Vertex AI Details</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Tailwind CSS for styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Simple focus styles for the input fields */
+    input:focus {
+      outline: none;
+      border-color: rgb(79 70 229);
+      box-shadow: 0 0 0 1px rgb(79 70 229);
+    }
+  </style>
+  <link rel="stylesheet" href="taskpane.css" />
+  <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+
+  <script>
+    function showStatus(message, isError) {
+      const statusDiv = document.querySelector(".status-popup .status-popup");
+      statusDiv.textContent = message;
+      statusDiv.style.color = isError ? "red" : "green";
+      statusDiv.style.display = "block";
+    }
+
+    (async () => {
+      await Office.onReady();
+
+
+      document.getElementById("ok-button").onclick = sendStringToParentPage;
+
+      const urlParams = new URLSearchParams(window.location.search);
+
+      const encodedConfig = urlParams.get("config");
+      let config = null; // Initialize config
+
+      if (encodedConfig) {
+        try {
+          const decodedConfig = decodeURIComponent(encodedConfig);
+          config = JSON.parse(decodedConfig);
+        } catch (error) {
+          console.error("Error decoding or parsing config:", error);
+        }
+      }
+
+      const vertexAiProjectIdInput = document.getElementById("vertexAiProjectId");
+      const vertexAiLocationInput = document.getElementById("vertexAiLocation");
+      const geminiModelLabel = document.querySelector('label[for="gemini-model"]');
+      const geminiModelInput = document.getElementById("gemini-model");
+
+
+      if (config !== null) {
+        vertexAiProjectIdInput.value = config.vertexAIProjectID;
+        vertexAiLocationInput.value = config.vertexAILocation;
+        geminiModelInput.value = config.model;
+      } else {
+        // set checkbox to false
+        document.getElementById("copyConfig").checked = false;
+        document.getElementById("copyConfig").style.display = "none";
+        const copyConfigLabel = document.querySelector('label[for="copyConfig"]'); // Select the label
+        copyConfigLabel.style.display = "none";
+        vertexAiProjectIdInput.disabled = false;
+        vertexAiLocationInput.disabled = false;
+        geminiModelInput.disabled = false;
+      }
+
+      vertexAiLocationInput.setAttribute("list", "gcp-regions");
+      geminiModelInput.setAttribute("list", "model");
+
+      function updateFormDisplay() {
+        const copyConfigCheckbox = document.getElementById('copyConfig');
+        const vertexAiProjectIdInput = document.getElementById("vertexAiProjectId");
+        const vertexAiLocationInput = document.getElementById("vertexAiLocation");
+        const geminiModelInput = document.getElementById("gemini-model");
+        const promptConfigSection = document.getElementById("prompt-config-section");
+
+        const isChecked = copyConfigCheckbox.checked;
+
+        vertexAiProjectIdInput.disabled = isChecked;
+        vertexAiLocationInput.disabled = isChecked;
+        geminiModelInput.disabled = isChecked;
+        promptConfigSection.style.display = isChecked ? 'none' : 'block';
+
+        if (isChecked) {
+          vertexAiProjectIdInput.classList.add('bg-gray-100');
+          vertexAiLocationInput.classList.add('bg-gray-100');
+          geminiModelInput.classList.add('bg-gray-100');
+        } else {
+          vertexAiProjectIdInput.classList.remove('bg-gray-100');
+          vertexAiLocationInput.classList.remove('bg-gray-100');
+          geminiModelInput.classList.remove('bg-gray-100');
+        }
+      }
+
+      document.getElementById('copyConfig').addEventListener('change', updateFormDisplay);
+      updateFormDisplay();
+
+      document.getElementById('useSampleData').addEventListener('change', function () {
+        const sampleDataDropdownContainer = document.getElementById('sampleDataDropdownContainer');
+        const promptConfigSection = document.getElementById("prompt-config-section");
+
+        if (this.checked) {
+          sampleDataDropdownContainer.classList.remove('hidden');
+          promptConfigSection.style.display = 'none';
+        } else {
+          sampleDataDropdownContainer.classList.add('hidden');
+          promptConfigSection.style.display = 'block';
+        }
+      });
+
+
+      function sendStringToParentPage() {
+        const sheetName = document.getElementById("sheetName").value;
+        const vertexAiProjectId = document.getElementById("vertexAiProjectId").value;
+        const vertexAiLocation = document.getElementById("vertexAiLocation").value;
+        const model = document.getElementById("gemini-model").value;
+
+        // Get the values from the new fields
+        const persona = document.getElementById('persona-input').value;
+        const verbosity = document.getElementById('verbosity-input').value;
+        const focusArea = document.getElementById('focus-area-input').value;
+        const useSampleData = document.getElementById("useSampleData").checked;
+        const sampleData = document.getElementById("sampleDataDropdown").value;
+
+
+        // Check if the input matches the pattern
+        if (!sheetName.match("^(?!History$)[^\/\\\?\*\:,']{1,31}$")) {
+          showStatus("Invalid Sheet name. Need to match following regexp: ^(?!History$)[^\/\\\?\*\:,']{1,31}$", true);
+          return;
+        }
+
+        if (config === null)
+          config = {};
+
+
+        config.vertexAIProjectID = vertexAiProjectId;
+        config.vertexAILocation = vertexAiLocation;
+        config.model = model;
+
+        // Add new values to config
+        config.persona = persona;
+        config.verbosity = verbosity;
+        config.focusArea = focusArea;
+        config.useSampleData = useSampleData;
+        if (useSampleData) {
+          config.sampleData = sampleData;
+        }
+
+
+        const data = {
+          sheetName: sheetName,
+          config: config,
+
+        };
+        console.log("Sending data to parent page:", data);
+        Office.context.ui.messageParent(JSON.stringify(data));
+      }
+    })();
+  </script>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+  <div class="w-full max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Configure Q&A Generation</h1>
+
+    <div class="space-y-8">
+
+      <!-- Section 1: Name and Config -->
+      <section>
+        <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Sheet and AI Configuration</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="md:col-span-2">
+            <label for="sheetName" class="block text-sm font-medium text-gray-700 mb-1">Eval Name/Sheet Name (Cannot be
+              renamed later!):</label>
+            <input type="text" id="sheetName" value="" pattern="^(?!History$)[^\/\\\?\*\:,']{1,31}$"
+              placeholder="Enter Sheet Name" required="'required'"
+              class="mt-1 block w-full pl-3 pr-3 py-2 text-base border border-gray-300 sm:text-sm rounded-md shadow-sm"
+              minlength="5" maxlength="31" />
+          </div>
+
+          <div class="md:col-span-2 flex items-center">
+            <input type="checkbox" id="copyConfig" name="copyConfig" checked
+              class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+            <label for="copyConfig" class="ml-2 block text-sm font-medium text-gray-700">Copy Config Values from Active
+              Sheet</label>
+          </div>
+
+          <div>
+            <label for="vertexAiProjectId" class="block text-sm font-medium text-gray-700 mb-1">Vertex AI Project
+              ID:</label>
+            <input type="text" id="vertexAiProjectId" placeholder="Vertex AI Project ID" required disabled
+              class="mt-1 block w-full pl-3 pr-3 py-2 text-base border border-gray-300 sm:text-sm rounded-md shadow-sm bg-gray-100">
+          </div>
+
+          <div>
+            <label for="vertexAiLocation" class="block text-sm font-medium text-gray-700 mb-1">Vertex AI
+              Location:</label>
+            <input type="text" id="vertexAiLocation" placeholder="us-central1" required disabled
+              class="mt-1 block w-full pl-3 pr-3 py-2 text-base border border-gray-300 sm:text-sm rounded-md shadow-sm bg-gray-100"
+              list="gcp-regions">
+            <datalist id="gcp-regions">
+              <option value="us-central1"></option>
+              <option value="us-east1"></option>
+              <option value="us-east4"></option>
+              <option value="us-west1"></option>
+              <option value="us-west2"></option>
+              <option value="us-west3"></option>
+              <option value="us-west4"></option>
+              <option value="northamerica-northeast1"></option>
+              <option value="northamerica-northeast2"></option>
+              <option value="southamerica-east1"></option>
+              <option value="southamerica-west1"></option>
+              <option value="europe-west1"></option>
+              <option value="europe-west2"></option>
+              <option value="europe-west3"></option>
+              <option value="europe-west4"></option>
+              <option value="europe-west6"></option>
+              <option value="europe-central2"></option>
+              <option value="europe-north1"></option>
+              <option value="asia-east1"></option>
+              <option value="asia-east2"></option>
+              <option value="asia-northeast1"></option>
+              <option value="asia-northeast2"></option>
+              <option value="asia-northeast3"></option>
+              <option value="asia-south1"></option>
+              <option value="asia-southeast1"></option>
+              <option value="asia-southeast2"></option>
+              <option value="australia-southeast1"></option>
+              <option value="australia-southeast2"></option>
+              <option value="me-central1"></option>
+              <option value="me-west1"></option>
+              <option value="me-central2"></option>
+              <option value="global"></option>
+            </datalist>
+          </div>
+
+          <div class="md:col-span-2">
+            <label for="gemini-model" class="block text-sm font-medium text-gray-700 mb-1">Gemini Model:</label>
+            <input type="text" id="gemini-model" placeholder="Gemini Model" required disabled
+              class="mt-1 block w-full pl-3 pr-3 py-2 text-base border border-gray-300 sm:text-sm rounded-md shadow-sm bg-gray-100"
+              list="model">
+            <datalist id="model">
+              <option value="gemini-2.5-flash"></option>
+              <option value="gemini-2.5-pro"></option>
+              <option value="gemini-2.0-flash-001"></option>
+              <option value="gemini-2.0-flash-lite-001"></option>
+              <option value="gemini-2.5-flash-lite-preview-06-17"></option>
+            </datalist>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 2: Prompt Configuration -->
+      <section id="prompt-config-section">
+        <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Prompt Configuration</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Persona Selection -->
+          <div>
+            <label for="persona-input" class="block text-sm font-medium text-gray-700 mb-1">Select or Type a
+              Persona</label>
+            <input type="text" id="persona-input" list="persona-list"
+              class="mt-1 block w-full pl-3 pr-3 py-2 text-base border border-gray-300 sm:text-sm rounded-md shadow-sm">
+            <datalist id="persona-list">
+              <option value="Compliance Officer"></option>
+              <option value="IT Help Desk Technician (Tier 1)"></option>
+              <option value="Senior Financial Analyst"></option>
+              <option value="HR Business Partner"></option>
+              <option value="Sales Representative"></option>
+              <option value="Supply Chain Manager"></option>
+              <option value="Paralegal"></option>
+              <option value="Project Manager"></option>
+              <option value="Manufacturing Floor Supervisor"></option>
+              <option value="Benefits Administrator"></option>
+              <option value="Call Center Agent"></option>
+            </datalist>
+          </div>
+
+          <!-- Answer Verbosity Selection -->
+          <div>
+            <label for="verbosity-input" class="block text-sm font-medium text-gray-700 mb-1">Select or Type Answer
+              Verbosity</label>
+            <input type="text" id="verbosity-input" list="verbosity-list"
+              class="mt-1 block w-full pl-3 pr-3 py-2 text-base border border-gray-300 sm:text-sm rounded-md shadow-sm">
+            <datalist id="verbosity-list">
+              <option value="Concise and to the point (a single sentence or key phrase)"></option>
+              <option value="A direct answer with no more than two supporting bullet points"></option>
+              <option value="Moderately detailed (2-3 sentences providing a direct answer and brief context)"></option>
+              <option value="A detailed breakdown with explanations (a comprehensive paragraph)"></option>
+              <option value="A direct quote from the most relevant section of the document"></option>
+              <option value="A step-by-step list extracted from a procedural section"></option>
+              <option value="An answer that defines key terms before providing the main point"></option>
+              <option value="A summary of the pros and cons mentioned in the document"></option>
+              <option value="An answer formatted for an executive summary (high-level, impact-focused)"></option>
+              <option
+                value="An answer that includes the direct answer and a reference to the corresponding policy number or section title">
+              </option>
+            </datalist>
+          </div>
+
+
+          <!-- Focus Area Selection -->
+          <div>
+            <label for="focus-area-input" class="block text-sm font-medium text-gray-700 mb-1">Select or Type Focus Area
+              (Optional)</label>
+            <input type="text" id="focus-area-input" list="focus-area-list"
+              class="mt-1 block w-full pl-3 pr-3 py-2 text-base border border-gray-300 sm:text-sm rounded-md shadow-sm">
+            <datalist id="focus-area-list">
+              <option value=""></option> <!-- For 'None' -->
+              <option value="Focus on questions related to financial amounts, dates, and deadlines"></option>
+              <option value="Focus on procedures and create 'how-to' questions"></option>
+              <option
+                value="Generate questions that compare and contrast two or more policies/products mentioned in the document">
+              </option>
+              <option value="Create questions that a brand-new employee who has not been onboarded yet might ask">
+              </option>
+              <option value="Avoid generating questions about the 'History' or 'Appendix' sections"></option>
+              <option value="Generate only scenario-based questions that begin with 'What should I do if...'"></option>
+              <option value="Focus on questions related to security protocols, access control, and data privacy">
+              </option>
+              <option value="Generate questions whose answers are likely to be found in tables or lists"></option>
+              <option value="Create questions about the roles and responsibilities of different teams"></option>
+              <option value="Generate questions that intentionally use colloquial synonyms for technical terms">
+              </option>
+            </datalist>
+          </div>
+        </div>
+      </section>
+      </section>
+      <!-- Section 3: Sample Data -->
+      <section>
+        <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Sample Data</h2>
+        <div class="flex items-center mb-4">
+          <input type="checkbox" id="useSampleData" name="useSampleData"
+            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+          <label for="useSampleData" class="ml-2 block text-sm font-medium text-gray-700">Use Sample Data</label>
+        </div>
+        <div id="sampleDataDropdownContainer" class="hidden">
+          <label for="sampleDataDropdown" class="block text-sm font-medium text-gray-700 mb-1">Select Sample
+            Data</label>
+          <select id="sampleDataDropdown" name="sampleDataDropdown"
+            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+            <option value="alphabet-investor-pdfs">Alphabet Investor PDFs</option>
+            <option value="alphabet-sec-filings-pdfs">Alphabet SEC filings PDFs</option>
+            <option value="cymal-bank-employee-guide-pdfs">Cymal Bank Employee Guide PDFs</option>
+            <option value="gemini-bank-policies-procedures-pdfs">Gemini Bank Policies & Procedures PDFs</option>
+          </select>
+        </div>
+      </section>
+      <!-- Action Button -->
+      <div class="pt-4">
+        <button type="button" id="ok-button"
+          class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

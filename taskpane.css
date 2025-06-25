@@ -3,17 +3,27 @@
  * See LICENSE in the project root for license information.
  */
 
- #sheetName:valid {
-    color: green;
+#sheetName:valid {
+  color: green;
 }
 #sheetName:invalid {
-    color: red;
+  color: red;
 }
 
 .container {
   /* Other container styles */
   font-family: sans-serif;
   padding: 20px;
+}
+
+.title-container {
+  display: flex; /* Enable flexbox */
+  align-items: center; /* Vertically center items */
+  justify-content: center; /* Horizontally center items */
+}
+
+.title-container img {
+  margin-right: 10px; /* Add some space between image and text */
 }
 
 .title {
@@ -30,7 +40,8 @@
 
 h1 {
   font-family: Arial, sans-serif;
-  color: #2d66eb;
+  font-size: 25px;
+  color: #000000;
 }
 
 p {
@@ -57,6 +68,10 @@ button {
   padding: 10px 30px;
   cursor: pointer;
   border-radius: 5px;
+  text-align: center;
+  display: inline-flex; /* Helps align text/icons if you add them */
+  align-items: center;
+  justify-content: center;
 }
 
 button:hover {
@@ -71,9 +86,45 @@ input[type="text"] {
   border-radius: 4px;
 }
 
+/* Primary Call to Action Button */
+button.button-primary {
+  background-color: #0078d4; /* A common Office UI primary blue */
+  border-color: #0078d4;
+  color: #ffffff;
+  font-weight: bold;
+  padding: 12px 35px; /* Slightly larger */
+}
+
+button.button-primary:hover {
+  background-color: #005a9e; /* Darker blue on hover */
+  border-color: #005a9e;
+  color: #ffffff;
+}
+
+/* Secondary Call to Action Button */
+button.button-secondary {
+  background-color: #f0f0f0; /* Light grey */
+  border: 1px solid #cccccc;
+  color: #333333; /* Darker text */
+  font-weight: normal;
+  padding: 8px 20px; /* Slightly smaller and more compact */
+}
+
+button.button-secondary:hover {
+  background-color: #e0e0e0; /* Slightly darker grey on hover */
+  border-color: #bbbbbb;
+  color: #333333;
+}
+
 .status {
   margin: 0;
   height: 140px;
+}
+
+
+.status-popup {
+  margin: 0;
+  height: 40px;
 }
 
 .status-card {

@@ -12,7 +12,7 @@ import { appendLog } from "./ui.js";
 export async function callVertexAISearch(id, query, config) {
   const token = config.accessToken;
   const preamble = config.preamble;
-  const model = config.model === "" ? "gemini-1.0-pro-002/answer_gen/v1" : config.model;
+  const model = config.model === "" ? "gemini-2.0-flash-001/answer_gen/v1" : config.model;
   const summaryResultCount = config.summaryResultCount;
   const extractiveContentSpec =
     config.extractiveContentSpec === null ? {} : config.extractiveContentSpec;
@@ -20,7 +20,7 @@ export async function callVertexAISearch(id, query, config) {
   const useSemanticChunks = config.useSemanticChunks;
   const ignoreAdversarialQuery = config.ignoreAdversarialQuery;
   const ignoreNonSummarySeekingQuery = config.ignoreNonSummarySeekingQuery;
-  const projectNumber = config.vertexAISearchProjectNumber;
+  const projectID = config.vertexAIProjectID;
   const searchAppId = config.vertexAISearchAppId;
 
   var data = {
@@ -45,7 +45,7 @@ export async function callVertexAISearch(id, query, config) {
     },
   };
 
-  const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${projectNumber}/locations/global/collections/default_collection/engines/${searchAppId}/servingConfigs/default_search:search`;
+  const url = `https://discoveryengine.googleapis.com/v1/projects/${projectID}/locations/global/collections/default_collection/engines/${searchAppId}/servingConfigs/default_search:search`;
 
   const { status, json_output } = await callVertexAI(url, token, data, id);
 
@@ -54,45 +54,74 @@ export async function callVertexAISearch(id, query, config) {
   return { id: id, status_code: status, output: json_output };
 }
 
+export async function callVertexAIAnswer(id, query, config) {
+  const token = config.accessToken;
+  const projectID = config.vertexAIProjectID;
+  const searchAppId = config.vertexAISearchAppId;
+  const preamble = config.preamble;
+  const model = config.model === "" ? "gemini-2.0-flash-001/answer_gen/v1" : config.model;
+  const ignoreAdversarialQuery = config.ignoreAdversarialQuery;
+  const ignoreNonAnswerSeekingQuery = config.ignoreNonAnswerSeekingQuery;
+  const ignoreLowRelevantContent = config.ignoreLowRelevantContent;
+  const includeGroundingSupports = config.includeGroundingSupports;
+  const includeCitations = config.includeCitations;
+
+  const data = {
+    query: {
+      text: query,
+    },
+    groundingSpec: {
+      includeGroundingSupports: `${includeGroundingSupports}`.toLowerCase(),
+    },
+    answerGenerationSpec: {
+      ignoreAdversarialQuery: `${ignoreAdversarialQuery}`.toLowerCase(),
+      ignoreNonAnswerSeekingQuery: `${ignoreNonAnswerSeekingQuery}`.toLowerCase(),
+      ignoreLowRelevantContent: `${ignoreLowRelevantContent}`.toLowerCase(),
+      includeCitations: `${includeCitations}`.toLowerCase(),
+      multimodalSpec: {},
+      promptSpec: {
+        preamble: `${preamble}`,
+      },
+      modelSpec: {
+        modelVersion: `${model}`,
+      },
+    },
+  };
+
+  const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${projectID}/locations/global/collections/default_collection/engines/${searchAppId}/servingConfigs/default_search:answer`;
+
+  const { status, json_output } = await callVertexAI(url, token, data, id);
+
+  appendLog(`testCaseID: ${id}: Answer Query Finished Successfully`);
+
+  return { id: id, status_code: status, output: json_output };
+}
+
 export async function calculateSimilarityUsingGemini(id, sentence1, sentence2, config) {
   appendLog(`testCaseID: ${id}: SummaryMatch Started `);
 
-  const token = config.accessToken;
-  const projectId = config.vertexAIProjectID;
-  const location = config.vertexAILocation;
   const summaryMatchingAdditionalPrompt =
     config.summaryMatchingAdditionalPrompt === null ? "" : config.summaryMatchingAdditionalPrompt;
 
   var prompt = summaryMatching_prompt + summaryMatchingAdditionalPrompt + summaryMatching_examples;
 
-  var full_prompt = `${prompt} answer_1: ${sentence1} answer_2: ${sentence2} output:`;
+  var full_prompt = `answer_1: ${sentence1} answer_2: ${sentence2} output:`;
 
-  var data = {
-    contents: [
-      {
-        role: "user",
-        parts: [
-          {
-            text: `${full_prompt}`,
-          },
-        ],
-      },
-    ],
-    generationConfig: {
-      temperature: 0.2,
-      maxOutputTokens: 256,
-    },
-  };
-
-  const model_id = "gemini-2.0-flash-001";
-  const url = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${model_id}:generateContent`;
-
-  const { status, json_output } = await callVertexAI(url, token, data, id);
-  const output = json_output.candidates[0].content.parts[0].text;
+  const json_output = await callGeminiMultitModal(
+    id,
+    full_prompt,
+    prompt,
+    null,
+    null,
+    "gemini-2.0-flash-001",
+    "text/plain",
+    config,
+  );
+  const output = json_output.output.candidates[0].content.parts[0].text;
 
   appendLog(`testCaseID: ${id}: SummaryMatch Finished Successfully `);
 
-  return { id: id, status_code: status, output: `${output}` };
+  return { id: json_output.id, status_code: json_output.status_code, output: `${output}` };
 }
 
 export async function callGeminiMultitModal(
@@ -350,7 +379,7 @@ export async function callVertexAI(url, token, data, id) {
         case 401:
           throw new NotAuthenticatedError(id, errorMessage);
         case 429:
-          throw new QuotaError(id, errorMessage);
+          throw new QuotaError(id, errorMessage); // TODO: retry here
         case 403:
           throw new PermissionDeniedError(id, errorMessage);
         case 404:

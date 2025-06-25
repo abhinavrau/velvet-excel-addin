@@ -15,157 +15,263 @@
   <script defer type="module" src="src/vertex_ai.js"></script>
   <script defer type="module" src="src/excel/addin.js"></script>
 
-  <link rel="stylesheet" href="taskpane.css" />
-  <title>Velvet</title>
+  <title>Velvet - Search Eval</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style></style>
+  <!-- Tailwind CSS for styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Simple focus styles for the input fields */
+    input:focus,
+    select:focus,
+    button:focus {
+      outline: none;
+      border-color: rgb(79 70 229);
+      box-shadow: 0 0 0 1px rgb(79 70 229);
+    }
+
+    /* Tabulator styles override */
+    .tabulator {
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      overflow: hidden;
+    }
+
+    .tabulator .tabulator-header {
+      background-color: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .tabulator .tabulator-col-title {
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .tabulator .tabulator-row {
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .tabulator .tabulator-row:hover {
+      background-color: #f1f5f9;
+    }
+  </style>
+
 </head>
 
-<body>
-  <div class="container">
-    <h1 class="title"><a href="https://github.com/abhinavrau/velvet-excel-addin">Velvet</a></h1>
-    <section class="step">
-      <h2 class="step-title">Authentication</h2>
-
-      <p>
-        <label for="access-token">Access Token:</label>
-        <input type="text" id="access-token" placeholder="Paste Access Token" size="100" />
-      </p>
-
-    </section>
-    <ul class="tabs">
-      <li class="tab active" data-target="search-tab">Search Eval</li>
-      <li class="tab" data-target="qa-tab">Synthetic Q&A</li>
-    </ul>
-
-    <div class="tab-content active" id="search-tab">
-      <section class="step">
-
-        <h2 class="step-title">Vertex AI Search Eval</h2>
-        <h3>How to use </h3>
-        <p>
-          1. Click the button below to create a new sheet with required tables.</p>
-        </p>
-        <p><button id="createSearchTables">Create Search Eval Sheet ... </button></p>
-        <p>
-          2. Use the "Synthetic Q&A" Tab to generate Questions and Answers
-          <b>OR</b>
-          If you have your own test cases copy into the test case table.
-        </p>
-        <p>
-          3. Fill in Config Parameters for your GCP environment in the Config Table.
-          Adjust the <b>Premable</b> and other settings for your use case.
-        </p>
-        <p><b>
-            Note:</b> Tests will stop when it sees an empty ID value.
-        </p>
-        <button id="executeSearchTests">Run Tests</button>
-        <button id="cancelSearchTests" style="visibility: hidden; background: red">
-          Cancel Tests
-        </button>
-      </section>
+<body class="bg-gray-100 p-4">
+  <div class="w-full max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+    <div class="flex items-center mb-6">
+      <img src="assets/search-icon-64.png" alt="Search Icon" class="h-10 w-10 mr-4">
+      <h1 class="text-2xl font-bold text-gray-800">Velvet</h1>
     </div>
 
-    <div class="tab-content" id="qa-tab">
-      <section class="step">
-        <h2 class="step-title">Synthetic Q&A Generation</h2>
-        <h3>How to use </h3>
-        <p>
-          1. Click the button below to create a new sheet with required tables.</p>
-        </p>
-        <p><button id="createGenQATables">Create Synth Q&A Sheet ...</button></p>
-        <p>
-          2. Fill in "FileUri" column with GCS doc link. <a
-            href="https://firebase.google.com/docs/vertex-ai/input-file-requirements"> Valid file types.</a>
-        </p>
-        <p>
-          3. Fill in Config Parameters for your GCP environment in the Config Table.
-          Adjust the <b>Prompt</b> and <b>Q&A Quality Prompt</b>
-          for your use case.
-
-        </p>
-        <p><b>
-            Note:</b> Generation will stop when it sees an empty ID value.
-        </p>
-        <button id="generateQAData">Generate Q&A</button>
-        <button id="cancelGenerateQAData" style="visibility: hidden; background: red">
-          Cancel Q&A Generation
-        </button>
+    <div class="space-y-8">
+      <section>
+        <h2 class="text-md font-semibold text-gray-700 mb-4 border-b pb-2">Authentication</h2>
+        <div>
+          <label for="access-token" class="block text-sm font-medium text-gray-700 mb-1">Access Token:</label>
+          <input type="text" id="access-token" placeholder="Paste Access Token"
+            class="mt-1 block w-full pl-3 pr-3 py-2 text-base border border-gray-300 sm:text-sm rounded-md shadow-sm">
+        </div>
       </section>
-    </div>
 
+      <div>
+        <div class="border-b border-gray-200">
+          <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+            <button
+              class="tab active whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base text-indigo-600 border-indigo-500"
+              data-target="search-tab">Search (Generic)</button>
+            <button
+              class="tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              data-target="answer-tab">AgentSpace (Answer)</button>
+            <button
+              class="tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              data-target="qa-tab">Generate Test Data</button>
+          </nav>
+        </div>
 
-    <section class="status">
-      <h2 class="status-title">Status</h2>
-      <div class="status"></div>
-    </section>
-    <section class="logs">
-      <button id="toggleLogs">Show/Hide Logs</button>
-      <div class="log-container">
-        <div id="log-pane" style="display: none"></div>
+        <div class="tab-content pt-6" id="search-tab">
+          <section class="space-y-4">
+            <h2 class="text-lg font-medium text-gray-600">Vertex AI Search Eval Tool (Generic)</h2>
+            <div>
+              <button id="createSearchTables"
+                class="w-full justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                + Configure New Evaluation
+              </button>
+            </div>
+            <p class="text-sm text-gray-600">
+              <b>Note:</b> Evaluation will run until an empty value is found in the ID column.
+            </p>
+            <div class="flex items-center space-x-4">
+              <button id="executeSearchTests"
+                class="w-full justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+                Run Evaluation Tests
+              </button>
+              <button id="cancelSearchTests" style="display: none;"
+                class="w-full justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700">
+                Cancel Tests
+              </button>
+            </div>
+          </section>
+        </div>
+
+        <div class="tab-content pt-6 hidden" id="answer-tab">
+          <section class="space-y-4">
+            <h2 class="text-lg font-medium text-gray-600">Vertex AI Search Eval Tool (AgentSpace)</h2>
+            <div>
+              <button id="createAnswerTablesBtn"
+                class="w-full justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                + Configure New Evaluation
+              </button>
+            </div>
+            <p class="text-sm text-gray-600">
+              <b>Note:</b> Evaluation will run until an empty value is found in the ID column.
+            </p>
+            <div class="flex items-center space-x-4">
+              <button id="executeAnswerTests"
+                class="w-full justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+                Run Evaluation Tests
+              </button>
+              <button id="cancelAnswerTests" style="display: none;"
+                class="w-full justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700">
+                Cancel Tests
+              </button>
+            </div>
+          </section>
+        </div>
+
+        <div class="tab-content pt-6 hidden" id="qa-tab">
+          <section class="space-y-4">
+            <h2 class="text-lg font-medium text-gray-600">Generate Synthetic Questions & Answers</h2>
+            <div>
+              <button id="createGenQATables"
+                class="w-full justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                + Configure New Synthetic Dataset
+              </button>
+            </div>
+            <p class="text-sm text-gray-600">
+              Fill in the "FileUri" column with a GCS document link.
+              <a href="https://firebase.google.com/docs/vertex-ai/input-file-requirements" target="_blank"
+                class="text-indigo-600 hover:underline">Valid file types.</a>
+            </p>
+            <p class="text-sm text-gray-600">
+              <b>Note:</b> Generation will stop when it sees an empty ID value.
+            </p>
+            <div class="flex items-center space-x-4">
+              <button id="generateQAData"
+                class="w-full justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+                Create Dataset
+              </button>
+              <button id="cancelGenerateQAData" style="display: none;"
+                class="w-full justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700">
+                Cancel Q&A Generation
+              </button>
+            </div>
+          </section>
+        </div>
       </div>
-    </section>
+
+      <section>
+        <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Status</h2>
+        <div class="status p-4 rounded-md min-h-[50px] text-sm"></div>
+      </section>
+
+      <section>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold text-gray-700">Logs</h2>
+          <button id="toggleLogs"
+            class="py-1 px-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Show
+            Logs ▼</button>
+        </div>
+        <div class="log-container">
+          <div id="log-pane" style="display: none;"></div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="text-center mt-8 text-sm text-gray-500">
+      <p>Made with ❤️ by <a href="https://github.com/abhinavrau/velvet-excel-addin" target="_blank"
+          class="text-indigo-600 hover:underline">Abhinav Rau</a></p>
+    </footer>
   </div>
 
   <script type="text/javascript">
-    // Create Tabulator table
+    // Tabulator table setup
     $("#log-pane").tabulator({
-      layout: "fitDataStretch", // Adjust column widths to fit content
+      layout: "fitDataStretch",
       layoutColumnsOnNewData: true,
-      columns: [
-        {
-          title: "Time",
-          field: "time",
-          sorter: "time",
-          sorterParams: { format: "HH:mm:ss" },
-          minWidth: 80,
+      columns: [{
+        title: "Time",
+        field: "time",
+        sorter: "time",
+        sorterParams: {
+          format: "HH:mm:ss"
         },
-        {
-          title: "Level",
-          field: "level",
-          headerFilter: "list",
-          headerFilterParams: {
-            values: ["INFO", "ERROR"],
-          },
-          headerSort: false,
-          minWidth: 80,
+        minWidth: 80,
+      }, {
+        title: "Level",
+        field: "level",
+        headerFilter: "list",
+        headerFilterParams: {
+          values: ["INFO", "ERROR"],
         },
-        {
-          title: "Message",
-          headerFilter: true,
-          headerSort: false,
-          field: "message",
-          formatter: "textarea",
-          variableHeight: true,
-        },
-      ],
-      initialSort: [
-        { column: "time", dir: "desc" }, // Initial sort by time descending
-      ],
+        headerSort: false,
+        minWidth: 80,
+      }, {
+        title: "Message",
+        headerFilter: true,
+        headerSort: false,
+        field: "message",
+        formatter: "textarea",
+        variableHeight: true,
+      },],
+      initialSort: [{
+        column: "time",
+        dir: "desc"
+      },],
     });
+
     const toggleLogsButton = document.getElementById("toggleLogs");
     const logPane = document.getElementById("log-pane");
 
     toggleLogsButton.addEventListener("click", () => {
-      if (logPane.style.display === "none") {
-        logPane.style.display = "block"; // Or 'inline' depending on your layout
-      } else {
-        logPane.style.display = "none";
-      }
+      const isHidden = logPane.style.display === "none";
+      logPane.style.display = isHidden ? "block" : "none";
+      toggleLogsButton.textContent = isHidden ? "Hide Logs ▲" : "Show Logs ▼";
+      toggleLogsButton.classList.toggle("bg-gray-200", isHidden);
     });
+
     const tabs = document.querySelectorAll(".tab");
     const tabContents = document.querySelectorAll(".tab-content");
     tabs.forEach((tab) => {
-      tab.addEventListener("click", () => {
-        // Remove active class from all tabs and content
-        tabs.forEach((t) => t.classList.remove("active"));
-        tabContents.forEach((tc) => tc.classList.remove("active"));
+      tab.addEventListener("click", (event) => {
+        // Deactivate all tabs
+        tabs.forEach((t) => {
+          t.classList.remove("active", "text-indigo-600", "border-indigo-500");
+          t.classList.add("text-gray-500", "hover:text-gray-700", "hover:border-gray-300");
+        });
+        // Hide all tab contents
+        tabContents.forEach((tc) => tc.classList.add("hidden"));
 
-        // Add active class to clicked tab and corresponding content
-        tab.classList.add("active");
-        document.getElementById(tab.dataset.target).classList.add("active");
+        // Activate the clicked tab
+        const clickedTab = event.currentTarget;
+        clickedTab.classList.add("active", "text-indigo-600", "border-indigo-500");
+        clickedTab.classList.remove("text-gray-500", "hover:text-gray-700", "hover:border-gray-300");
+
+        // Show the corresponding tab content
+        const target = clickedTab.dataset.target;
+        document.getElementById(target).classList.remove("hidden");
       });
     });
+
+    // Set initial active tab
+    document.querySelector('.tab[data-target="search-tab"]').click();
   </script>
 </body>
 

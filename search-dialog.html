@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+  <title>Enter SheetName and Vertex AI Details</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Tailwind CSS for styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Simple focus styles for the input fields */
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: rgb(79 70 229);
+      box-shadow: 0 0 0 1px rgb(79 70 229);
+    }
+  </style>
+  <link rel="stylesheet" href="taskpane.css" />
+  <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+
+  <script>
+    function showStatus(message, isError) {
+      const statusDiv = document.getElementById("status-message-area");
+      if (statusDiv) {
+        statusDiv.textContent = message;
+        statusDiv.className = isError ? 'text-red-600 text-sm mt-2' : 'text-green-600 text-sm mt-2';
+        statusDiv.style.display = "block";
+      } else {
+        console.error("Status message area not found!");
+      }
+    }
+
+    (async () => {
+      await Office.onReady();
+
+      document.getElementById("ok-button").onclick = sendStringToParentPage;
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const encodedConfig = urlParams.get("config");
+      const synthQASheetsEncoded = urlParams.get("synthQASheets");
+      let config = null;
+
+      if (encodedConfig) {
+        try {
+          config = JSON.parse(decodeURIComponent(encodedConfig));
+        } catch (error) {
+          console.error("Error decoding or parsing config:", error);
+        }
+      }
+
+      let synthQASheets = [];
+      if (synthQASheetsEncoded) {
+        try {
+          synthQASheets = JSON.parse(decodeURIComponent(synthQASheetsEncoded));
+        } catch (error) {
+          console.error("Error decoding or parsing synthQASheets:", error);
+        }
+      }
+
+      const vertexAiAppIdInput = document.getElementById("vertexAiAppId");
+      const vertexAiProjectIdInput = document.getElementById("vertexAiProjectId");
+      const vertexAiLocationInput = document.getElementById("vertexAiLocation");
+      const searchGeminiModelInput = document.getElementById("search-gemini-model");
+      const sampleDataDropdown = document.getElementById("sampleDataDropdown");
+
+      const staticOptions = Array.from(sampleDataDropdown.options).map(option => ({
+        value: option.value,
+        textContent: option.textContent
+      }));
+
+      sampleDataDropdown.innerHTML = '';
+
+      if (config !== null) {
+        vertexAiProjectIdInput.value = config.vertexAIProjectID;
+        vertexAiLocationInput.value = config.vertexAILocation;
+        vertexAiAppIdInput.value = config.vertexAISearchAppId;
+        searchGeminiModelInput.value = config.model;
+        const option = document.createElement("option");
+        option.value = "current_sheet";
+        option.textContent = "Test Cases from Current Sheet";
+        sampleDataDropdown.appendChild(option);
+      } else {
+        document.getElementById("copyConfig").checked = false;
+        document.getElementById("copyConfig").style.display = "none";
+        document.querySelector('label[for="copyConfig"]').style.display = "none";
+        vertexAiAppIdInput.disabled = false;
+        vertexAiProjectIdInput.disabled = false;
+        vertexAiLocationInput.disabled = false;
+        searchGeminiModelInput.disabled = false;
+      }
+
+      synthQASheets.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = `Synthetic Questions and Answers from Sheet:${name}`;
+        sampleDataDropdown.appendChild(option);
+      });
+
+      staticOptions.forEach(opt => {
+        const option = document.createElement("option");
+        option.value = opt.value;
+        option.textContent = opt.textContent;
+        sampleDataDropdown.appendChild(option);
+      });
+
+      vertexAiLocationInput.setAttribute("list", "gcp-regions");
+      searchGeminiModelInput.setAttribute("list", "search-model");
+
+      function updateConfigurableFields() {
+        const isChecked = document.getElementById('copyConfig').checked;
+        const vertexAiAppIdInput = document.getElementById("vertexAiAppId");
+        const vertexAiProjectIdInput = document.getElementById("vertexAiProjectId");
+        const vertexAiLocationInput = document.getElementById("vertexAiLocation");
+        const searchGeminiModelInput = document.getElementById("search-gemini-model");
+
+        const inputs = [vertexAiAppIdInput, vertexAiProjectIdInput, vertexAiLocationInput, searchGeminiModelInput];
+        inputs.forEach(input => {
+          input.disabled = isChecked;
+          if (isChecked) {
+            input.classList.add('bg-gray-100');
+          } else {
+            input.classList.remove('bg-gray-100');
+          }
+        });
+      }
+
+      function updateSampleDataFields() {
+        const isChecked = document.getElementById('populateSampleData').checked;
+        const dropdownContainer = document.getElementById('sampleDataDropdownContainer');
+        dropdownContainer.style.display = isChecked ? 'block' : 'none';
+      }
+
+      document.getElementById('copyConfig').addEventListener('change', updateConfigurableFields);
+      document.getElementById('populateSampleData').addEventListener('change', updateSampleDataFields);
+
+      // Initial state setup
+      updateConfigurableFields();
+      updateSampleDataFields();
+
+
+      function sendStringToParentPage() {
+        const sheetName = document.getElementById("sheetName").value;
+        const vertexAiAppId = document.getElementById("vertexAiAppId").value;
+        const vertexAiProjectId = document.getElementById("vertexAiProjectId").value;
+        const vertexAiLocation = document.getElementById("vertexAiLocation").value;
+        const searchModel = document.getElementById("search-gemini-model").value;
+
+        if (!sheetName.match("^(?!History$)[^\/\\\?\*\:,']{1,31}$")) {
+          showStatus("Invalid Sheet name. Must not be 'History' and be 1-31 chars.", true);
+          return;
+        }
+
+        if (!document.getElementById('copyConfig').checked && (!vertexAiAppId || !vertexAiProjectId || !vertexAiLocation || !searchModel)) {
+          showStatus("Please fill all the required AI configuration fields.", true);
+          return;
+        }
+
+        if (config === null) config = {};
+
+        config.vertexAISearchAppId = vertexAiAppId;
+        config.vertexAIProjectID = vertexAiProjectId;
+        config.vertexAILocation = vertexAiLocation;
+        config.model = searchModel;
+
+        const data = {
+          sheetName: sheetName,
+          config: config,
+          sampleData: document.getElementById("populateSampleData").checked ? document.getElementById("sampleDataDropdown").value : null,
+        };
+        console.log("Sending data to parent page:", data);
+        Office.context.ui.messageParent(JSON.stringify(data));
+      }
+    })();
+  </script>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+  <div class="w-full max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Configure Search Evaluation</h1>
+
+    <div class="space-y-8">
+      <!-- Section 1: Name and Config -->
+      <section>
+        <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Sheet and AI Configuration</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="md:col-span-2">
+            <label for="sheetName" class="block text-sm font-medium text-gray-700 mb-1">Eval Name/Sheet Name (Cannot be
+              renamed later!):</label>
+            <input type="text" id="sheetName" value="" pattern="^(?!History$)[^\/\\\?\*\:,']{1,31}$"
+              placeholder="Enter Sheet Name" required
+              class="mt-1 block w-full pl-3 pr-3 py-2 text-base border border-gray-300 sm:text-sm rounded-md shadow-sm"
+              minlength="5" maxlength="31" />
+          </div>
+
+          <div class="md:col-span-2 flex items-center">
+            <input type="checkbox" id="copyConfig" name="copyConfig" checked
+              class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+            <label for="copyConfig" class="ml-2 block text-sm font-medium text-gray-700">Copy Config Values from Active
+              Sheet</label>
+          </div>
+
+          <div>
+            <label for="vertexAiProjectId" class="block text-sm font-medium text-gray-700 mb-1">Vertex AI Project
+              ID:</label>
+            <input type="text" id="vertexAiProjectId" placeholder="Vertex AI Project ID" required
+              class="mt-1 block w-full pl-3 pr-3 py-2 text-base border border-gray-300 sm:text-sm rounded-md shadow-sm">
+          </div>
+
+          <div>
+            <label for="vertexAiLocation" class="block text-sm font-medium text-gray-700 mb-1">Vertex AI
+              Location:</label>
+            <input type="text" id="vertexAiLocation" placeholder="us-central1" required list="gcp-regions"
+              class="mt-1 block w-full pl-3 pr-3 py-2 text-base border border-gray-300 sm:text-sm rounded-md shadow-sm">
+            <datalist id="gcp-regions">
+              <option value="us-central1"></option>
+              <option value="us-east1"></option>
+              <option value="us-east4"></option>
+              <option value="us-west1"></option>
+              <option value="us-west2"></option>
+              <option value="us-west3"></option>
+              <option value="us-west4"></option>
+              <option value="northamerica-northeast1"></option>
+              <option value="northamerica-northeast2"></option>
+              <option value="southamerica-east1"></option>
+              <option value="southamerica-west1"></option>
+              <option value="europe-west1"></option>
+              <option value="europe-west2"></option>
+              <option value="europe-west3"></option>
+              <option value="europe-west4"></option>
+              <option value="europe-west6"></option>
+              <option value="europe-central2"></option>
+              <option value="europe-north1"></option>
+              <option value="asia-east1"></option>
+              <option value="asia-east2"></option>
+              <option value="asia-northeast1"></option>
+              <option value="asia-northeast2"></option>
+              <option value="asia-northeast3"></option>
+              <option value="asia-south1"></option>
+              <option value="asia-southeast1"></option>
+              <option value="asia-southeast2"></option>
+              <option value="australia-southeast1"></option>
+              <option value="australia-southeast2"></option>
+              <option value="me-central1"></option>
+              <option value="me-west1"></option>
+              <option value="me-central2"></option>
+              <option value="global"></option>
+            </datalist>
+          </div>
+
+          <div>
+            <label for="vertexAiAppId" class="block text-sm font-medium text-gray-700 mb-1">Vertex AI Search App
+              ID:</label>
+            <input type="text" id="vertexAiAppId" placeholder="Vertex AI Search App ID" required
+              class="mt-1 block w-full pl-3 pr-3 py-2 text-base border border-gray-300 sm:text-sm rounded-md shadow-sm">
+          </div>
+
+          <div>
+            <label for="search-gemini-model" class="block text-sm font-medium text-gray-700 mb-1">Answer Generation
+              Gemini Model:</label>
+            <input type="text" id="search-gemini-model" placeholder="Answer Generation Gemini Model" required
+              list="search-model"
+              class="mt-1 block w-full pl-3 pr-3 py-2 text-base border border-gray-300 sm:text-sm rounded-md shadow-sm">
+            <datalist id="search-model">
+              <option value="stable"></option>
+              <option value="gemini-2.0-flash-001/answer_gen/v1"></option>
+              <option value="gemini-1.5-flash-002/answer_gen/v1"></option>
+              <option value="preview"></option>
+            </datalist>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 2: Test Data -->
+      <section>
+        <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Test Data Configuration</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="md:col-span-2 flex items-center">
+            <input type="checkbox" id="populateSampleData" name="populateSampleData" checked
+              class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+            <label for="populateSampleData" class="ml-2 block text-sm font-medium text-gray-700">Populate with Test
+              Data</label>
+          </div>
+
+          <div id="sampleDataDropdownContainer" class="md:col-span-2">
+            <label for="sampleDataDropdown" class="block text-sm font-medium text-gray-700 mb-1">Select Test
+              Data:</label>
+            <select id="sampleDataDropdown"
+              class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+              <option value="alphabet">Alphabet Quaterly & Annual Reports</option>
+              <option value="gemini_bank">Gemini Bank Policies and Procedures</option>
+              <option value="device_manuals">Device User Manuals</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <div id="status-message-area" style="display: none;"></div>
+
+      <!-- Action Button -->
+      <div class="pt-4">
+        <button type="button" id="ok-button"
+          class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

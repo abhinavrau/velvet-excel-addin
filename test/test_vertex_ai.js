@@ -14,6 +14,7 @@ import {
 import {
   calculateSimilarityUsingGemini,
   callCheckGrounding,
+  callVertexAIAnswer,
   callVertexAISearch,
 } from "../src/vertex_ai.js";
 import { mockDiscoveryEngineRequestResponse } from "./test_common.js";
@@ -56,6 +57,7 @@ describe("When calculateSimilarityUsingVertexAI is called ", () => {
       candidates: [
         {
           content: {
+            role: "model",
             parts: [
               {
                 text: "same",
@@ -64,6 +66,11 @@ describe("When calculateSimilarityUsingVertexAI is called ", () => {
           },
         },
       ],
+      usageMetadata: {
+        promptTokenCount: 634,
+        candidatesTokenCount: 166,
+        totalTokenCount: 800,
+      },
     };
     const url = `https://${config.vertexAILocation}-aiplatform.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/${config.vertexAILocation}/publishers/google/models/gemini-2.0-flash-001:generateContent`;
     fetchMock.postOnce(url, {
@@ -89,7 +96,7 @@ describe("When calculateSimilarityUsingVertexAI is called ", () => {
     var prompt =
       summaryMatching_prompt + config.summaryMatchingAdditionalPrompt + summaryMatching_examples;
 
-    var full_prompt = `${prompt} answer_1: ${sentence1} answer_2: ${sentence2} output:`;
+    var full_prompt = `answer_1: ${sentence1} answer_2: ${sentence2} output:`;
 
     expect(JSON.parse(fetchMock.lastCall()[1].body)).toEqual({
       contents: [
@@ -102,10 +109,37 @@ describe("When calculateSimilarityUsingVertexAI is called ", () => {
           ],
         },
       ],
-      generationConfig: {
-        temperature: 0.2,
-        maxOutputTokens: 256,
+      systemInstruction: {
+        parts: [
+          {
+            text: `${prompt}`,
+          },
+        ],
       },
+      generationConfig: {
+        maxOutputTokens: 8192,
+        temperature: 1,
+        topP: 0.95,
+        response_mime_type: "text/plain",
+      },
+      safetySettings: [
+        {
+          category: "HARM_CATEGORY_HATE_SPEECH",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE",
+        },
+        {
+          category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE",
+        },
+        {
+          category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE",
+        },
+        {
+          category: "HARM_CATEGORY_HARASSMENT",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE",
+        },
+      ],
     });
 
     expect(result).toEqual(expectedResponse);
@@ -196,16 +230,16 @@ describe("When callVertexAISearch is called", () => {
         maxExtractiveSegmentCount: "0",
       },
       summaryResultCount: 2,
-      model: "gemini-1.0-pro-001/answer_gen/v1",
+      model: "gemini-2.0-flash-001/answer_gen/v1",
       useSemanticChunks: false,
       ignoreAdversarialQuery: true,
       ignoreNonSummarySeekingQuery: true,
-      vertexAISearchProjectNumber: "YOUR_PROJECT_NUMBER",
+      vertexAIProjectID: "YOUR_PROJECT_ID",
       vertexAISearchAppId: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
 
-    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
+    const url = `https://discoveryengine.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
     await testRequestResponse(
       1,
       url,
@@ -229,11 +263,11 @@ describe("When callVertexAISearch is called", () => {
       model: "preview",
       ignoreAdversarialQuery: true,
       ignoreNonSummarySeekingQuery: true,
-      vertexAISearchProjectNumber: "YOUR_PROJECT_NUMBER",
+      vertexAIProjectID: "YOUR_PROJECT_ID",
       vertexAISearchAppId: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
-    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
+    const url = `https://discoveryengine.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
     await testRequestResponse(
       1,
       url,
@@ -257,11 +291,11 @@ describe("When callVertexAISearch is called", () => {
       model: "preview",
       ignoreAdversarialQuery: true,
       ignoreNonSummarySeekingQuery: true,
-      vertexAISearchProjectNumber: "YOUR_PROJECT_NUMBER",
+      vertexAIProjectID: "YOUR_PROJECT_ID",
       vertexAISearchAppId: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
-    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
+    const url = `https://discoveryengine.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
     await testRequestResponse(
       1,
       url,
@@ -338,15 +372,15 @@ describe("When callVertexAISearch is called", () => {
         maxExtractiveSegmentCount: "0",
       },
       summaryResultCount: 2,
-      model: "gemini-1.0-pro-001/answer_gen/v1",
+      model: "gemini-2.0-flash-001/answer_gen/v1",
       useSemanticChunks: false,
       ignoreAdversarialQuery: true,
       ignoreNonSummarySeekingQuery: true,
-      vertexAISearchProjectNumber: "YOUR_PROJECT_NUMBER",
+      vertexAIProjectID: "YOUR_PROJECT_ID",
       vertexAISearchAppId: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
-    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
+    const url = `https://discoveryengine.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
     const { requestJson, expectedResponse } = mockDiscoveryEngineRequestResponse(
       1,
       url,
@@ -376,15 +410,15 @@ describe("When callVertexAISearch is called", () => {
         maxExtractiveSegmentCount: "0",
       },
       summaryResultCount: 2,
-      model: "gemini-1.0-pro-001/answer_gen/v1",
+      model: "gemini-2.0-flash-001/answer_gen/v1",
       useSemanticChunks: false,
       ignoreAdversarialQuery: true,
       ignoreNonSummarySeekingQuery: true,
-      vertexAISearchProjectNumber: "YOUR_PROJECT_NUMBER",
+      vertexAIProjectID: "YOUR_PROJECT_ID",
       vertexAISearchAppId: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
-    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
+    const url = `https://discoveryengine.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
     const { requestJson, expectedResponse } = mockDiscoveryEngineRequestResponse(
       1,
       url,
@@ -414,12 +448,12 @@ describe("When callVertexAISearch is called", () => {
       useSemanticChunks: true,
       ignoreAdversarialQuery: false,
       ignoreNonSummarySeekingQuery: false,
-      vertexAISearchProjectNumber: "YOUR_PROJECT_NUMBER",
+      vertexAIProjectID: "YOUR_PROJECT_ID",
       vertexAISearchAppId: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
 
-    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
+    const url = `https://discoveryengine.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
 
     var response = fetchMock.postOnce(url, {
       throws: new Error("Mocked error"),
@@ -445,15 +479,15 @@ describe("When callVertexAISearch is called", () => {
         maxExtractiveSegmentCount: "0",
       },
       summaryResultCount: 2,
-      model: "gemini-1.0-pro-001/answer_gen/v1",
+      model: "gemini-2.0-flash-001/answer_gen/v1",
       useSemanticChunks: false,
       ignoreAdversarialQuery: true,
       ignoreNonSummarySeekingQuery: true,
-      vertexAISearchProjectNumber: "YOUR_PROJECT_NUMBER",
+      vertexAIProjectID: "YOUR_PROJECT_ID",
       vertexAISearchAppId: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
-    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
+    const url = `https://discoveryengine.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
     const { requestJson, expectedResponse } = mockDiscoveryEngineRequestResponse(
       1,
       url,
@@ -480,15 +514,15 @@ describe("When callVertexAISearch is called", () => {
         maxExtractiveSegmentCount: "0",
       },
       summaryResultCount: 2,
-      model: "gemini-1.0-pro-001/answer_gen/v1",
+      model: "gemini-2.0-flash-001/answer_gen/v1",
       useSemanticChunks: false,
       ignoreAdversarialQuery: true,
       ignoreNonSummarySeekingQuery: true,
-      vertexAISearchProjectNumber: "YOUR_PROJECT_NUMBER",
+      vertexAIProjectID: "YOUR_PROJECT_ID",
       vertexAISearchAppId: "YOUR_DATASTORE_NAME",
       vertexAILocation: "YOUR_LOCATION",
     };
-    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAISearchProjectNumber}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
+    const url = `https://discoveryengine.googleapis.com/v1/projects/${config.vertexAIProjectID}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:search`;
     const { requestJson, expectedResponse } = mockDiscoveryEngineRequestResponse(
       1,
       url,
@@ -534,4 +568,59 @@ describe("When callVertexAISearch is called", () => {
     // Assert response is correct
     expect(result).toEqual(expectedResponse);
   }
+});
+
+describe("When callVertexAIAnswer is called", () => {
+  var $stub;
+  beforeEach(() => {
+    // stub out jQuery calls
+    $stub = sinon.stub(globalThis, "$").returns({
+      empty: sinon.stub(),
+      append: sinon.stub(),
+      val: sinon.stub(),
+      tabulator: sinon.stub(),
+    });
+
+    fetchMock.reset();
+  });
+
+  afterEach(() => {
+    $stub.restore();
+  });
+  it("should return an answer", async () => {
+    const query = "What is the gross revenue currency neutral growth for Q1/24?";
+    const config = {
+      accessToken: "YOUR_ACCESS_TOKEN",
+      vertexAIProjectID: "YOUR_PROJECT_ID",
+      vertexAISearchAppId: "YOUR_DATASTORE_NAME",
+      preamble:
+        "You are an expert financial analyst. Focus on questions related to financial amounts, dates, and deadlines.",
+      model: "stable",
+      ignoreAdversarialQuery: true,
+      ignoreNonAnswerSeekingQuery: false,
+      ignoreLowRelevantContent: true,
+      includeCitations: true,
+      includeGroundingSupports: true,
+    };
+
+    const url = `https://discoveryengine.googleapis.com/v1alpha/projects/${config.vertexAIProjectID}/locations/global/collections/default_collection/engines/${config.vertexAISearchAppId}/servingConfigs/default_search:answer`;
+    const { requestJson, expectedResponse } = mockDiscoveryEngineRequestResponse(
+      1,
+      url,
+      200,
+      "./test/data/search/answer/test_vai_answer_request.json",
+      "./test/data/search/answer/test_vai_answer_response.json",
+      config,
+    );
+
+    const result = await callVertexAIAnswer(1, query, config);
+
+    expect(fetchMock.called()).toBe(true);
+    // Assert request body is correct
+    expect(JSON.parse(fetchMock.lastCall()[1].body)).toEqual(requestJson);
+    // Assert URL is correct
+    expect(fetchMock.lastUrl().toLowerCase()).toBe(url.toLowerCase());
+    // Assert response is correct
+    expect(result).toEqual(expectedResponse);
+  });
 });
