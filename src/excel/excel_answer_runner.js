@@ -68,14 +68,14 @@ export class ExcelAnswerRunner extends ExcelSearchRunner {
       const sources = result.answer.citations[0].sources;
       if (sources[0] && sources[0].referenceId) {
         const referenceId = sources[0].referenceId;
-        if (result.answer.references && result.answer.references[referenceId]) {
+        if (result.answer.references && result.answer.references[referenceId] && result.answer.references[referenceId].structuredDocumentInfo) {
           p0_result = result.answer.references[referenceId].structuredDocumentInfo.uri;
           link_1_cell.values = [[p0_result]];
         }
       }
       if (sources[1] && sources[1].referenceId) {
         const referenceId = sources[1].referenceId;
-        if (result.answer.references && result.answer.references[referenceId]) {
+        if (result.answer.references && result.answer.references[referenceId] && result.answer.references[referenceId].structuredDocumentInfo) {
           p2_result = result.answer.references[referenceId].structuredDocumentInfo.uri;
           link_2_cell.values = [[p2_result]];
         }

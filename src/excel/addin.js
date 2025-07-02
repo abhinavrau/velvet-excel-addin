@@ -87,7 +87,7 @@ Office.onReady((info) => {
       },
     );
 
-    summarizationRunner = new SummarizationRunner();
+   /*  summarizationRunner = new SummarizationRunner();
     setupButtonEvents(
       "createSummarizationTables",
       createSummarizationTables,
@@ -101,7 +101,7 @@ Office.onReady((info) => {
       async function () {
         await summarizationRunner.cancelProcessing();
       },
-    );
+    ); */
   }
 });
 
@@ -119,14 +119,14 @@ function setupButtonEvents(
 
   runTaskButton.addEventListener("click", async () => {
     $("#log-pane").tabulator("clearData");
-    runTaskButton.style.visibility = "hidden";
-    cancelJobButton.style.visibility = "visible";
+    runTaskButton.style.display = "none";
+    cancelJobButton.style.display = "block";
 
     try {
       await fn_runTask();
     } finally {
-      runTaskButton.style.visibility = "visible";
-      cancelJobButton.style.visibility = "hidden";
+      runTaskButton.style.display = "block";
+      cancelJobButton.style.display = "none";
     }
   });
 
@@ -134,8 +134,8 @@ function setupButtonEvents(
     try {
       await fn_cancelTask();
     } finally {
-      runTaskButton.style.visibility = "visible";
-      cancelJobButton.style.visibility = "hidden";
+      runTaskButton.style.display = "block";
+      cancelJobButton.style.display = "none";
     }
   });
 }
