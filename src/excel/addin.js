@@ -203,7 +203,7 @@ async function createSummarizationTables() {
 let dialog = null;
 
 async function promptSheetName(type, config, callback) {
-  const baseUrl = window.location.origin;
+  const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf("/"));
   var page = "";
   var synthQASheets = [];
 
