@@ -184,7 +184,7 @@ async function createSyntheticQATables() {
     }
     await createNewSheet(sheetName, "Synthetic QnAs", createSyntheticQnARunsTable);
     await createSyntheticQAConfigTable(data);
-    await createSyntheticQADataTable(sheetName);
+    await createSyntheticQADataTable(sheetName, data.config.sampleData);
   });
 }
 

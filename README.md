@@ -2,6 +2,10 @@
 
 # Velvet
 
+![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![GitHub last commit](https://img.shields.io/github/last-commit/abhinavrau/velvet-excel-addin)
+
 🚀 Run your Summarization and RAG evaluations in a few minutes using Excel.
 
 ## Note
@@ -10,12 +14,14 @@ This is not an official Google product
 
 ## Features
 
-- **Gemini Summarization Evaluation:** Generate metrics by providing input text and comparing generated summaries against expected outputs. Customize prompts and quality settings.
-- **RAG Search Evaluation:** Evaluate the accuracy of your [Vertex AI Search](https://cloud.google.com/enterprise-search) using your own test cases.
+- **AgentSpace (Answer) Evaluation:** Evaluate Vertex AI Search "Answer" type agents. This is similar to the RAG Search Evaluation but is specifically designed for agents that provide direct answers.
+  - **Metrics Calculated:** Summary Match (using LLM as judge), First Link Match (Precision@1), and Link in Top 2 (Precision@2).
+  - **Grounding Score** calculated for each result using the data returned from the API.
+- **RAG Search Evaluation (Generic):** Evaluate the accuracy of your [Vertex AI Search](https://cloud.google.com/enterprise-search) using your own test cases for generic search applications.
 
   - **Metrics Calculated:** Summary Match (using LLM as judge), First Link Match (Precision@1), and Link in Top 2 (Precision@2).
   - **Grounding Score** calculated for each result using [Check Grounding API](https://cloud.google.com/generative-ai-app-builder/docs/check-grounding)
-  - **Synthetic Q&A Generation:** Don't have test cases? No problem! Generate synthetic question-answer pairs based on your documents. Specify a GCS path, customize the prompt, and control the quality of generated Q&A.
+- **Synthetic Q&A Generation:** Don't have test cases? No problem! Generate synthetic question-answer pairs based on your documents. Specify a GCS path, customize the prompt, and control the quality of generated Q&A.
 
 - Ability to run hundreds of test cases in seconds.
 - Configurable Vertex AI Search Agent parameters and Gemini settings

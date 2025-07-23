@@ -12,7 +12,7 @@
   <IconUrl DefaultValue="https://localhost:5500/assets/summary-icon-32.png"/>
   <HighResolutionIconUrl DefaultValue="https://localhost:5500/assets/summary-icon-64.png"/>
   <SupportUrl DefaultValue="https://learn.microsoft.com/office/dev/add-ins/overview/office-add-in-code-samples"/>
-  <AppDomains>`
+  <AppDomains>
     <AppDomain>https://localhost:5500</AppDomain>
   </AppDomains>
   <Hosts>

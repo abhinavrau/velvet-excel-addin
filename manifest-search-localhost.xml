@@ -4,7 +4,7 @@
   xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
   xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="TaskPaneApp">
   <Id>775091b3-e24a-4cf4-a65b-26976fda4f3c</Id>
-  <Version>1.0.0.0</Version>en-US
+  <Version>1.0.0.0</Version>
   <ProviderName>Velvet-search-local</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="Velvet-search-local"/>
@@ -12,7 +12,7 @@
   <IconUrl DefaultValue="https://localhost:5500/assets/search-icon-32.png"/>
   <HighResolutionIconUrl DefaultValue="https://localhost:5500/assets/search-icon-64.png"/>
   <SupportUrl DefaultValue="https://learn.microsoft.com/office/dev/add-ins/overview/office-add-in-code-samples"/>
-  <AppDomains>`
+  <AppDomains>
     <AppDomain>https://localhost:5500</AppDomain>
   </AppDomains>
   <Hosts>

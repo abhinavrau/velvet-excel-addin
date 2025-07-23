@@ -1,5 +1,9 @@
 import {
+  alphabetInvestorPdfs,
+  alphabetSecFilingsPdfs,
+  cymalBankEmployeeGuidePdfs,
   findIndexByColumnsNameIn2DArray,
+  geminiBankPoliciesProceduresPdfs,
   synth_q_and_a_configValues,
   synth_q_and_a_TableHeader,
   vertex_ai_search_testTableHeader,
@@ -73,7 +77,26 @@ export async function createSyntheticQAConfigTable(data) {
   await groupRows(data.sheetName, "4:17");
 }
 
-export async function createSyntheticQADataTable(sheetName) {
+
+async function loadSampleData(sampleData) {
+  if (sampleData === "alphabet-investor-pdfs") {
+    return alphabetInvestorPdfs;
+  } else if (sampleData === "alphabet-sec-filings-pdfs") {
+    return alphabetSecFilingsPdfs;
+  } else if (sampleData === "cymal-bank-employee-guide-pdfs") {
+    return cymalBankEmployeeGuidePdfs;
+  } else if (sampleData === "gemini-bank-policies-procedures-pdfs") {
+    return geminiBankPoliciesProceduresPdfs;
+  }
+  return null;
+}
+export async function createSyntheticQADataTable(sheetName, sampleData = null) {
+
+  let csvData = null;
+  if (sampleData) {
+    csvData = await loadSampleData(sampleData);
+  }
+
   Excel.run(async (context) => {
     // Get the active worksheet
     let sheet = context.workbook.worksheets.getItemOrNullObject(sheetName);
@@ -99,6 +122,7 @@ export async function createSyntheticQADataTable(sheetName) {
     dataTableFontSize,
     tableTitlesFontSize,
     sheetName,
+    csvData,
   );
 
   await summaryHeading(sheetName, "A19:B19", "Generate Synthetic Q&A Quality");
@@ -130,22 +154,26 @@ export async function getSyntheticQAData(syntheticQASheetName) {
     const synthHeader = tableValues[0];
     const searchHeader = vertex_ai_search_testTableHeader[0];
 
+    const iDIndex = synthHeader.indexOf("ID");
     const questionIndex = synthHeader.indexOf("Generated Question");
     const expectedAnswerIndex = synthHeader.indexOf("Expected Answer");
     const gcsUriIndex = synthHeader.indexOf("GCS File URI");
 
+    const searchIDIndex = searchHeader.indexOf("ID");
     const searchQuestionIndex = searchHeader.indexOf("Query");
     const searchExpectedAnswerIndex = searchHeader.indexOf("Expected Summary");
     const searchExpectedLink1Index = searchHeader.indexOf("Expected Link 1");
 
     const alignedRows = tableValues.slice(1).map((row) => {
       const alignedRow = [];
+      alignedRow[searchIDIndex] = row[iDIndex];
       alignedRow[searchQuestionIndex] = row[questionIndex];
       alignedRow[searchExpectedAnswerIndex] = row[expectedAnswerIndex];
       alignedRow[searchExpectedLink1Index] = row[gcsUriIndex];
       // Fill the rest of the columns with empty strings
       for (let i = 0; i < searchHeader.length; i++) {
         if (
+          i !== searchIDIndex &&
           i !== searchQuestionIndex &&
           i !== searchExpectedAnswerIndex &&
           i !== searchExpectedLink1Index
@@ -184,15 +212,24 @@ You are detail-oriented and need accurate, contextually-aware answers.
 
 When generating the question-answer pairs, you must adhere to the following guidelines:
 
-* **Verbosity of Answers:** The answers should be ${options.answerVerbosity}.
-* **Question Complexity & Style:** The questions should be formulated to mimic real-world inquiries. This includes:
-    * **Direct Fact-Finding Questions:** (e.g., "What is the maximum liability coverage for Project X?")
-    * **Comparative Questions:** (e.g., "What are the differences in the maintenance schedules for the A-series and B-series equipment?")
-    * **Multi-Detail Questions:** These questions should require synthesizing information from multiple parts of the document to form a complete answer. (e.g., "What are the security protocols and the associated reporting procedures for a data breach?")
-    * **Scenario-Based Questions:** Frame some questions as if you are facing a real-world problem. (e.g., "I am a new project manager. What are the first three steps I need to take to initiate a project according to the 'Project Initiation' section?")
+* 
+* **Question Complexity & Style:** The questions should be formulated to how a ${options.persona} would make real-world inquiries. This includes:
+    * **Direct Fact-Finding Questions:** (e.g., "What is the maximum liability coverage for X?")
+    * **Clarification Questions:** (e.g., "Can you clarify the terms of the contract regarding this facet X?")
+    * **Contextual Questions:** (e.g., "How does the liability coverage for X if I have already signed up for Y?")
+* **Answer Format:** The answers should be ${options.answerVerbosity}.
+* **Use of Context:** Leverage the provided document(s) to ensure that the answers are grounded in the context of the information available.
+* **Avoiding Assumptions:** Do not make assumptions beyond the information provided in the document(s). If the answer is not available, indicate that clearly.
+* **Relevance:** Ensure that the questions and answers are relevant to the role of a ${options.persona} and the context of the document(s).
 * **Additional Considerations:**${additionalConsiderations || "\n    * None."}
 
 `;
+  
+  /* * **Comparative Questions:** (e.g., "What are the differences in the maintenance schedules for the A-series and B-series equipment?")
+    * **Multi-Detail Questions:** These questions should require synthesizing information from multiple parts of the document to form a complete answer. (e.g., "What are the security protocols and the associated reporting procedures for a data breach?")
+    * **Scenario-Based Questions:** Frame some questions as if you are facing a real-world problem. (e.g., "I am a new project manager. What are the first three steps I need to take to initiate a project according to the 'Project Initiation' section?")
+    * 
+    * */
 
   return promptTemplate.trim();
 }
