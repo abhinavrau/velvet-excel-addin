@@ -8,8 +8,13 @@ import { appendError, appendLog, showStatus } from "../ui.js";
 
 import { TaskRunner } from "../task_runner.js";
 
-import { getAccuracyFormula, getAverageFormula } from "../common.js";
 import { getColumn, getSearchConfigFromActiveSheet } from "./excel_common.js";
+
+const SUMMARY_MATCH_ACCURACY_CELL = "B27";
+const FIRST_LINK_MATCH_ACCURACY_CELL = "B28";
+const LINK_IN_TOP_2_ACCURACY_CELL = "B29";
+const AVG_GROUNDING_SCORE_CELL = "B30";
+
 export class ExcelSearchRunner extends TaskRunner {
   constructor() {
     super();
@@ -64,8 +69,6 @@ export class ExcelSearchRunner extends TaskRunner {
           appendError(`Error in executeSearchTests: Access token is empty`, null);
           return;
         }
-
-        
 
         if (this.queryColumn.isNullObject || this.idColumn.isNullObject) {
           showStatus(
@@ -208,13 +211,11 @@ export class ExcelSearchRunner extends TaskRunner {
     const score_cell = this.summaryScoreColumn.getRange().getCell(rowNum, 0);
     const actualSummarycell = this.actualSummaryColumn.getRange().getCell(rowNum, 0);
     try {
-     
       actualSummarycell.clear(Excel.ClearApplyTo.formats);
       actualSummarycell.values = [[result]];
 
       // match summaries only if they are not null or not empty
       if (expectedSummary[rowNum][0] !== null && expectedSummary[rowNum][0] !== "") {
-        
         score_cell.clear(Excel.ClearApplyTo.formats);
 
         const response = await calculateSimilarityUsingGemini(
@@ -309,77 +310,122 @@ export class ExcelSearchRunner extends TaskRunner {
   async addSearchRunToTable(context, config, worksheetName, run_results) {
     try {
       const searchEvalRunsSheet = context.workbook.worksheets.getItemOrNullObject("Search Evals");
-      searchEvalRunsSheet.load();
-      await context.sync();
-
-      if (searchEvalRunsSheet.isNullObject) {
-        appendLog("Could not find searchEvalRunsSheet.", new Error("Search Evals sheet not found"));
-        return;
-      }
-
       const runsTable = searchEvalRunsSheet.tables.getItemOrNullObject("SearchEvals.TestRunsTable");
+
+      searchEvalRunsSheet.load("name");
       runsTable.load("name");
       await context.sync();
 
+      if (searchEvalRunsSheet.isNullObject) {
+        appendLog(
+          "Could not find 'Search Evals' sheet.",
+          new Error("Search Evals sheet not found"),
+        );
+        return;
+      }
       if (runsTable.isNullObject) {
         appendLog(
-          "Could not find 'Search Evals.TestRunsTable' in 'Search Evals' sheet.",
+          "Could not find 'SearchEvals.TestRunsTable' in 'Search Evals' sheet.",
           new Error("TestRunsTable not found"),
         );
         return;
       }
 
-      const summaryMatchAccuracyFormula = getAccuracyFormula(worksheetName, "Summary Match");
-      const firstLinkMatchAccuracyFormula = getAccuracyFormula(worksheetName, "First Link Match");
-      const linkInTop2AccuracyFormula = getAccuracyFormula(worksheetName, "Link in Top 2");
-      const avgGroundingScoreFormula = getAverageFormula(worksheetName, "Grounding Score");
-
-      // I'll assume num_success and num_errors are available from the TaskRunner base class.
-      // In TaskRunner, they are initialized to 0.
-      // In processsAllRows, they are incremented.
-      const newRowData = [
-        [
-          worksheetName,
-          new Date().toLocaleString(),
-          config.vertexAIProjectID,
-          config.vertexAISearchAppId,
-          run_results.numSuccessful,
-          run_results.numFails,
-          summaryMatchAccuracyFormula,
-          firstLinkMatchAccuracyFormula,
-          linkInTop2AccuracyFormula,
-          avgGroundingScoreFormula,
-          run_results.numCallsMade,
-          run_results.timeTakenSeconds,
-          run_results.stoppedReason,
-        ],
-      ];
-
-      const tableBodyRange = runsTable.getDataBodyRange();
-      tableBodyRange.load(["values", "rowCount"]);
+      const dataRange = runsTable.getDataBodyRange();
+      dataRange.load("values, rowCount");
       await context.sync();
 
-      const tableValues = tableBodyRange.values;
+      const testCasesSheet = context.workbook.worksheets.getItem(worksheetName);
+
+      const summaryMatchAccuracyRange = testCasesSheet.getRange(SUMMARY_MATCH_ACCURACY_CELL);
+      summaryMatchAccuracyRange.load("values");
+      const firstLinkMatchAccuracyRange = testCasesSheet.getRange(FIRST_LINK_MATCH_ACCURACY_CELL);
+      firstLinkMatchAccuracyRange.load("values");
+      const linkInTop2AccuracyRange = testCasesSheet.getRange(LINK_IN_TOP_2_ACCURACY_CELL);
+      linkInTop2AccuracyRange.load("values");
+      const avgGroundingScoreRange = testCasesSheet.getRange(AVG_GROUNDING_SCORE_CELL);
+      avgGroundingScoreRange.load("values");
+
+      await context.sync();
+
+      const summaryMatchAccuracy = summaryMatchAccuracyRange.values[0][0];
+      const firstLinkMatchAccuracy = firstLinkMatchAccuracyRange.values[0][0];
+      const linkInTop2Accuracy = linkInTop2AccuracyRange.values[0][0];
+      const avgGroundingScore = avgGroundingScoreRange.values[0][0];
+
+      const newRowData = [
+        worksheetName,
+        new Date().toLocaleString(),
+        config.vertexAIProjectID,
+        config.vertexAISearchAppId,
+        run_results.numSuccessful,
+        run_results.numFails,
+        summaryMatchAccuracy,
+        firstLinkMatchAccuracy,
+        linkInTop2Accuracy,
+        avgGroundingScore,
+        run_results.numCallsMade,
+        run_results.timeTakenSeconds,
+        run_results.stoppedReason,
+      ];
+
+      let tableData = dataRange.values;
       let rowIndex = -1;
-      for (let i = 0; i < tableBodyRange.rowCount; i++) {
-        if (tableValues[i][0] === worksheetName) {
+      for (let i = 0; i < dataRange.rowCount; i++) {
+        if (tableData[i][0] === worksheetName) {
           rowIndex = i;
           break;
         }
       }
 
-      if (rowIndex > -1) {
-        // Update existing row
-        const rowRange = tableBodyRange.getRow(rowIndex);
-        rowRange.values = newRowData;
-        appendLog(`Updated row for ${worksheetName} in 'Search Eval Runs' table.`);
+      if (rowIndex !== -1) {
+        // Update existing row data in our local array
+        tableData[rowIndex] = newRowData;
+        //dataRange.getRow(rowIndex).values = [newRowData];
+        appendLog(`Updating Row index:${rowIndex} 'Search Eval Runs' table for ${worksheetName}.`);
       } else {
-        // Add new row
-        runsTable.rows.add(null, newRowData);
-        appendLog("Added a new row to 'Search Eval Runs' table.");
+        // Add new row data to our local array
+        tableData.push(newRowData);
+        //dataRange.getRowsBelow(dataRange.rowCount).values = [newRowData];
+        appendLog(`Inserting New Row  'Search Eval Runs' table for ${worksheetName}.`);
+      }
+
+      // filter out the rows in array runsTable.rows  except header row
+      runsTable.rows.load("items");
+      await context.sync();
+
+      const dataRows = runsTable.rows.items;
+
+      // Clear all the rows in the table exept the header
+      runsTable.rows.deleteRows(dataRows);
+
+      await context.sync();
+      // remove empty row with empty values
+      tableData = tableData.filter((row) => row !== null && row[0] !== "");
+    
+      // Add all rows back to the table
+      if (tableData.length > 0) {
+        runsTable.rows.add(null, tableData);
       }
 
       await context.sync();
+
+      // Add hyperlinks
+      const newDataRange = runsTable.getDataBodyRange();
+      newDataRange.load("values, rowCount");
+      await context.sync();
+      for (let i = 0; i < newDataRange.rowCount; i++) {
+        const cellToUpdate = newDataRange.getCell(i, 0);
+        const sheetName = newDataRange.values[i][0];
+        cellToUpdate.hyperlink = {
+          textToDisplay: sheetName,
+          screenTip: `Navigate to the '${sheetName}' worksheet`,
+          documentReference: `'${sheetName}'!A1`,
+        };
+      }
+
+      await context.sync();
+      appendLog(`Finished addSearchRunToTable 'Search Eval Runs' table for ${worksheetName}.`);
     } catch (error) {
       appendError(`Error in addSearchRunToTable: ${error.message}`, error);
       showStatus(`Error adding row to Search Eval Runs table: ${JSON.stringify(error)}`, true);

@@ -9,9 +9,12 @@ import {
   vertex_ai_search_testTableHeader,
 } from "../common.js";
 import {
+  appendError,
+  appendLog,
   configTableFontSize,
   dataTableFontSize,
   sheetTitleFontSize,
+  showStatus,
   summaryFontSize,
   tableTitlesFontSize,
 } from "../ui.js";
@@ -36,12 +39,11 @@ export async function createSyntheticQAConfigTable(data) {
   ][1] = data.config.model;
 
   if (data.config.prompt) {
-    
     synth_q_and_a_configValues[
       findIndexByColumnsNameIn2DArray(synth_q_and_a_configValues, "Prompt")
     ][1] = data.config.prompt;
   }
-  
+
   const worksheetName = await createExcelTable(
     data.sheetName + " - Synthetic Questions & Answers",
     "C2",
@@ -77,7 +79,6 @@ export async function createSyntheticQAConfigTable(data) {
   await groupRows(data.sheetName, "4:17");
 }
 
-
 async function loadSampleData(sampleData) {
   if (sampleData === "alphabet-investor-pdfs") {
     return alphabetInvestorPdfs;
@@ -90,11 +91,23 @@ async function loadSampleData(sampleData) {
   }
   return null;
 }
-export async function createSyntheticQADataTable(sheetName, sampleData = null) {
-
+export async function createSyntheticQADataTable(sheetName, sampleData = null, numQAPerDoc = 1) {
   let csvData = null;
   if (sampleData) {
     csvData = await loadSampleData(sampleData);
+  }
+
+  if (numQAPerDoc > 1) {
+    const newCsvData = [];
+    let id = 1;
+    csvData.forEach(row => {
+      for (let i = 0; i < numQAPerDoc; i++) {
+        const newRow = [...row];
+        newRow[0] = id++;
+        newCsvData.push(newRow);
+      }
+    });
+    csvData = newCsvData;
   }
 
   Excel.run(async (context) => {
@@ -143,57 +156,96 @@ export async function createSyntheticQADataTable(sheetName, sampleData = null) {
 
 export async function getSyntheticQAData(syntheticQASheetName) {
   let data = [];
-  await Excel.run(async (context) => {
-    const worksheet = context.workbook.worksheets.getItemOrNullObject(syntheticQASheetName);
-    const table = worksheet.tables.getItem(`${syntheticQASheetName}.SyntheticQATable`);
-    const tableRange = table.getRange();
-    tableRange.load("values");
-    await context.sync();
+  try {
+    await Excel.run(async (context) => {
+      const worksheet = context.workbook.worksheets.getItemOrNullObject(syntheticQASheetName);
+      worksheet.load("isNullObject");
+      const table = worksheet.tables.getItemOrNullObject(
+        `${syntheticQASheetName}.SyntheticQATable`,
+      );
+      table.load("isNullObject");
 
-    const tableValues = tableRange.values;
-    const synthHeader = tableValues[0];
-    const searchHeader = vertex_ai_search_testTableHeader[0];
+      await context.sync();
 
-    const iDIndex = synthHeader.indexOf("ID");
-    const questionIndex = synthHeader.indexOf("Generated Question");
-    const expectedAnswerIndex = synthHeader.indexOf("Expected Answer");
-    const gcsUriIndex = synthHeader.indexOf("GCS File URI");
-
-    const searchIDIndex = searchHeader.indexOf("ID");
-    const searchQuestionIndex = searchHeader.indexOf("Query");
-    const searchExpectedAnswerIndex = searchHeader.indexOf("Expected Summary");
-    const searchExpectedLink1Index = searchHeader.indexOf("Expected Link 1");
-
-    const alignedRows = tableValues.slice(1).map((row) => {
-      const alignedRow = [];
-      alignedRow[searchIDIndex] = row[iDIndex];
-      alignedRow[searchQuestionIndex] = row[questionIndex];
-      alignedRow[searchExpectedAnswerIndex] = row[expectedAnswerIndex];
-      alignedRow[searchExpectedLink1Index] = row[gcsUriIndex];
-      // Fill the rest of the columns with empty strings
-      for (let i = 0; i < searchHeader.length; i++) {
-        if (
-          i !== searchIDIndex &&
-          i !== searchQuestionIndex &&
-          i !== searchExpectedAnswerIndex &&
-          i !== searchExpectedLink1Index
-        ) {
-          alignedRow[i] = "";
-        }
+      if (worksheet.isNullObject) {
+        const message = `Worksheet with name ${syntheticQASheetName} not found.`;
+        appendError(message, null);
+        showStatus(message, true);
+        return;
       }
-      return alignedRow;
+
+      if (table.isNullObject) {
+        const message = `Table 'SyntheticQATable' not found in worksheet '${syntheticQASheetName}'.`;
+        appendError(message, null);
+        showStatus(message, true);
+        return;
+      }
+
+      const tableRange = table.getRange();
+      tableRange.load("values");
+      await context.sync();
+
+      const tableValues = tableRange.values;
+      const synthHeader = tableValues[0];
+      const searchHeader = vertex_ai_search_testTableHeader[0];
+
+      const iDIndex = synthHeader.indexOf("ID");
+      const questionIndex = synthHeader.indexOf("Generated Question");
+      const expectedAnswerIndex = synthHeader.indexOf("Expected Answer");
+      const gcsUriIndex = synthHeader.indexOf("GCS File URI");
+      const qualityIndex = synthHeader.indexOf("Q & A Quality");
+
+      const searchIDIndex = searchHeader.indexOf("ID");
+      const searchQuestionIndex = searchHeader.indexOf("Query");
+      const searchExpectedAnswerIndex = searchHeader.indexOf("Expected Summary");
+      const searchExpectedLink1Index = searchHeader.indexOf("Expected Link 1");
+
+      const alignedRows = tableValues
+        .slice(1)
+        .filter((row) => {
+          if (!row[iDIndex]) {
+            return false;
+          }
+          const score = parseInt(row[qualityIndex].toString().charAt(0), 10);
+          if (score < 4) {
+            appendLog(`Skipping row with ID ${row[iDIndex]} due to low quality score: ${score}`);
+            return false;
+          }
+          return true;
+        })
+        .map((row, index) => {
+          const alignedRow = [];
+          alignedRow[searchIDIndex] = index + 1; // Regenerate ID
+          alignedRow[searchQuestionIndex] = row[questionIndex];
+          alignedRow[searchExpectedAnswerIndex] = row[expectedAnswerIndex];
+          alignedRow[searchExpectedLink1Index] = row[gcsUriIndex];
+          // Fill the rest of the columns with empty strings
+          for (let i = 0; i < searchHeader.length; i++) {
+            if (
+              i !== searchIDIndex &&
+              i !== searchQuestionIndex &&
+              i !== searchExpectedAnswerIndex &&
+              i !== searchExpectedLink1Index
+            ) {
+              alignedRow[i] = "";
+            }
+          }
+          return alignedRow;
+        });
+      data = alignedRows;
     });
-    data = alignedRows;
-  });
+  } catch (error) {
+    const message = `Error in getSyntheticQAData: ${error.message}`;
+    appendError(message, error);
+    showStatus(message, true);
+    throw error;
+  }
   return data;
 }
 
 export function generatePrompt(options) {
   // --- Input Validation (optional but recommended) ---
-  if (
-    !options.persona ||
-    !options.answerVerbosity
-  ) {
+  if (!options.persona || !options.answerVerbosity) {
     throw new Error("Missing required options for prompt generation.");
   }
 
@@ -224,12 +276,12 @@ When generating the question-answer pairs, you must adhere to the following guid
 * **Additional Considerations:**${additionalConsiderations || "\n    * None."}
 
 `;
-  
+
   /* * **Comparative Questions:** (e.g., "What are the differences in the maintenance schedules for the A-series and B-series equipment?")
-    * **Multi-Detail Questions:** These questions should require synthesizing information from multiple parts of the document to form a complete answer. (e.g., "What are the security protocols and the associated reporting procedures for a data breach?")
-    * **Scenario-Based Questions:** Frame some questions as if you are facing a real-world problem. (e.g., "I am a new project manager. What are the first three steps I need to take to initiate a project according to the 'Project Initiation' section?")
-    * 
-    * */
+   * **Multi-Detail Questions:** These questions should require synthesizing information from multiple parts of the document to form a complete answer. (e.g., "What are the security protocols and the associated reporting procedures for a data breach?")
+   * **Scenario-Based Questions:** Frame some questions as if you are facing a real-world problem. (e.g., "I am a new project manager. What are the first three steps I need to take to initiate a project according to the 'Project Initiation' section?")
+   *
+   * */
 
   return promptTemplate.trim();
 }

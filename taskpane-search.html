@@ -98,7 +98,8 @@
 
         <div class="tab-content pt-6" id="search-tab">
           <section class="space-y-4">
-            <h2 class="text-lg font-medium text-gray-600">Vertex AI Search Eval Tool (Generic)</h2>
+            <h2 class="text-lg font-medium text-gray-600">Vertex AI Search Eval Tool <a href="https://cloud.google.com/generative-ai-app-builder/docs/preview-search-results"
+              class="text-indigo-600 hover:underline">(Search Method)</a></h2>
             <div>
               <button id="createSearchTables"
                 class="w-full justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
@@ -111,7 +112,7 @@
             <div class="flex items-center space-x-4">
               <button id="executeSearchTests"
                 class="w-full justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-                Run Evaluation Tests
+                Run Evaluation Tests in Current Sheet
               </button>
               <button id="cancelSearchTests" style="display: none;"
                 class="w-full justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700">
@@ -123,7 +124,8 @@
 
         <div class="tab-content pt-6 hidden" id="answer-tab">
           <section class="space-y-4">
-            <h2 class="text-lg font-medium text-gray-600">Vertex AI Search Eval Tool (AgentSpace)</h2>
+            <h2 class="text-lg font-medium text-gray-600">Vertex AI Search Eval Tool  <a href="https://cloud.google.com/agentspace/agentspace-enterprise/docs/answer" class="text-indigo-600 hover:underline">(Answer Method)</a></h2>
+
             <div>
               <button id="createAnswerTablesBtn"
                 class="w-full justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
@@ -136,7 +138,7 @@
             <div class="flex items-center space-x-4">
               <button id="executeAnswerTests"
                 class="w-full justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-                Run Evaluation Tests
+                Run Evaluation Tests in Current Sheet
               </button>
               <button id="cancelAnswerTests" style="display: none;"
                 class="w-full justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700">
@@ -166,7 +168,7 @@
             <div class="flex items-center space-x-4">
               <button id="generateQAData"
                 class="w-full justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-                Create Dataset
+                Create Dataset from Current Sheet
               </button>
               <button id="cancelGenerateQAData" style="display: none;"
                 class="w-full justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700">
