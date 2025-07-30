@@ -14,19 +14,22 @@ This is not an official Google product
 
 ## Features
 
-- **AgentSpace (Answer) Evaluation:** Evaluate Vertex AI Search "Answer" type agents. This is similar to the RAG Search Evaluation but is specifically designed for agents that provide direct answers.
-  - **Metrics Calculated:** Summary Match (using LLM as judge), First Link Match (Precision@1), and Link in Top 2 (Precision@2).
-  - **Grounding Score** calculated for each result using the data returned from the API.
-- **RAG Search Evaluation (Generic):** Evaluate the accuracy of your [Vertex AI Search](https://cloud.google.com/enterprise-search) using your own test cases for generic search applications.
+- 🤖 **AgentSpace (Answer) Evaluation:** Evaluate Vertex AI Search "Answer" type agents. This is similar to the RAG Search Evaluation but is specifically designed for agents that provide direct answers.
+  - **Metrics Calculated:** 
+    - Summary Match (using LLM as judge)
+    - First Link Match (Precision@1)
+    - Link in Top 2 (Precision@2)
+  - **Grounding Score** [Grouding support scores](https://cloud.google.com/generative-ai-app-builder/docs/answer#return-support-scores) for answers.
+- 🔍 **RAG Search Evaluation (Generic):** Evaluate the accuracy of your [Vertex AI Search](https://cloud.google.com/enterprise-search) using your own test cases for generic search applications.
 
   - **Metrics Calculated:** Summary Match (using LLM as judge), First Link Match (Precision@1), and Link in Top 2 (Precision@2).
   - **Grounding Score** calculated for each result using [Check Grounding API](https://cloud.google.com/generative-ai-app-builder/docs/check-grounding)
-- **Synthetic Q&A Generation:** Don't have test cases? No problem! Generate synthetic question-answer pairs based on your documents. Specify a GCS path, customize the prompt, and control the quality of generated Q&A.
+- 📝 **Synthetic Q&A Generation:** Don't have test cases? No problem! Generate synthetic question-answer pairs based on your documents. Specify a GCS path, customize the prompt, and control the quality of generated Q&A.
 
-- Ability to run hundreds of test cases in seconds.
-- Configurable Vertex AI Search Agent parameters and Gemini settings
-- Detailed status updates and logs for monitoring and troubleshooting.
-- Works with Excel Web (Microsoft 365) and Excel Desktop.
+- ⚡️ Ability to run hundreds of test cases in seconds.
+- ⚙️ Configurable Vertex AI Search Agent parameters and Gemini settings
+- 📊 Detailed status updates and logs for monitoring and troubleshooting.
+- 💼 Works with Excel Web (Microsoft 365) and Excel Desktop.
 
 ## Quick Start
 
@@ -87,13 +90,13 @@ To remove it just clear your browser cache.
 
 ### Excel Desktop
 
-- Download the [manifest.xml](manifest.xml) file to your local machine.
-- Place the manifest.xml file in the following location:
+- Download the [manifest-search.xml](manifest-search.xml) file to your local machine.
+- Place this file in the following location:
   - **Windows**: Follow instructions [here](https://learn.microsoft.com/en-us/office/dev/add-ins/testing/create-a-network-shared-folder-catalog-for-task-pane-and-content-add-ins).
   - **Mac**:
-    - Use Finder to sideload the manifest file. Open Finder and then enter Command+Shift+G to open the Go to folder dialog.
-    - Navigate to the following location: /Users/<username>/Library/Containers/com.microsoft.Excel/Data/Documents/wef
-    - If the wef folder doesn't exist on your computer, create it.
-    - Save the manifest.xml file in the wef folder.
+    - Use Finder to sideload the manifest file. Open Finder and then enter `Command+Shift+G` to open the Go to folder dialog.
+    - Navigate to the following location: `/Users/<username>/Library/Containers/com.microsoft.Excel/Data/Documents/wef`
+    - If the `wef` folder doesn't exist on your computer, create it.
+    - Save the [manifest-search.xml](manifest-search.xml) file in the wef folder.
 - Open Excel.
 - Confirm that the Velvet Add-in is listed in the Home Ribbon.
