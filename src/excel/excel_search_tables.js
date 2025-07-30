@@ -2,11 +2,10 @@ import {
   findIndexByColumnsNameIn2DArray,
   getAccuracyFormula,
   getAverageFormula,
-  vertex_ai_search_configValues,
   vertex_ai_answer_configValues,
+  vertex_ai_search_configValues,
   vertex_ai_search_testTableHeader,
 } from "../common.js";
-import { getSyntheticQAData } from "./excel_synthetic_qa_tables.js";
 import {
   configTableFontSize,
   dataTableFontSize,
@@ -20,7 +19,7 @@ import {
   makeRowBold,
   summaryHeading,
 } from "./excel_create_tables.js";
-
+import { getSyntheticQAData } from "./excel_synthetic_qa_tables.js";
 
 export async function createVAIAnswerConfigTable(data) {
   vertex_ai_answer_configValues[
@@ -124,7 +123,11 @@ export async function createVAIConfigTable(data) {
   await groupRows(data.sheetName, "4:23");
 }
 
-export async function createVAIDataTable(sheetName, originalWorksheetName = null, sampleData = null) {
+export async function createVAIDataTable(
+  sheetName,
+  originalWorksheetName = null,
+  sampleData = null,
+) {
   let csvData = null;
   if (sampleData) {
     csvData = await loadSampleData(originalWorksheetName, sampleData);
@@ -244,6 +247,32 @@ async function getCurrentSheetData(originalWorksheetName) {
     await context.sync();
     const tableValues = tableRange.values;
     tableValues.shift();
+
+    // get the index values of the following columns "ID","Query", "Expected Summary", "Expected Link 1","Expected Link 2", "Expected Link 3",
+    const columnsToGetIndexOf = [
+      "ID",
+      "Query",
+      "Expected Summary",
+      "Expected Link 1",
+      "Expected Link 2",
+      "Expected Link 3",
+    ];
+    const columnsValuesToKeep = [];
+    vertex_ai_search_testTableHeader[0].forEach((column, index) => {
+      if (columnsToGetIndexOf.includes(column)) {
+        columnsValuesToKeep.push(index);
+      }
+    });
+
+    // set values in array to empty execept those in  columnsValuesToKeep
+    for (let i = 0; i < tableValues.length; i++) {
+      const row = tableValues[i];
+      for (let j = 0; j < row.length; j++) {
+        if (!columnsValuesToKeep.includes(j)) {
+          row[j] = "";
+        }
+      }
+    }
     data = tableValues;
   });
   return data;
