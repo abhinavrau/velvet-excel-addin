@@ -10,6 +10,8 @@ import { appendError, appendLog, showStatus } from "../ui.js";
 import { callGeminiMultitModal } from "../vertex_ai.js";
 import { getColumn } from "./excel_common.js";
 
+const AVG_QA_QUALITY_CELL = "B20";
+
 export class SyntheticQARunner extends TaskRunner {
   constructor() {
     super();
@@ -80,8 +82,14 @@ export class SyntheticQARunner extends TaskRunner {
           responseMimeType: "application/json",
         };
       } catch (error) {
-        appendError(`Caught Exception in getSyntheticQAConfig: ${error} `, error);
-        showStatus(`Caught Exception in getSyntheticQAConfig: ${error}`, true);
+        appendError(
+          `Caught Exception in getSyntheticQAConfig: ${error}. Make sure you are in the right sheet`,
+          error,
+        );
+        showStatus(
+          `Caught Exception in getSyntheticQAConfig: ${error}. Make sure you are in the right sheet`,
+          true,
+        );
         return null;
       }
     });
@@ -141,10 +149,17 @@ export class SyntheticQARunner extends TaskRunner {
 
         const countRows = testCasesTable.rows.count;
 
-        await this.processsAllRows(context, config, countRows, this.idColumn.values);
+        const run_results = await this.processsAllRows(
+          context,
+          config,
+          countRows,
+          this.idColumn.values,
+        );
+
+        await this.addSynthQARunToTable(context, config, worksheetName, run_results);
 
         // autofit the content
-        //currentWorksheet.getUsedRange().format.autofitColumns();
+        currentWorksheet.getUsedRange().format.autofitColumns();
         //currentWorksheet.getUsedRange().format.autofitRows();
 
         await context.sync();
@@ -263,6 +278,126 @@ export class SyntheticQARunner extends TaskRunner {
       cell_status.clear(Excel.ClearApplyTo.formats);
       cell_status.format.fill.color = "#FFCCCB";
       cell_status.values = [["Failed. Error: " + err.message]];
+    }
+  }
+
+  async addSynthQARunToTable(context, config, worksheetName, run_results) {
+    try {
+      const synthQARunsSheet = context.workbook.worksheets.getItemOrNullObject("Synthetic QnAs");
+      const runsTable = synthQARunsSheet.tables.getItemOrNullObject(
+        "SyntheticQnAs.SynthQARunsTable",
+      );
+
+      synthQARunsSheet.load("name");
+      runsTable.load("name");
+      await context.sync();
+
+      if (synthQARunsSheet.isNullObject) {
+        appendLog(
+          "Could not find 'Synthetic Questions & Answers Eval Runs' sheet.",
+          new Error("Synthetic Questions & Answers Eval Runs sheet not found"),
+        );
+        return;
+      }
+      if (runsTable.isNullObject) {
+        appendLog(
+          "Could not find 'SynthQARunsTable' in 'Synthetic Questions & Answers Eval Runs' sheet.",
+          new Error("TestRunsTable not found"),
+        );
+        return;
+      }
+
+      const dataRange = runsTable.getDataBodyRange();
+      dataRange.load("values, rowCount");
+      await context.sync();
+
+      const testCasesSheet = context.workbook.worksheets.getItem(worksheetName);
+
+      const avgQualityScoreRange = testCasesSheet.getRange(AVG_QA_QUALITY_CELL);
+      avgQualityScoreRange.load("values");
+
+      await context.sync();
+
+      const avgQualityScore = avgQualityScoreRange.values[0][0];
+
+      const newRowData = [
+        worksheetName,
+        new Date().toLocaleString(),
+        config.vertexAIProjectID,
+        run_results.numSuccessful,
+        run_results.numFails,
+        avgQualityScore,
+      ];
+
+      let tableData = dataRange.values;
+      let rowIndex = -1;
+      for (let i = 0; i < dataRange.rowCount; i++) {
+        if (tableData[i][0] === worksheetName) {
+          rowIndex = i;
+          break;
+        }
+      }
+
+      if (rowIndex !== -1) {
+        // Update existing row data in our local array
+        tableData[rowIndex] = newRowData;
+        appendLog(
+          `Updating Row index:${rowIndex} 'Synthetic Questions & Answers Eval Runs' table for ${worksheetName}.`,
+        );
+      } else {
+        // Add new row data to our local array
+        tableData.push(newRowData);
+        appendLog(
+          `Inserting New Row 'Synthetic Questions & Answers Eval Runs' table for ${worksheetName}.`,
+        );
+      }
+
+      // filter out the rows in array runsTable.rows  except header row
+      runsTable.rows.load("items");
+      await context.sync();
+
+      const dataRows = runsTable.rows.items;
+
+      // Clear all the rows in the table exept the header
+      if (dataRows.length > 0) {
+        runsTable.rows.deleteRows(dataRows);
+      }
+
+      await context.sync();
+      // remove empty row with empty values
+      tableData = tableData.filter((row) => row !== null && row[0] !== "");
+
+      // Add all rows back to the table
+      if (tableData.length > 0) {
+        runsTable.rows.add(null, tableData);
+      }
+
+      await context.sync();
+
+      // Add hyperlinks
+      const newDataRange = runsTable.getDataBodyRange();
+      newDataRange.load("values, rowCount");
+      await context.sync();
+      for (let i = 0; i < newDataRange.rowCount; i++) {
+        const cellToUpdate = newDataRange.getCell(i, 0);
+        const sheetName = newDataRange.values[i][0];
+        cellToUpdate.hyperlink = {
+          textToDisplay: sheetName,
+          screenTip: `Navigate to the '${sheetName}' worksheet`,
+          documentReference: `'${sheetName}'!A1`,
+        };
+      }
+
+      await context.sync();
+      appendLog(
+        `Finished addSynthQARunToTable 'Synthetic Questions & Answers Eval Runs' table for ${worksheetName}.`,
+      );
+    } catch (error) {
+      appendError(`Error in addSynthQARunToTable: ${error.message}`, error);
+      showStatus(
+        `Error adding row to Synthetic Questions & Answers Eval Runs table: ${JSON.stringify(error)}`,
+        true,
+      );
     }
   }
 }
