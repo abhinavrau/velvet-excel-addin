@@ -153,8 +153,8 @@
         const vertexAiLocation = document.getElementById("vertexAiLocation").value;
         const searchModel = document.getElementById("search-gemini-model").value;
 
-        if (!sheetName.match("^(?!History$)[^\/\\\?\*\:,']{1,31}$")) {
-          showStatus("Invalid Sheet name. Must not be 'History' and be 1-31 chars.", true);
+        if (!sheetName.match("^(?!History$)[^\/\\\?\*\:,'-]{1,31}$")) {
+          showStatus("Invalid Sheet name. It must not contain '-', and be between 1 and 31 characters. Also, it cannot be named 'History'.", true);
           return;
         }
 
@@ -195,7 +195,7 @@
           <div class="md:col-span-2">
             <label for="sheetName" class="block text-sm font-medium text-gray-700 mb-1">Eval Name/Sheet Name (Cannot be
               renamed later!):</label>
-            <input type="text" id="sheetName" value="" pattern="^(?!History$)[^\/\\\?\*\:,']{1,31}$"
+            <input type="text" id="sheetName" value="" pattern="^(?!History$)[^\/\\\?\*\:,'-]{1,31}$"
               placeholder="Enter Sheet Name" required
               class="mt-1 block w-full pl-3 pr-3 py-2 text-base border border-gray-300 sm:text-sm rounded-md shadow-sm"
               minlength="5" maxlength="31" />
