@@ -1,7 +1,6 @@
 import {
   getSearchConfigFromActiveSheet,
   getAnswerConfigFromActiveSheet,
-  getSummarizationConfigFromActiveSheet,
   getSyntheticQAConfigFromActiveSheet,
 } from "./excel_common.js";
 
@@ -13,11 +12,7 @@ import {
 import { findSheetsWithTableSuffix } from "./excel_helper.js";
 import { ExcelSearchRunner } from "./excel_search_runner.js";
 import { ExcelAnswerRunner } from "./excel_answer_runner.js";
-import { SummarizationRunner } from "./excel_summarization_runner.js";
-import {
-  createSummarizationEvalConfigTable,
-  createSummarizationEvalDataTable,
-} from "./excel_summarization_tables.js";
+
 import { SyntheticQARunner } from "./excel_synthetic_qa_runner.js";
 import {
   createSyntheticQAConfigTable,
@@ -34,7 +29,6 @@ import {
 
 let excelSearchRunner;
 let excelAnswerRunner;
-let summarizationRunner;
 let syntheticQuestionAnswerRunner;
 // Initialize Office API
 Office.onReady((info) => {
@@ -87,21 +81,6 @@ Office.onReady((info) => {
       },
     );
 
-   /*  summarizationRunner = new SummarizationRunner();
-    setupButtonEvents(
-      "createSummarizationTables",
-      createSummarizationTables,
-      "genSummarizationData",
-      async function () {
-        const config = await summarizationRunner.getSummarizationConfig();
-        if (config == null) return;
-        await summarizationRunner.createSummarizationData(config);
-      },
-      "cancelSummarizationData",
-      async function () {
-        await summarizationRunner.cancelProcessing();
-      },
-    ); */
   }
 });
 
@@ -188,17 +167,7 @@ async function createSyntheticQATables() {
   });
 }
 
-async function createSummarizationTables() {
-  const config = await getSummarizationConfigFromActiveSheet();
 
-  await promptSheetName("summary", config, async (arg) => {
-    const data = JSON.parse(arg.message);
-    const sheetName = data.sheetName;
-    await createNewSheet(sheetName, "Summarization Evals", createSummaryRunsTable);
-    await createSummarizationEvalConfigTable(data);
-    await createSummarizationEvalDataTable(sheetName);
-  });
-}
 
 let dialog = null;
 

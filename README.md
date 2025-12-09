@@ -6,7 +6,7 @@
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![GitHub last commit](https://img.shields.io/github/last-commit/abhinavrau/velvet-excel-addin)
 
-🚀 Run your Summarization and RAG evaluations in a few minutes using Excel.
+🚀 Run your RAG evaluations in a few minutes using Excel.
 
 ## Note
 

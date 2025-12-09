@@ -28,16 +28,4 @@ export async function createSyntheticQnARunsTable(sheetName) {
     sheetName,
   );
 }
-export async function createSummaryRunsTable(sheetName) {
-  await createExcelTable(
-    "Summarization Eval Runs",
-    "A2",
-    "SummarizationRunsTable",
-    summary_runs_table,
-    "A3:F3",
-    "A3:F50",
-    configTableFontSize,
-    sheetTitleFontSize,
-    sheetName,
-  );
-}
+

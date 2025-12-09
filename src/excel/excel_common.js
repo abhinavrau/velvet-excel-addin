@@ -141,17 +141,7 @@ export async function getSyntheticQAConfigFromActiveSheet(
   );
 }
 
-export async function getSummarizationConfigFromActiveSheet(
-  reportErrorTableNotFound = false,
-  getAccessToken = false,
-) {
-  return getConfigFromActiveSheet(
-    buildSummarizationConfig,
-    "SummarizationTestCasesTable",
-    reportErrorTableNotFound,
-    getAccessToken,
-  );
-}
+
 
 async function getConfigFromActiveSheet(
   fn_buildConfig,
@@ -453,67 +443,6 @@ export async function buildSynthQAConfig(config, valueColumn, configColumn) {
   return config;
 }
 
-function buildSummarizationConfig(config, valueColumn, configColumn) {
-  config = {
-    vertexAIProjectID:
-      valueColumn.values[
-        findIndexByColumnsNameIn2DArray(configColumn.values, configFieldMap.vertexAIProjectID)
-      ][0],
-    vertexAILocation:
-      valueColumn.values[
-        findIndexByColumnsNameIn2DArray(configColumn.values, configFieldMap.vertexAILocation)
-      ][0],
-    model:
-      valueColumn.values[
-        findIndexByColumnsNameIn2DArray(configColumn.values, configFieldMap.model)
-      ][0],
-    preamble:
-      valueColumn.values[
-        findIndexByColumnsNameIn2DArray(configColumn.values, configFieldMap.preamble)
-      ][0],
-    summaryResultCount:
-      valueColumn.values[
-        findIndexByColumnsNameIn2DArray(configColumn.values, configFieldMap.summaryResultCount)
-      ][0],
-    genereateGrounding:
-      valueColumn.values[
-        findIndexByColumnsNameIn2DArray(configColumn.values, configFieldMap.genereateGrounding)
-      ][0],
-    useSemanticChunks:
-      valueColumn.values[
-        findIndexByColumnsNameIn2DArray(configColumn.values, configFieldMap.useSemanticChunks)
-      ][0],
-    ignoreAdversarialQuery:
-      valueColumn.values[
-        findIndexByColumnsNameIn2DArray(configColumn.values, configFieldMap.ignoreAdversarialQuery)
-      ][0],
-    ignoreNonSummarySeekingQuery:
-      valueColumn.values[
-        findIndexByColumnsNameIn2DArray(
-          configColumn.values,
-          configFieldMap.ignoreNonSummarySeekingQuery,
-        )
-      ][0],
-    summaryMatchingAdditionalPrompt:
-      valueColumn.values[
-        findIndexByColumnsNameIn2DArray(
-          configColumn.values,
-          configFieldMap.summaryMatchingAdditionalPrompt,
-        )
-      ][0],
-    batchSize: parseInt(
-      valueColumn.values[
-        findIndexByColumnsNameIn2DArray(configColumn.values, configFieldMap.batchSize)
-      ][0],
-    ),
-    timeBetweenCallsInSec: parseInt(
-      valueColumn.values[
-        findIndexByColumnsNameIn2DArray(configColumn.values, configFieldMap.timeBetweenCallsInSec)
-      ][0],
-    ),
-  };
-  return config;
-}
 
 /**
  * Populates the vertex_ai_search_configValues array with values from the config object.
