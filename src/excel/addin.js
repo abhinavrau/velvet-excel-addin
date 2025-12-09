@@ -6,7 +6,6 @@ import {
 
 import {
   createSearchRunsTable,
-  createSummaryRunsTable,
   createSyntheticQnARunsTable,
 } from "./excel_eval_runs_tables.js";
 import { findSheetsWithTableSuffix } from "./excel_helper.js";
